@@ -191,18 +191,18 @@ export function ClientManager() {
 
   return (
     <div className="min-h-screen bg-[#F9FAFB]">
-      <div className="p-8">
+      <div className="p-4 md:p-6 lg:p-8">
         {/* Header */}
-        <div className="mb-8 flex items-start justify-between">
+        <div className="mb-6 md:mb-8 flex flex-col md:flex-row md:items-start md:justify-between gap-4">
           <div>
             <h1 className="text-[#111827] mb-2">Customers</h1>
-            <p className="text-[#6B7280]">
+            <p className="text-[#6B7280] text-sm md:text-base">
               Manage your clients and their campaigns, media, and playlists
             </p>
           </div>
           <button
             onClick={() => setShowCreateClient(true)}
-            className="flex items-center gap-2 px-6 h-11 bg-[#D9480F] text-white rounded-lg hover:bg-[#C23D0D] transition-colors"
+            className="flex items-center justify-center gap-2 px-4 md:px-6 h-11 bg-[#D9480F] text-white rounded-lg hover:bg-[#C23D0D] transition-colors w-full md:w-auto"
           >
             <Plus className="w-5 h-5" />
             Create Client
@@ -210,74 +210,74 @@ export function ClientManager() {
         </div>
 
         {/* Insights Cards */}
-        <div className="grid grid-cols-6 gap-6 mb-8">
-          <div className="bg-white rounded-xl border border-[#E5E7EB] p-6 h-[120px] flex flex-col justify-between">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4 lg:gap-6 mb-6 md:mb-8">
+          <div className="bg-white rounded-xl border border-[#E5E7EB] p-4 md:p-6 h-[100px] md:h-[120px] flex flex-col justify-between">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-sm text-[#6B7280]">Total Clients</p>
-              <div className="w-8 h-8 bg-[#F9FAFB] rounded-lg flex items-center justify-center">
-                <Users className="w-4 h-4 text-[#6B7280]" />
+              <p className="text-xs md:text-sm text-[#6B7280]">Total Clients</p>
+              <div className="w-7 h-7 md:w-8 md:h-8 bg-[#F9FAFB] rounded-lg flex items-center justify-center">
+                <Users className="w-3.5 h-3.5 md:w-4 md:h-4 text-[#6B7280]" />
               </div>
             </div>
-            <p className="text-2xl font-semibold text-[#111827]">{stats.total}</p>
+            <p className="text-xl md:text-2xl font-semibold text-[#111827]">{stats.total}</p>
           </div>
 
-          <div className="bg-white rounded-xl border border-[#E5E7EB] p-6 h-[120px] flex flex-col justify-between">
+          <div className="bg-white rounded-xl border border-[#E5E7EB] p-4 md:p-6 h-[100px] md:h-[120px] flex flex-col justify-between">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-sm text-[#6B7280]">Active</p>
-              <div className="w-8 h-8 bg-[#ECFDF5] rounded-lg flex items-center justify-center">
-                <TrendingUp className="w-4 h-4 text-[#10B981]" />
+              <p className="text-xs md:text-sm text-[#6B7280]">Active</p>
+              <div className="w-7 h-7 md:w-8 md:h-8 bg-[#ECFDF5] rounded-lg flex items-center justify-center">
+                <TrendingUp className="w-3.5 h-3.5 md:w-4 md:h-4 text-[#10B981]" />
               </div>
             </div>
-            <p className="text-2xl font-semibold text-[#111827]">{stats.active}</p>
+            <p className="text-xl md:text-2xl font-semibold text-[#111827]">{stats.active}</p>
           </div>
 
-          <div className="bg-white rounded-xl border border-[#E5E7EB] p-6 h-[120px] flex flex-col justify-between">
+          <div className="bg-white rounded-xl border border-[#E5E7EB] p-4 md:p-6 h-[100px] md:h-[120px] flex flex-col justify-between">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-sm text-[#6B7280]">Campaigns</p>
-              <div className="w-8 h-8 bg-[#EFF6FF] rounded-lg flex items-center justify-center">
-                <TrendingUp className="w-4 h-4 text-[#3B82F6]" />
+              <p className="text-xs md:text-sm text-[#6B7280]">Campaigns</p>
+              <div className="w-7 h-7 md:w-8 md:h-8 bg-[#EFF6FF] rounded-lg flex items-center justify-center">
+                <TrendingUp className="w-3.5 h-3.5 md:w-4 md:h-4 text-[#3B82F6]" />
               </div>
             </div>
-            <p className="text-2xl font-semibold text-[#111827]">{stats.totalCampaigns}</p>
+            <p className="text-xl md:text-2xl font-semibold text-[#111827]">{stats.totalCampaigns}</p>
           </div>
 
-          <div className="bg-white rounded-xl border border-[#E5E7EB] p-6 h-[120px] flex flex-col justify-between">
+          <div className="bg-white rounded-xl border border-[#E5E7EB] p-4 md:p-6 h-[100px] md:h-[120px] flex flex-col justify-between">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-sm text-[#6B7280]">Media Files</p>
-              <div className="w-8 h-8 bg-[#F3F0FF] rounded-lg flex items-center justify-center">
-                <ImageIcon className="w-4 h-4 text-[#8B5CF6]" />
+              <p className="text-xs md:text-sm text-[#6B7280]">Media Files</p>
+              <div className="w-7 h-7 md:w-8 md:h-8 bg-[#F3F0FF] rounded-lg flex items-center justify-center">
+                <ImageIcon className="w-3.5 h-3.5 md:w-4 md:h-4 text-[#8B5CF6]" />
               </div>
             </div>
-            <p className="text-2xl font-semibold text-[#111827]">{stats.totalMedia}</p>
+            <p className="text-xl md:text-2xl font-semibold text-[#111827]">{stats.totalMedia}</p>
           </div>
 
-          <div className="bg-white rounded-xl border border-[#E5E7EB] p-6 h-[120px] flex flex-col justify-between">
+          <div className="bg-white rounded-xl border border-[#E5E7EB] p-4 md:p-6 h-[100px] md:h-[120px] flex flex-col justify-between">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-sm text-[#6B7280]">Playlists</p>
-              <div className="w-8 h-8 bg-[#FDF2F8] rounded-lg flex items-center justify-center">
-                <FolderOpen className="w-4 h-4 text-[#EC4899]" />
+              <p className="text-xs md:text-sm text-[#6B7280]">Playlists</p>
+              <div className="w-7 h-7 md:w-8 md:h-8 bg-[#FDF2F8] rounded-lg flex items-center justify-center">
+                <FolderOpen className="w-3.5 h-3.5 md:w-4 md:h-4 text-[#EC4899]" />
               </div>
             </div>
-            <p className="text-2xl font-semibold text-[#111827]">{stats.totalPlaylists}</p>
+            <p className="text-xl md:text-2xl font-semibold text-[#111827]">{stats.totalPlaylists}</p>
           </div>
 
-          <div className="bg-white rounded-xl border border-[#E5E7EB] p-6 h-[120px] flex flex-col justify-between">
+          <div className="bg-white rounded-xl border border-[#E5E7EB] p-4 md:p-6 h-[100px] md:h-[120px] flex flex-col justify-between">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-sm text-[#6B7280]">Archived</p>
-              <div className="w-8 h-8 bg-[#F9FAFB] rounded-lg flex items-center justify-center">
-                <Archive className="w-4 h-4 text-[#6B7280]" />
+              <p className="text-xs md:text-sm text-[#6B7280]">Archived</p>
+              <div className="w-7 h-7 md:w-8 md:h-8 bg-[#F9FAFB] rounded-lg flex items-center justify-center">
+                <Archive className="w-3.5 h-3.5 md:w-4 md:h-4 text-[#6B7280]" />
               </div>
             </div>
-            <p className="text-2xl font-semibold text-[#111827]">{stats.archived}</p>
+            <p className="text-xl md:text-2xl font-semibold text-[#111827]">{stats.archived}</p>
           </div>
         </div>
 
         {/* Main Container */}
         <div className="bg-white rounded-xl border border-[#E5E7EB] overflow-hidden">
           {/* Search and Actions Bar */}
-          <div className="px-6 py-4 border-b border-[#E5E7EB] flex items-center gap-4">
+          <div className="px-4 md:px-6 py-3 md:py-4 border-b border-[#E5E7EB] flex flex-col md:flex-row md:items-center gap-3 md:gap-4">
             {/* Search */}
-            <div className="flex-1 max-w-[320px]">
+            <div className="flex-1 max-w-full md:max-w-[320px]">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]" />
                 <input
@@ -285,92 +285,55 @@ export function ClientManager() {
                   placeholder="Search clients..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full h-10 pl-10 pr-4 bg-white border border-[#E5E7EB] rounded-lg text-sm text-[#111827] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#D9480F] focus:border-transparent"
+                  className="w-full h-10 md:h-10 pl-10 pr-4 bg-white border border-[#E5E7EB] rounded-lg text-sm text-[#111827] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#D9480F] focus:border-transparent"
                 />
               </div>
             </div>
 
-            {/* Filters Button */}
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className={`relative flex items-center gap-2 h-10 px-4 bg-white border rounded-lg text-sm transition-colors ${
-                hasActiveFilters
-                  ? 'border-[#D9480F] text-[#D9480F] bg-[#FEF2F2]'
-                  : 'border-[#E5E7EB] text-[#111827] hover:bg-[#F9FAFB]'
-              }`}
-            >
-              <Filter className="w-4 h-4" />
-              Filters
-              {hasActiveFilters && (
-                <span className="absolute -top-1 -right-1 w-5 h-5 bg-[#D9480F] text-white text-xs rounded-full flex items-center justify-center">
-                  {(selectedStatus !== 'all' ? 1 : 0) + (selectedIndustry !== 'all' ? 1 : 0) + selectedTags.length}
-                </span>
-              )}
-            </button>
-
-            {selectedItems.length > 0 && (
-              <div className="relative">
-                <button
-                  onClick={() => setShowBulkActions(!showBulkActions)}
-                  className="flex items-center gap-2 h-10 px-4 bg-[#111827] text-white rounded-lg text-sm hover:bg-[#1F2937] transition-colors"
-                >
-                  {selectedItems.length} selected
-                  <MoreVertical className="w-4 h-4" />
-                </button>
-
-                {showBulkActions && (
-                  <div className="absolute top-full left-0 mt-2 w-48 bg-white border border-[#E5E7EB] rounded-lg shadow-lg z-10">
-                    <button
-                      onClick={handleBulkArchive}
-                      className="w-full px-4 py-2 text-left text-sm text-[#6B7280] hover:bg-[#F9FAFB] flex items-center gap-3"
-                    >
-                      <Archive className="w-4 h-4" />
-                      Archive Selected
-                    </button>
-                    <button
-                      onClick={handleBulkDelete}
-                      className="w-full px-4 py-2 text-left text-sm text-[#DC2626] hover:bg-[#FEF2F2] flex items-center gap-3"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                      Delete Selected
-                    </button>
-                  </div>
+            <div className="flex items-center gap-2 md:gap-3">
+              {/* Filters Button */}
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className={`relative flex items-center gap-2 h-10 px-3 md:px-4 bg-white border rounded-lg text-sm transition-colors flex-1 md:flex-none justify-center ${
+                  hasActiveFilters
+                    ? 'border-[#D9480F] text-[#D9480F] bg-[#FEF2F2]'
+                    : 'border-[#E5E7EB] text-[#111827] hover:bg-[#F9FAFB]'
+                }`}
+              >
+                <Filter className="w-4 h-4" />
+                <span className="hidden md:inline">Filters</span>
+                {hasActiveFilters && (
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-[#D9480F] text-white text-xs rounded-full flex items-center justify-center">
+                    {(selectedStatus !== 'all' ? 1 : 0) + (selectedIndustry !== 'all' ? 1 : 0) + selectedTags.length}
+                  </span>
                 )}
+              </button>
+
+              {/* View Toggle - Hidden on mobile */}
+              <div className="hidden md:flex items-center gap-1 border border-[#E5E7EB] rounded-lg p-1">
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={`w-9 h-9 flex items-center justify-center rounded-md transition-colors ${
+                    viewMode === 'list'
+                      ? 'bg-[#FEF2F2] text-[#D9480F]'
+                      : 'text-[#6B7280] hover:bg-[#F9FAFB]'
+                  }`}
+                  title="List view"
+                >
+                  <LayoutGrid className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={() => setViewMode('grid')}
+                  className={`w-9 h-9 flex items-center justify-center rounded-md transition-colors ${
+                    viewMode === 'grid'
+                      ? 'bg-[#FEF2F2] text-[#D9480F]'
+                      : 'text-[#6B7280] hover:bg-[#F9FAFB]'
+                  }`}
+                  title="Grid view"
+                >
+                  <Grid3x3 className="w-5 h-5" />
+                </button>
               </div>
-            )}
-
-            <div className="flex-1"></div>
-
-            {/* Export Button */}
-            <button className="flex items-center gap-2 h-10 px-4 bg-white border border-[#E5E7EB] rounded-lg text-sm text-[#D9480F] hover:bg-[#FEF2F2] transition-colors">
-              <Download className="w-4 h-4" />
-              Export
-            </button>
-
-            {/* View Toggle */}
-            <div className="flex items-center gap-1 border border-[#E5E7EB] rounded-lg p-1">
-              <button
-                onClick={() => setViewMode('list')}
-                className={`w-9 h-9 flex items-center justify-center rounded-md transition-colors ${
-                  viewMode === 'list'
-                    ? 'bg-[#FEF2F2] text-[#D9480F]'
-                    : 'text-[#6B7280] hover:bg-[#F9FAFB]'
-                }`}
-                title="List view"
-              >
-                <LayoutGrid className="w-5 h-5" />
-              </button>
-              <button
-                onClick={() => setViewMode('grid')}
-                className={`w-9 h-9 flex items-center justify-center rounded-md transition-colors ${
-                  viewMode === 'grid'
-                    ? 'bg-[#FEF2F2] text-[#D9480F]'
-                    : 'text-[#6B7280] hover:bg-[#F9FAFB]'
-                }`}
-                title="Grid view"
-              >
-                <Grid3x3 className="w-5 h-5" />
-              </button>
             </div>
           </div>
 
@@ -472,16 +435,16 @@ export function ClientManager() {
 
           {/* Content */}
           {viewMode === 'grid' ? (
-            <div className="p-6">
-              <div className="grid grid-cols-3 gap-6">
+            <div className="p-4 md:p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                 {filteredClients.map(client => (
                   <div
                     key={client.id}
-                    className="bg-white border border-[#E5E7EB] rounded-xl p-6 hover:border-[#D9480F] hover:shadow-md transition-all cursor-pointer relative group"
+                    className="bg-white border border-[#E5E7EB] rounded-xl p-4 md:p-6 hover:border-[#D9480F] hover:shadow-md transition-all cursor-pointer relative group"
                     onClick={() => setSelectedClient(client)}
                   >
-                    {/* Checkbox */}
-                    <div className="absolute top-4 left-4">
+                    {/* Checkbox - Hidden on mobile */}
+                    <div className="absolute top-4 left-4 hidden md:block">
                       <input
                         type="checkbox"
                         checked={selectedItems.includes(client.id)}
@@ -495,17 +458,17 @@ export function ClientManager() {
                     </div>
 
                     {/* Logo */}
-                    <div className="flex justify-center mb-4">
-                      <div className="w-16 h-16 bg-gradient-to-br from-[#D9480F] to-[#C23D0D] rounded-full flex items-center justify-center">
-                        <span className="text-2xl font-bold text-white">
+                    <div className="flex justify-center mb-3 md:mb-4">
+                      <div className="w-14 h-14 md:w-16 md:h-16 bg-gradient-to-br from-[#D9480F] to-[#C23D0D] rounded-full flex items-center justify-center">
+                        <span className="text-xl md:text-2xl font-bold text-white">
                           {client.name.charAt(0)}
                         </span>
                       </div>
                     </div>
 
                     {/* Client Info */}
-                    <div className="text-center mb-4">
-                      <h3 className="font-semibold text-[#111827] mb-1">{client.name}</h3>
+                    <div className="text-center mb-3 md:mb-4">
+                      <h3 className="font-semibold text-[#111827] mb-1 text-sm md:text-base">{client.name}</h3>
                       <p className="text-xs text-[#6B7280] mb-2">{client.industry}</p>
                       <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${
                         client.status === 'active'
@@ -517,25 +480,25 @@ export function ClientManager() {
                     </div>
 
                     {/* Stats */}
-                    <div className="grid grid-cols-3 gap-3 mb-4">
+                    <div className="grid grid-cols-3 gap-2 md:gap-3 mb-3 md:mb-4">
                       <div className="text-center">
-                        <p className="text-lg font-semibold text-[#111827]">{client.campaignsCount}</p>
+                        <p className="text-base md:text-lg font-semibold text-[#111827]">{client.campaignsCount}</p>
                         <p className="text-xs text-[#6B7280]">Campaigns</p>
                       </div>
                       <div className="text-center">
-                        <p className="text-lg font-semibold text-[#111827]">{client.mediaCount}</p>
+                        <p className="text-base md:text-lg font-semibold text-[#111827]">{client.mediaCount}</p>
                         <p className="text-xs text-[#6B7280]">Media</p>
                       </div>
                       <div className="text-center">
-                        <p className="text-lg font-semibold text-[#111827]">{client.playlistsCount}</p>
+                        <p className="text-base md:text-lg font-semibold text-[#111827]">{client.playlistsCount}</p>
                         <p className="text-xs text-[#6B7280]">Playlists</p>
                       </div>
                     </div>
 
                     {/* Contact & Tags */}
-                    <div className="pt-4 border-t border-[#E5E7EB]">
+                    <div className="pt-3 md:pt-4 border-t border-[#E5E7EB]">
                       <p className="text-xs text-[#6B7280] mb-1">Contact</p>
-                      <p className="text-sm font-medium text-[#111827] mb-3">{client.contactPerson}</p>
+                      <p className="text-sm font-medium text-[#111827] mb-2 md:mb-3 truncate">{client.contactPerson}</p>
                       
                       {client.tags.length > 0 && (
                         <div className="flex flex-wrap gap-1">
@@ -554,23 +517,23 @@ export function ClientManager() {
                     </div>
                   </div>
                 ))}
-              </div>
 
-              {filteredClients.length === 0 && (
-                <div className="text-center py-16">
-                  <div className="w-16 h-16 bg-[#F9FAFB] rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Users className="w-8 h-8 text-[#9CA3AF]" />
+                {filteredClients.length === 0 && (
+                  <div className="text-center py-16">
+                    <div className="w-16 h-16 bg-[#F9FAFB] rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Users className="w-8 h-8 text-[#9CA3AF]" />
+                    </div>
+                    <h3 className="font-semibold text-[#111827] mb-2">No clients found</h3>
+                    <p className="text-sm text-[#6B7280] mb-4">Try adjusting your filters or create a new client</p>
+                    <button
+                      onClick={() => setShowCreateClient(true)}
+                      className="h-10 px-6 bg-[#D9480F] text-white rounded-lg hover:bg-[#C43F0D] transition-colors font-medium"
+                    >
+                      Create Client
+                    </button>
                   </div>
-                  <h3 className="font-semibold text-[#111827] mb-2">No clients found</h3>
-                  <p className="text-sm text-[#6B7280] mb-4">Try adjusting your filters or create a new client</p>
-                  <button
-                    onClick={() => setShowCreateClient(true)}
-                    className="h-10 px-6 bg-[#D9480F] text-white rounded-lg hover:bg-[#C43F0D] transition-colors font-medium"
-                  >
-                    Create Client
-                  </button>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           ) : (
             <>

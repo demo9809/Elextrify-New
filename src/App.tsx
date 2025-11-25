@@ -6,12 +6,14 @@ import { PlaylistManager } from './components/playlists/PlaylistManager';
 import { MediaManager } from './components/media/MediaManager';
 import { ClientManager } from './components/clients/ClientManager';
 import { Sidebar } from './components/Sidebar';
+import { MobileNav } from './components/MobileNav';
 import { TopHeader } from './components/TopHeader';
 
 type Page = 'welcome' | 'campaigns' | 'terminals' | 'playlists' | 'media' | 'customers';
 
 function App() {
   const [currentPage, setCurrentPage] = useState<Page>('welcome');
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   const handleNavigate = (route: string) => {
     // Map routes to pages
@@ -31,9 +33,33 @@ function App() {
 
   return (
     <div className="min-h-screen bg-[#F9FAFB]">
-      <Sidebar activePage={currentPage} onNavigate={(page) => setCurrentPage(page as Page)} />
-      <div className="ml-[240px] flex flex-col min-h-screen">
-        <TopHeader />
+      {/* Desktop/Tablet Sidebar */}
+      <div className="hidden lg:block">
+        <Sidebar 
+          activePage={currentPage} 
+          onNavigate={(page) => setCurrentPage(page as Page)}
+          isCollapsed={isSidebarCollapsed}
+          onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+        />
+      </div>
+
+      {/* Mobile Navigation */}
+      <MobileNav 
+        activePage={currentPage}
+        onNavigate={(page) => setCurrentPage(page as Page)}
+      />
+
+      {/* Main Content */}
+      <div 
+        className={`flex flex-col min-h-screen transition-all duration-300 pt-14 lg:pt-0 ${
+          isSidebarCollapsed ? 'lg:ml-[72px]' : 'lg:ml-[240px]'
+        }`}
+      >
+        {/* Desktop Header - hidden on mobile */}
+        <div className="hidden lg:block">
+          <TopHeader />
+        </div>
+
         <div className="flex-1">
           {currentPage === 'welcome' && (
             <WelcomeScreen onNavigate={handleNavigate} />
