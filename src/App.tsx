@@ -4,10 +4,11 @@ import { TerminalManagement } from './components/terminal/TerminalManagement';
 import { WelcomeScreen } from './components/welcome/WelcomeScreen';
 import { PlaylistManager } from './components/playlists/PlaylistManager';
 import { MediaManager } from './components/media/MediaManager';
+import { ClientManager } from './components/clients/ClientManager';
 import { Sidebar } from './components/Sidebar';
 import { TopHeader } from './components/TopHeader';
 
-type Page = 'welcome' | 'campaigns' | 'terminals' | 'playlists' | 'media';
+type Page = 'welcome' | 'campaigns' | 'terminals' | 'playlists' | 'media' | 'customers';
 
 function App() {
   const [currentPage, setCurrentPage] = useState<Page>('welcome');
@@ -22,6 +23,8 @@ function App() {
       setCurrentPage('playlists');
     } else if (route.includes('media')) {
       setCurrentPage('media');
+    } else if (route.includes('customer') || route.includes('client')) {
+      setCurrentPage('customers');
     }
     // Add more route mappings as needed
   };
@@ -39,6 +42,7 @@ function App() {
           {currentPage === 'terminals' && <TerminalManagement />}
           {currentPage === 'playlists' && <PlaylistManager />}
           {currentPage === 'media' && <MediaManager />}
+          {currentPage === 'customers' && <ClientManager />}
         </div>
       </div>
     </div>

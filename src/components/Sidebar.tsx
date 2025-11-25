@@ -24,7 +24,7 @@ export function Sidebar({ activePage = 'welcome', onNavigate }: SidebarProps) {
   const menuItems = [
     { id: 'welcome', label: 'Welcome', icon: Home },
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, hasDropdown: true, disabled: true },
-    { id: 'customers', label: 'Customers', icon: Users, disabled: true },
+    { id: 'customers', label: 'Customers', icon: Users },
     { id: 'campaigns', label: 'Campaigns', icon: Target, active: true },
     { id: 'terminals', label: 'Kiosk Management', icon: Monitor },
     { id: 'media', label: 'Media', icon: Film },
