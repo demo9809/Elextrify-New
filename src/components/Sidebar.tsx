@@ -11,7 +11,8 @@ import {
   LogOut,
   ChevronDown,
   Monitor,
-  DollarSign
+  DollarSign,
+  Home
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -19,14 +20,15 @@ interface SidebarProps {
   onNavigate?: (pageId: string) => void;
 }
 
-export function Sidebar({ activePage = 'campaigns', onNavigate }: SidebarProps) {
+export function Sidebar({ activePage = 'welcome', onNavigate }: SidebarProps) {
   const menuItems = [
+    { id: 'welcome', label: 'Welcome', icon: Home },
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, hasDropdown: true, disabled: true },
     { id: 'customers', label: 'Customers', icon: Users, disabled: true },
     { id: 'campaigns', label: 'Campaigns', icon: Target, active: true },
     { id: 'terminals', label: 'Kiosk Management', icon: Monitor },
     { id: 'media', label: 'Media', icon: Film, disabled: true },
-    { id: 'playlists', label: 'Playlists', icon: List, disabled: true },
+    { id: 'playlists', label: 'Playlists', icon: List },
     { id: 'analytics', label: 'Proof-of-Play Analytics', icon: BarChart3, disabled: true },
     { id: 'billing', label: 'Budget & Billing', icon: CreditCard, disabled: true },
     { id: 'reports', label: 'Reports & Insights', icon: FileText, disabled: true },
