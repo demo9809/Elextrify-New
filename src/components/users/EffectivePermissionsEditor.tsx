@@ -112,7 +112,7 @@ export default function EffectivePermissionsEditor({
           <div className="flex flex-col sm:flex-row gap-3">
             <button
               onClick={() => setShowRolePermissions(!showRolePermissions)}
-              className="flex items-center justify-center gap-2 px-4 h-11 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              className="flex items-center justify-center gap-2 px-4 h-11 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors whitespace-nowrap"
             >
               <Eye className="w-4 h-4" />
               <span>{showRolePermissions ? 'Hide' : 'View'} Role Permissions</span>
@@ -120,7 +120,7 @@ export default function EffectivePermissionsEditor({
             <button
               onClick={handleResetToRole}
               disabled={overrideCount === 0}
-              className="flex items-center justify-center gap-2 px-4 h-11 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center justify-center gap-2 px-4 h-11 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
             >
               <RotateCcw className="w-4 h-4" />
               <span>Reset to Role</span>
