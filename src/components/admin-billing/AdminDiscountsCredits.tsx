@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import ApplyDiscountFlow from './ApplyDiscountFlow';
+import IssueCreditFlow from './IssueCreditFlow';
 
 // Mock discount data
 const mockDiscounts = [
@@ -125,6 +126,7 @@ export default function AdminDiscountsCredits() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [showApplyDiscountFlow, setShowApplyDiscountFlow] = useState(false);
+  const [showIssueCreditFlow, setShowIssueCreditFlow] = useState(false);
 
   const filteredDiscounts = mockDiscounts.filter((discount) => {
     const matchesSearch =
@@ -150,9 +152,12 @@ export default function AdminDiscountsCredits() {
   };
 
   const handleIssueCredit = () => {
-    toast.success('Issue Credit modal would open', {
-      description: 'Enter amount, reason, and expiry date',
-    });
+    setShowIssueCreditFlow(true);
+  };
+
+  const handleCreditSuccess = () => {
+    // Refresh data or update state
+    console.log('Credit issued successfully');
   };
 
   const handleRevokeDiscount = (discount: typeof mockDiscounts[0]) => {
@@ -477,6 +482,13 @@ export default function AdminDiscountsCredits() {
         isOpen={showApplyDiscountFlow}
         onClose={() => setShowApplyDiscountFlow(false)}
         onSuccess={handleDiscountSuccess}
+      />
+
+      {/* Issue Credit Flow */}
+      <IssueCreditFlow
+        isOpen={showIssueCreditFlow}
+        onClose={() => setShowIssueCreditFlow(false)}
+        onSuccess={handleCreditSuccess}
       />
     </div>
   );
