@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Search,
   Plus,
@@ -9,8 +10,10 @@ import {
   Trash2,
   AlertCircle,
   CheckCircle,
+  X,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import ApplyDiscountFlow from './ApplyDiscountFlow';
 
 // Mock discount data
 const mockDiscounts = [
@@ -117,9 +120,11 @@ const mockCredits = [
 ];
 
 export default function AdminDiscountsCredits() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'discounts' | 'credits'>('discounts');
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [showApplyDiscountFlow, setShowApplyDiscountFlow] = useState(false);
 
   const filteredDiscounts = mockDiscounts.filter((discount) => {
     const matchesSearch =
@@ -136,9 +141,12 @@ export default function AdminDiscountsCredits() {
   });
 
   const handleApplyDiscount = () => {
-    toast.success('Apply Discount modal would open', {
-      description: 'Select tenant, discount type, and expiry',
-    });
+    setShowApplyDiscountFlow(true);
+  };
+
+  const handleDiscountSuccess = () => {
+    // Refresh data or update state
+    console.log('Discount applied successfully');
   };
 
   const handleIssueCredit = () => {
@@ -463,6 +471,13 @@ export default function AdminDiscountsCredits() {
           )}
         </div>
       </div>
+
+      {/* Apply Discount Flow */}
+      <ApplyDiscountFlow
+        isOpen={showApplyDiscountFlow}
+        onClose={() => setShowApplyDiscountFlow(false)}
+        onSuccess={handleDiscountSuccess}
+      />
     </div>
   );
 }
