@@ -41,13 +41,13 @@ export function Sidebar({ activePage = 'welcome', onNavigate, isCollapsed = fals
     { id: 'tenants', label: 'Tenant Management', icon: Building2 },
     { id: 'editions', label: 'Edition Management', icon: Package },
     { id: 'organization-units', label: 'Organization Units', icon: Layers },
+    { id: 'billing', label: 'Billing & Subscription', icon: CreditCard, badge: 'TENANT' },
     { id: 'customers', label: 'Customers', icon: Users },
     { id: 'campaigns', label: 'Campaigns', icon: Target, active: true },
     { id: 'terminals', label: 'Kiosk Management', icon: Monitor },
     { id: 'media', label: 'Media', icon: Film },
     { id: 'playlists', label: 'Playlists', icon: List },
     { id: 'analytics', label: 'Proof-of-Play Analytics', icon: BarChart3, disabled: true },
-    { id: 'billing', label: 'Budget & Billing', icon: CreditCard, disabled: true },
     { id: 'reports', label: 'Reports & Insights', icon: FileText, disabled: true },
   ];
 
@@ -142,6 +142,11 @@ export function Sidebar({ activePage = 'welcome', onNavigate, isCollapsed = fals
                       </span>
                       {item.hasDropdown && (
                         <ChevronDown className={`w-4 h-4 ml-auto ${item.disabled ? 'text-[#D1D5DB]' : 'text-[#6B7280]'}`} />
+                      )}
+                      {item.badge && (
+                        <span className="ml-2 px-2 py-0.5 bg-[#FEE2E2] text-[#D9480F] text-xs font-medium rounded-full">
+                          {item.badge}
+                        </span>
                       )}
                     </>
                   )}

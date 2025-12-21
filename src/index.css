@@ -991,6 +991,10 @@
     height: calc(var(--spacing) * 96);
   }
 
+  .h-\[32px\] {
+    height: 32px;
+  }
+
   .h-\[36px\] {
     height: 36px;
   }
