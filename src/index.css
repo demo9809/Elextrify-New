@@ -888,6 +888,10 @@
     display: none;
   }
 
+  .inline {
+    display: inline;
+  }
+
   .inline-block {
     display: inline-block;
   }
@@ -1796,6 +1800,10 @@
     border-color: #fee2e2;
   }
 
+  .border-\[\#FEF3C7\] {
+    border-color: #fef3c7;
+  }
+
   .border-blue-200 {
     border-color: var(--color-blue-200);
   }
@@ -2540,6 +2548,10 @@
     padding-right: calc(var(--spacing) * 12);
   }
 
+  .pr-24 {
+    padding-right: calc(var(--spacing) * 24);
+  }
+
   .pb-3 {
     padding-bottom: calc(var(--spacing) * 3);
   }
@@ -3250,6 +3262,12 @@
   @media (hover: hover) {
     .hover\:border-\[\#3B82F6\]:hover {
       border-color: #3b82f6;
+    }
+  }
+
+  @media (hover: hover) {
+    .hover\:border-\[\#16A34A\]:hover {
+      border-color: #16a34a;
     }
   }
 

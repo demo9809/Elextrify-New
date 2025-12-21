@@ -12,7 +12,8 @@ import {
   UserCog,
   Package,
   Plus,
-  X
+  X,
+  Shield
 } from 'lucide-react';
 import { 
   mockTenants, 
@@ -94,21 +95,29 @@ export default function TenantManagement() {
   return (
     <div className="flex flex-col h-full bg-[#F9FAFB]">
       {/* Header */}
-      <div className="bg-white border-b border-[#E5E7EB] px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          <div>
-            <h1 className="text-[#111827] mb-2">Tenant Management</h1>
-            <p className="text-[#6B7280]">
-              Manage all tenant companies and their subscriptions
-            </p>
+      <div className="bg-white border-b border-[#E5E7EB]">
+        <div className="px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-[#FEF2F2] border border-[#FEE2E2] text-[#D9480F] text-xs font-medium">
+                  <Shield className="w-3 h-3 mr-1" />
+                  Infrastructure & Billing Control
+                </span>
+              </div>
+              <h1 className="text-[#111827] mb-2">Tenant Management</h1>
+              <p className="text-[#6B7280]">
+                Manage multi-database architecture, tenant isolation, and infrastructure settings
+              </p>
+            </div>
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 h-[44px] bg-[#D9480F] hover:bg-[#C23D0D] text-white rounded-lg transition-colors font-medium"
+            >
+              <Plus className="w-5 h-5" />
+              <span>Create Tenant</span>
+            </button>
           </div>
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 h-[44px] bg-[#D9480F] hover:bg-[#C23D0D] text-white rounded-lg transition-colors font-medium"
-          >
-            <Plus className="w-5 h-5" />
-            <span>Create Tenant</span>
-          </button>
         </div>
       </div>
 

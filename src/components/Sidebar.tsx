@@ -27,7 +27,8 @@ import {
   AlertCircle,
   Percent,
   Globe,
-  Activity
+  Activity,
+  Server
 } from 'lucide-react';
 import React from 'react';
 
@@ -42,18 +43,22 @@ export function Sidebar({ activePage = 'welcome', onNavigate, isCollapsed = fals
   const [showUserMenu, setShowUserMenu] = React.useState(false);
   const [settingsExpanded, setSettingsExpanded] = React.useState(false);
   const [billingExpanded, setBillingExpanded] = React.useState(false);
+  const [hostAdminExpanded, setHostAdminExpanded] = React.useState(false);
 
   const menuItems = [
     { id: 'welcome', label: 'Welcome', icon: Home },
-    { id: 'tenants', label: 'Tenant Management', icon: Building2 },
-    { id: 'editions', label: 'Edition Management', icon: Package },
-    { id: 'organization-units', label: 'Organization Units', icon: Layers },
     { id: 'billing', label: 'Billing & Subscription', icon: Receipt, badge: 'TENANT' },
     { id: 'customers', label: 'Customers', icon: Users },
     { id: 'campaigns', label: 'Campaigns', icon: Target, active: true },
     { id: 'terminals', label: 'Kiosk Management', icon: Monitor },
     { id: 'media', label: 'Media', icon: Film },
     { id: 'playlists', label: 'Playlists', icon: List },
+  ];
+
+  const hostAdminItems = [
+    { id: 'tenants', label: 'Tenant Management', icon: Building2 },
+    { id: 'editions', label: 'Edition Management', icon: Package },
+    { id: 'organization-units', label: 'Organization Units', icon: Layers },
   ];
 
   const billingAdminItems = [
@@ -77,6 +82,9 @@ export function Sidebar({ activePage = 'welcome', onNavigate, isCollapsed = fals
   
   // Check if current page is a billing admin page
   const isBillingAdminActive = activePage === 'admin-billing' || activePage.startsWith('admin-billing-');
+  
+  // Check if current page is a host admin page
+  const isHostAdminActive = activePage === 'tenants' || activePage === 'editions' || activePage === 'organization-units';
 
   // Auto-expand settings if a settings page is active
   React.useEffect(() => {
@@ -91,6 +99,13 @@ export function Sidebar({ activePage = 'welcome', onNavigate, isCollapsed = fals
       setBillingExpanded(true);
     }
   }, [isBillingAdminActive, isCollapsed]);
+
+  // Auto-expand host admin if a host admin page is active
+  React.useEffect(() => {
+    if (isHostAdminActive && !isCollapsed) {
+      setHostAdminExpanded(true);
+    }
+  }, [isHostAdminActive, isCollapsed]);
 
   return (
     <div 
@@ -184,6 +199,79 @@ export function Sidebar({ activePage = 'welcome', onNavigate, isCollapsed = fals
               </div>
             );
           })}
+
+          {/* Host Admin Menu Item with Submenu */}
+          <div className="relative group">
+            <button
+              onClick={() => {
+                if (isCollapsed) {
+                  onNavigate?.('tenants');
+                } else {
+                  setHostAdminExpanded(!hostAdminExpanded);
+                }
+              }}
+              className={`
+                w-full flex items-center rounded-lg transition-colors text-left
+                ${isCollapsed ? 'justify-center px-0 py-3' : 'gap-3 px-4 py-2.5'}
+                ${isHostAdminActive 
+                  ? 'bg-[#FEF2F2] text-[#D9480F]' 
+                  : 'text-[#6B7280] hover:bg-[#F9FAFB]'
+                }
+                ${isHostAdminActive && !isCollapsed ? 'border-l-4 border-[#D9480F] -ml-[4px] pl-[20px]' : ''}
+              `}
+              title={isCollapsed ? 'Host Admin' : undefined}
+            >
+              <Shield className={`w-5 h-5 ${ 
+                isHostAdminActive ? 'text-[#D9480F]' : 'text-[#6B7280]'
+              }`} />
+              {!isCollapsed && (
+                <>
+                  <span className={`text-sm flex-1 ${isHostAdminActive ? 'font-medium' : ''}`}>
+                    Host Admin
+                  </span>
+                  <ChevronDown className={`w-4 h-4 transition-transform ${
+                    hostAdminExpanded ? 'rotate-180' : ''
+                  } ${isHostAdminActive ? 'text-[#D9480F]' : 'text-[#6B7280]'}`} />
+                </>
+              )}
+            </button>
+
+            {/* Tooltip for collapsed state */}
+            {isCollapsed && (
+              <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-[#111827] text-white text-sm rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50 pointer-events-none">
+                Host Admin
+                <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-[#111827]"></div>
+              </div>
+            )}
+
+            {/* Submenu - only show when expanded and not collapsed */}
+            {hostAdminExpanded && !isCollapsed && (
+              <div className="mt-1 ml-4 pl-4 border-l-2 border-[#E5E7EB] space-y-1">
+                {hostAdminItems.map((subItem) => {
+                  const isSubActive = activePage === subItem.id;
+                  
+                  return (
+                    <button
+                      key={subItem.id}
+                      onClick={() => !subItem.disabled && onNavigate?.(subItem.id)}
+                      disabled={subItem.disabled}
+                      className={`
+                        w-full flex items-center gap-3 px-4 py-2 rounded-lg text-left text-sm transition-colors
+                        ${subItem.disabled 
+                          ? 'text-[#D1D5DB] cursor-not-allowed opacity-50' 
+                          : isSubActive 
+                            ? 'bg-[#FEF2F2] text-[#D9480F] font-medium' 
+                            : 'text-[#6B7280] hover:bg-[#F9FAFB]'
+                        }
+                      `}
+                    >
+                      {subItem.label}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
 
           {/* Settings Menu Item with Submenu */}
           <div className="relative group">
