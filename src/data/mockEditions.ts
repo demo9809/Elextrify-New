@@ -326,3 +326,29 @@ export const calculateYearlyDiscount = (monthlyPrice: number, yearlyPrice: numbe
 export const formatLimit = (limit: number | 'unlimited'): string => {
   return limit === 'unlimited' ? 'Unlimited' : limit.toString();
 };
+
+export const getCurrencySymbol = (currency: string): string => {
+  const symbols: Record<string, string> = {
+    USD: '$',
+    EUR: '€',
+    GBP: '£',
+    JPY: '¥',
+    AUD: 'A$',
+    CAD: 'C$',
+    INR: '₹',
+  };
+  return symbols[currency] || currency;
+};
+
+export const getCurrencyLabel = (currency: string): string => {
+  const labels: Record<string, string> = {
+    USD: 'US Dollar',
+    EUR: 'Euro',
+    GBP: 'British Pound',
+    JPY: 'Japanese Yen',
+    AUD: 'Australian Dollar',
+    CAD: 'Canadian Dollar',
+    INR: 'Indian Rupee',
+  };
+  return labels[currency] || currency;
+};

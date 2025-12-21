@@ -20,6 +20,7 @@ import {
   getStatusLabel,
   getStatusColor,
   calculateYearlyDiscount,
+  getCurrencySymbol,
   type Edition,
   type TierLevel,
   type EditionStatus
@@ -282,11 +283,11 @@ export default function EditionManagement() {
                         </span>
                       </td>
                       <td className="px-6 py-4">
-                        <p className="font-medium text-[#111827]">${edition.monthlyPrice}</p>
+                        <p className="font-medium text-[#111827]">{getCurrencySymbol(edition.currency)}{edition.monthlyPrice}</p>
                         <p className="text-xs text-[#6B7280]">per month</p>
                       </td>
                       <td className="px-6 py-4">
-                        <p className="font-medium text-[#111827]">${edition.yearlyPrice}</p>
+                        <p className="font-medium text-[#111827]">{getCurrencySymbol(edition.currency)}{edition.yearlyPrice}</p>
                         <p className="text-xs text-[#16A34A]">{discount}% discount</p>
                       </td>
                       <td className="px-6 py-4 text-sm text-[#111827]">
@@ -414,11 +415,11 @@ export default function EditionManagement() {
               <div className="grid grid-cols-2 gap-3 pt-3 border-t border-[#E5E7EB]">
                 <div>
                   <p className="text-xs text-[#6B7280] mb-1">Monthly Price</p>
-                  <p className="font-medium text-[#111827]">${edition.monthlyPrice}</p>
+                  <p className="font-medium text-[#111827]">{getCurrencySymbol(edition.currency)}{edition.monthlyPrice}</p>
                 </div>
                 <div>
                   <p className="text-xs text-[#6B7280] mb-1">Yearly Price</p>
-                  <p className="font-medium text-[#111827]">${edition.yearlyPrice}</p>
+                  <p className="font-medium text-[#111827]">{getCurrencySymbol(edition.currency)}{edition.yearlyPrice}</p>
                   <p className="text-xs text-[#16A34A]">{discount}% off</p>
                 </div>
                 <div>

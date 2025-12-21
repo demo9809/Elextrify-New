@@ -30,6 +30,7 @@ import {
   calculateYearlyDiscount,
   getEnforcementLabel,
   formatLimit,
+  getCurrencySymbol,
   type Edition 
 } from '../../data/mockEditions';
 
@@ -75,10 +76,13 @@ export default function EditionDetails() {
 
   const confirmDeprecate = () => {
     toast.success('Edition deprecated successfully', {
-      description: 'This edition will no longer be available for new tenants',
+      description: 'This edition is no longer available for new tenant assignments',
     });
     setShowDeprecateModal(false);
-    // In real app, would navigate back or refresh data
+    // Navigate back after deprecation
+    setTimeout(() => {
+      navigate('/editions');
+    }, 1500);
   };
 
   const formatDate = (dateString: string) => {
@@ -188,12 +192,12 @@ export default function EditionDetails() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="p-4 bg-[#F9FAFB] rounded-lg">
                 <p className="text-sm text-[#6B7280] mb-1">Monthly Price</p>
-                <p className="text-2xl font-semibold text-[#111827]">${edition.monthlyPrice}</p>
+                <p className="text-2xl font-semibold text-[#111827]">{getCurrencySymbol(edition.currency)}{edition.monthlyPrice}</p>
                 <p className="text-xs text-[#6B7280] mt-1">per month</p>
               </div>
               <div className="p-4 bg-[#F9FAFB] rounded-lg">
                 <p className="text-sm text-[#6B7280] mb-1">Yearly Price</p>
-                <p className="text-2xl font-semibold text-[#111827]">${edition.yearlyPrice}</p>
+                <p className="text-2xl font-semibold text-[#111827]">{getCurrencySymbol(edition.currency)}{edition.yearlyPrice}</p>
                 <p className="text-xs text-[#16A34A] mt-1">{yearlyDiscount}% discount</p>
               </div>
               <div className="p-4 bg-[#F9FAFB] rounded-lg">

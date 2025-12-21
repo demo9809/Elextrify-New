@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { 
   ArrowLeft,
   Package,
@@ -10,7 +10,8 @@ import {
   Gauge,
   Zap,
   Shield,
-  HelpCircle
+  HelpCircle,
+  Globe
 } from 'lucide-react';
 import { toast } from 'sonner@2.0.3';
 import {
@@ -311,10 +312,15 @@ export default function CreateEditEdition() {
                     onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
                     className="w-full h-[44px] px-4 border border-[#E5E7EB] rounded-lg text-[#111827] bg-white focus:outline-none focus:ring-2 focus:ring-[#D9480F] focus:border-transparent"
                   >
-                    <option value="USD">USD - US Dollar</option>
-                    <option value="EUR">EUR - Euro</option>
-                    <option value="GBP">GBP - British Pound</option>
+                    <option value="USD">USD - US Dollar ($)</option>
+                    <option value="EUR">EUR - Euro (€)</option>
+                    <option value="GBP">GBP - British Pound (£)</option>
+                    <option value="JPY">JPY - Japanese Yen (¥)</option>
+                    <option value="AUD">AUD - Australian Dollar (A$)</option>
+                    <option value="CAD">CAD - Canadian Dollar (C$)</option>
+                    <option value="INR">INR - Indian Rupee (₹)</option>
                   </select>
+                  <p className="mt-1 text-sm text-[#6B7280]">All prices for this edition will be in {formData.currency}</p>
                 </div>
 
                 <div>
