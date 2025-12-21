@@ -742,6 +742,10 @@
     grid-column: span 4 / span 4;
   }
 
+  .col-span-6 {
+    grid-column: span 6 / span 6;
+  }
+
   .-mx-4 {
     margin-inline: calc(var(--spacing) * -4);
   }
@@ -1794,6 +1798,10 @@
 
   .border-\[\#16A34A\] {
     border-color: #16a34a;
+  }
+
+  .border-\[\#86EFAC\] {
+    border-color: #86efac;
   }
 
   .border-\[\#93C5FD\] {
@@ -3032,6 +3040,10 @@
     text-transform: capitalize;
   }
 
+  .lowercase {
+    text-transform: lowercase;
+  }
+
   .uppercase {
     text-transform: uppercase;
   }
@@ -3571,6 +3583,12 @@
   @media (hover: hover) {
     .hover\:bg-\[\#FFF7ED\]:hover {
       background-color: #fff7ed;
+    }
+  }
+
+  @media (hover: hover) {
+    .hover\:bg-\[\#FFFBEB\]:hover {
+      background-color: #fffbeb;
     }
   }
 

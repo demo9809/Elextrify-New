@@ -27,6 +27,10 @@ import ThirdPartyIntegrations from './components/settings/ThirdPartyIntegrations
 import RazorpayConfig from './components/settings/integrations/RazorpayConfig';
 import ZohoBooksConfig from './components/settings/integrations/ZohoBooksConfig';
 import WebhooksConfig from './components/settings/integrations/WebhooksConfig';
+import ProfileSettings from './components/settings/account/ProfileSettings';
+import PasswordMFA from './components/settings/account/PasswordMFA';
+import NotificationPreferences from './components/settings/account/NotificationPreferences';
+import LanguageTimezone from './components/settings/account/LanguageTimezone';
 import TenantManagement from './components/tenants/TenantManagement';
 import TenantDetails from './components/tenants/TenantDetails';
 import EditionManagement from './components/editions/EditionManagement';
@@ -79,16 +83,18 @@ function AppContent() {
     if (path.includes('/admin/billing/audit')) return 'admin-billing-audit';
     if (path.includes('/admin/billing')) return 'admin-billing';
     if (path.includes('/billing')) return 'billing';
-    // Handle nested integration routes FIRST - before other settings checks
+    // Handle nested routes FIRST - before other settings checks
     if (path.includes('/settings/system/integrations')) return 'settings-system';
+    if (path.includes('/settings/account/')) return 'settings-account'; // All account sub-pages
     if (path === '/settings/account') return 'settings-account';
+    // Workspace sub-pages should show Workspace as active
+    if (path.includes('/settings/security')) return 'settings-workspace';
+    if (path.includes('/settings/language')) return 'settings-workspace';
+    if (path.includes('/settings/general')) return 'settings-workspace';
     if (path === '/settings/workspace') return 'settings-workspace';
     if (path === '/settings/system') return 'settings-system';
-    if (path.includes('/settings/security')) return 'settings-security';
     if (path.includes('/settings/email')) return 'settings-email';
     if (path.includes('/settings/api')) return 'settings-api';
-    if (path.includes('/settings/language')) return 'settings-language';
-    if (path.includes('/settings/general')) return 'settings-general';
     if (path.includes('/settings/billing')) return 'settings-billing';
     if (path.includes('/settings/integrations')) return 'settings-integrations';
     if (path.includes('/settings/notifications')) return 'settings-notifications';
@@ -224,6 +230,10 @@ function AppContent() {
             <Route path="/settings/system/integrations/razorpay" element={<RazorpayConfig />} />
             <Route path="/settings/system/integrations/zoho-books" element={<ZohoBooksConfig />} />
             <Route path="/settings/system/integrations/webhooks" element={<WebhooksConfig />} />
+            <Route path="/settings/account/profile" element={<ProfileSettings />} />
+            <Route path="/settings/account/password-mfa" element={<PasswordMFA />} />
+            <Route path="/settings/account/notifications" element={<NotificationPreferences />} />
+            <Route path="/settings/account/language-timezone" element={<LanguageTimezone />} />
             <Route path="/help-support" element={<HelpSupport />} />
             <Route path="/documentation" element={<Documentation />} />
             <Route path="/notifications" element={<NotificationsPage />} />

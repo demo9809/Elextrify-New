@@ -17,17 +17,15 @@ export default function SettingsAccount() {
       description: 'Update your name, email, avatar, and personal information',
       icon: User,
       route: '/settings/account/profile',
-      available: false,
-      comingSoon: true,
+      available: true,
     },
     {
       id: 'password',
       title: 'Password & MFA',
       description: 'Change your password and configure multi-factor authentication',
       icon: Lock,
-      route: '/settings/account/password',
-      available: false,
-      comingSoon: true,
+      route: '/settings/account/password-mfa',
+      available: true,
     },
     {
       id: 'notifications',
@@ -35,17 +33,15 @@ export default function SettingsAccount() {
       description: 'Control which notifications you receive via email and in-app',
       icon: Bell,
       route: '/settings/account/notifications',
-      available: false,
-      comingSoon: true,
+      available: true,
     },
     {
       id: 'timezone',
       title: 'Language & Timezone',
       description: 'Set your personal language preference and timezone',
       icon: Globe,
-      route: '/settings/account/timezone',
-      available: false,
-      comingSoon: true,
+      route: '/settings/account/language-timezone',
+      available: true,
     },
   ];
 
@@ -77,15 +73,6 @@ export default function SettingsAccount() {
                 }
               `}
             >
-              {/* Coming Soon Badge */}
-              {setting.comingSoon && (
-                <div className="absolute top-4 right-4">
-                  <span className="px-2 py-1 bg-[#F3F4F6] text-[#6B7280] text-xs rounded-md">
-                    Coming Soon
-                  </span>
-                </div>
-              )}
-
               {/* Icon */}
               <div className={`
                 w-12 h-12 rounded-lg flex items-center justify-center mb-4

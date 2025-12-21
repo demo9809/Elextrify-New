@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { 
   Shield, 
+  Lock,
   Languages, 
   Settings as SettingsIcon, 
   Layers,
@@ -45,6 +46,14 @@ export default function SettingsWorkspace() {
       description: 'Manage team members, roles, and access control',
       icon: Shield,
       route: '/users',
+      available: true,
+    },
+    {
+      id: 'security',
+      title: 'Security & Authentication',
+      description: 'Configure MFA policies, session security, and authentication settings',
+      icon: Lock,
+      route: '/settings/security',
       available: true,
     },
     {
