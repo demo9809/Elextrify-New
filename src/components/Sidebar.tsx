@@ -21,7 +21,13 @@ import {
   Building2,
   Package,
   Layers,
-  Receipt
+  Receipt,
+  DollarSign,
+  TrendingUp,
+  AlertCircle,
+  Percent,
+  Globe,
+  Activity
 } from 'lucide-react';
 import React from 'react';
 
@@ -35,6 +41,7 @@ interface SidebarProps {
 export function Sidebar({ activePage = 'welcome', onNavigate, isCollapsed = false, onToggleCollapse }: SidebarProps) {
   const [showUserMenu, setShowUserMenu] = React.useState(false);
   const [settingsExpanded, setSettingsExpanded] = React.useState(false);
+  const [billingExpanded, setBillingExpanded] = React.useState(false);
 
   const menuItems = [
     { id: 'welcome', label: 'Welcome', icon: Home },
@@ -42,7 +49,6 @@ export function Sidebar({ activePage = 'welcome', onNavigate, isCollapsed = fals
     { id: 'tenants', label: 'Tenant Management', icon: Building2 },
     { id: 'editions', label: 'Edition Management', icon: Package },
     { id: 'organization-units', label: 'Organization Units', icon: Layers },
-    { id: 'admin-billing', label: 'Billing Administration', icon: Receipt, badge: 'ADMIN' },
     { id: 'billing', label: 'Billing & Subscription', icon: CreditCard, badge: 'TENANT' },
     { id: 'customers', label: 'Customers', icon: Users },
     { id: 'campaigns', label: 'Campaigns', icon: Target, active: true },
@@ -51,6 +57,17 @@ export function Sidebar({ activePage = 'welcome', onNavigate, isCollapsed = fals
     { id: 'playlists', label: 'Playlists', icon: List },
     { id: 'analytics', label: 'Proof-of-Play Analytics', icon: BarChart3, disabled: true },
     { id: 'reports', label: 'Reports & Insights', icon: FileText, disabled: true },
+  ];
+
+  const billingAdminItems = [
+    { id: 'admin-billing-overview', label: 'Billing Overview', icon: LayoutDashboard, route: '/admin/billing' },
+    { id: 'admin-billing-subscriptions', label: 'Subscriptions', icon: Users, route: '/admin/billing/subscriptions' },
+    { id: 'admin-billing-invoices', label: 'Invoices', icon: FileText, route: '/admin/billing/invoices' },
+    { id: 'admin-billing-payments', label: 'Payments & Failures', icon: AlertCircle, route: '/admin/billing/payments' },
+    { id: 'admin-billing-revenue', label: 'Revenue Analytics', icon: TrendingUp, route: '/admin/billing/revenue' },
+    { id: 'admin-billing-discounts', label: 'Discounts & Credits', icon: Percent, route: '/admin/billing/discounts' },
+    { id: 'admin-billing-tax', label: 'Tax & Compliance', icon: Globe, route: '/admin/billing/tax' },
+    { id: 'admin-billing-audit', label: 'Audit Log', icon: Activity, route: '/admin/billing/audit' },
   ];
 
   const settingsItems = [
@@ -64,6 +81,9 @@ export function Sidebar({ activePage = 'welcome', onNavigate, isCollapsed = fals
 
   // Check if current page is a settings page
   const isSettingsActive = activePage === 'settings' || activePage.startsWith('settings-');
+  
+  // Check if current page is a billing admin page
+  const isBillingAdminActive = activePage === 'admin-billing' || activePage.startsWith('admin-billing-');
 
   // Auto-expand settings if a settings page is active
   React.useEffect(() => {
@@ -71,6 +91,13 @@ export function Sidebar({ activePage = 'welcome', onNavigate, isCollapsed = fals
       setSettingsExpanded(true);
     }
   }, [isSettingsActive, isCollapsed]);
+
+  // Auto-expand billing if a billing admin page is active
+  React.useEffect(() => {
+    if (isBillingAdminActive && !isCollapsed) {
+      setBillingExpanded(true);
+    }
+  }, [isBillingAdminActive, isCollapsed]);
 
   return (
     <div 
@@ -213,6 +240,79 @@ export function Sidebar({ activePage = 'welcome', onNavigate, isCollapsed = fals
             {settingsExpanded && !isCollapsed && (
               <div className="mt-1 ml-4 pl-4 border-l-2 border-[#E5E7EB] space-y-1">
                 {settingsItems.map((subItem) => {
+                  const isSubActive = activePage === subItem.id;
+                  
+                  return (
+                    <button
+                      key={subItem.id}
+                      onClick={() => !subItem.disabled && onNavigate?.(subItem.id)}
+                      disabled={subItem.disabled}
+                      className={`
+                        w-full flex items-center gap-3 px-4 py-2 rounded-lg text-left text-sm transition-colors
+                        ${subItem.disabled 
+                          ? 'text-[#D1D5DB] cursor-not-allowed opacity-50' 
+                          : isSubActive 
+                            ? 'bg-[#FEF2F2] text-[#D9480F] font-medium' 
+                            : 'text-[#6B7280] hover:bg-[#F9FAFB]'
+                        }
+                      `}
+                    >
+                      {subItem.label}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Billing Admin Menu Item with Submenu */}
+          <div className="relative group">
+            <button
+              onClick={() => {
+                if (isCollapsed) {
+                  onNavigate?.('admin-billing');
+                } else {
+                  setBillingExpanded(!billingExpanded);
+                }
+              }}
+              className={`
+                w-full flex items-center rounded-lg transition-colors text-left
+                ${isCollapsed ? 'justify-center px-0 py-3' : 'gap-3 px-4 py-2.5'}
+                ${isBillingAdminActive 
+                  ? 'bg-[#FEF2F2] text-[#D9480F]' 
+                  : 'text-[#6B7280] hover:bg-[#F9FAFB]'
+                }
+                ${isBillingAdminActive && !isCollapsed ? 'border-l-4 border-[#D9480F] -ml-[4px] pl-[20px]' : ''}
+              `}
+              title={isCollapsed ? 'Billing Admin' : undefined}
+            >
+              <CreditCard className={`w-5 h-5 ${ 
+                isBillingAdminActive ? 'text-[#D9480F]' : 'text-[#6B7280]'
+              }`} />
+              {!isCollapsed && (
+                <>
+                  <span className={`text-sm flex-1 ${isBillingAdminActive ? 'font-medium' : ''}`}>
+                    Billing Admin
+                  </span>
+                  <ChevronDown className={`w-4 h-4 transition-transform ${
+                    billingExpanded ? 'rotate-180' : ''
+                  } ${isBillingAdminActive ? 'text-[#D9480F]' : 'text-[#6B7280]'}`} />
+                </>
+              )}
+            </button>
+
+            {/* Tooltip for collapsed state */}
+            {isCollapsed && (
+              <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-[#111827] text-white text-sm rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50 pointer-events-none">
+                Billing Admin
+                <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-[#111827]"></div>
+              </div>
+            )}
+
+            {/* Submenu - only show when expanded and not collapsed */}
+            {billingExpanded && !isCollapsed && (
+              <div className="mt-1 ml-4 pl-4 border-l-2 border-[#E5E7EB] space-y-1">
+                {billingAdminItems.map((subItem) => {
                   const isSubActive = activePage === subItem.id;
                   
                   return (

@@ -30,11 +30,14 @@ import UserAccessManagement from './components/organization-units/UserAccessMana
 import TenantBilling from './components/billing/TenantBilling';
 import AdminBillingDashboard from './components/admin-billing/AdminBillingDashboard';
 import AdminTenantBillingDetail from './components/admin-billing/AdminTenantBillingDetail';
+import AdminSubscriptions from './components/admin-billing/AdminSubscriptions';
+import AdminInvoices from './components/admin-billing/AdminInvoices';
+import AdminPaymentsFailures from './components/admin-billing/AdminPaymentsFailures';
 import { Sidebar } from './components/Sidebar';
 import { MobileNav } from './components/MobileNav';
 import { TopHeader } from './components/TopHeader';
 
-type Page = 'welcome' | 'campaigns' | 'terminals' | 'playlists' | 'media' | 'customers' | 'tenants' | 'editions' | 'organization-units' | 'billing' | 'admin-billing' | 'settings' | 'settings-users' | 'settings-language' | 'settings-general' | 'settings-billing' | 'settings-integrations' | 'settings-notifications';
+type Page = 'welcome' | 'campaigns' | 'terminals' | 'playlists' | 'media' | 'customers' | 'tenants' | 'editions' | 'organization-units' | 'billing' | 'admin-billing' | 'admin-billing-overview' | 'admin-billing-subscriptions' | 'admin-billing-invoices' | 'admin-billing-payments' | 'admin-billing-revenue' | 'admin-billing-discounts' | 'admin-billing-tax' | 'admin-billing-audit' | 'settings' | 'settings-users' | 'settings-language' | 'settings-general' | 'settings-billing' | 'settings-integrations' | 'settings-notifications';
 
 function AppContent() {
   const location = useLocation();
@@ -52,6 +55,14 @@ function AppContent() {
     if (path.includes('/customers') || path.includes('/clients')) return 'customers';
     if (path.includes('/editions')) return 'editions';
     if (path.includes('/organization-units')) return 'organization-units';
+    if (path === '/admin/billing') return 'admin-billing-overview';
+    if (path.includes('/admin/billing/subscriptions')) return 'admin-billing-subscriptions';
+    if (path.includes('/admin/billing/invoices')) return 'admin-billing-invoices';
+    if (path.includes('/admin/billing/payments')) return 'admin-billing-payments';
+    if (path.includes('/admin/billing/revenue')) return 'admin-billing-revenue';
+    if (path.includes('/admin/billing/discounts')) return 'admin-billing-discounts';
+    if (path.includes('/admin/billing/tax')) return 'admin-billing-tax';
+    if (path.includes('/admin/billing/audit')) return 'admin-billing-audit';
     if (path.includes('/admin/billing')) return 'admin-billing';
     if (path.includes('/billing')) return 'billing';
     if (path.includes('/settings/language')) return 'settings-language';
@@ -79,6 +90,14 @@ function AppContent() {
       editions: '/editions',
       'organization-units': '/organization-units',
       'admin-billing': '/admin/billing',
+      'admin-billing-overview': '/admin/billing',
+      'admin-billing-subscriptions': '/admin/billing/subscriptions',
+      'admin-billing-invoices': '/admin/billing/invoices',
+      'admin-billing-payments': '/admin/billing/payments',
+      'admin-billing-revenue': '/admin/billing/revenue',
+      'admin-billing-discounts': '/admin/billing/discounts',
+      'admin-billing-tax': '/admin/billing/tax',
+      'admin-billing-audit': '/admin/billing/audit',
       billing: '/billing',
       users: '/users',
       settings: '/settings',
@@ -143,6 +162,9 @@ function AppContent() {
             <Route path="/organization-units/:unitId/access" element={<UserAccessManagement />} />
             <Route path="/billing" element={<TenantBilling />} />
             <Route path="/admin/billing" element={<AdminBillingDashboard />} />
+            <Route path="/admin/billing/subscriptions" element={<AdminSubscriptions />} />
+            <Route path="/admin/billing/invoices" element={<AdminInvoices />} />
+            <Route path="/admin/billing/payments" element={<AdminPaymentsFailures />} />
             <Route path="/admin/billing/:tenantId" element={<AdminTenantBillingDetail />} />
             <Route path="/users" element={<UserManagement />} />
             <Route path="/users/:userId" element={<UserDetails />} />

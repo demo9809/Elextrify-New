@@ -14,7 +14,8 @@ import {
   Calendar,
   Filter,
   Search,
-  Download
+  Download,
+  ChevronDown
 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -31,6 +32,8 @@ export default function AdminBillingDashboard() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedTenant, setSelectedTenant] = useState<string | null>(null);
+  const [dateRange, setDateRange] = useState<string>('30-days');
+  const [comparisonEnabled, setComparisonEnabled] = useState(false);
 
   const { revenueMetrics, tenantBillings } = billingData;
 
@@ -116,13 +119,13 @@ export default function AdminBillingDashboard() {
           <div className="flex items-center justify-between">
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-[#111827]">Billing Administration</h1>
+                <h1 className="text-[#111827]">Billing Overview</h1>
                 <span className="px-2 py-1 bg-purple-100 text-purple-700 text-xs font-medium rounded">
                   SAAS ADMIN
                 </span>
               </div>
               <p className="text-sm text-[#6B7280] mt-1">
-                Manage all tenant subscriptions, payments, and revenue
+                High-level revenue metrics and tenant subscription summary
               </p>
             </div>
             <div className="flex items-center gap-3">
