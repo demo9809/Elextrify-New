@@ -1670,6 +1670,11 @@
     border-top-width: 1px;
   }
 
+  .border-t-2 {
+    border-top-style: var(--tw-border-style);
+    border-top-width: 2px;
+  }
+
   .border-t-\[10px\] {
     border-top-style: var(--tw-border-style);
     border-top-width: 10px;
@@ -2114,6 +2119,10 @@
 
   .bg-orange-100 {
     background-color: var(--color-orange-100);
+  }
+
+  .bg-orange-600 {
+    background-color: var(--color-orange-600);
   }
 
   .bg-pink-50 {
@@ -3234,12 +3243,6 @@
   }
 
   @media (hover: hover) {
-    .hover\:border-\[\#E5E7EB\]:hover {
-      border-color: #e5e7eb;
-    }
-  }
-
-  @media (hover: hover) {
     .hover\:border-red-300:hover {
       border-color: var(--color-red-300);
     }
@@ -3512,6 +3515,12 @@
   @media (hover: hover) {
     .hover\:text-orange-600:hover {
       color: var(--color-orange-600);
+    }
+  }
+
+  @media (hover: hover) {
+    .hover\:text-red-600:hover {
+      color: var(--color-red-600);
     }
   }
 

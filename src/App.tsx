@@ -33,6 +33,10 @@ import AdminTenantBillingDetail from './components/admin-billing/AdminTenantBill
 import AdminSubscriptions from './components/admin-billing/AdminSubscriptions';
 import AdminInvoices from './components/admin-billing/AdminInvoices';
 import AdminPaymentsFailures from './components/admin-billing/AdminPaymentsFailures';
+import AdminRevenueAnalytics from './components/admin-billing/AdminRevenueAnalytics';
+import AdminDiscountsCredits from './components/admin-billing/AdminDiscountsCredits';
+import AdminTaxCompliance from './components/admin-billing/AdminTaxCompliance';
+import AdminAuditLog from './components/admin-billing/AdminAuditLog';
 import { Sidebar } from './components/Sidebar';
 import { MobileNav } from './components/MobileNav';
 import { TopHeader } from './components/TopHeader';
@@ -165,6 +169,10 @@ function AppContent() {
             <Route path="/admin/billing/subscriptions" element={<AdminSubscriptions />} />
             <Route path="/admin/billing/invoices" element={<AdminInvoices />} />
             <Route path="/admin/billing/payments" element={<AdminPaymentsFailures />} />
+            <Route path="/admin/billing/revenue" element={<AdminRevenueAnalytics />} />
+            <Route path="/admin/billing/discounts" element={<AdminDiscountsCredits />} />
+            <Route path="/admin/billing/tax" element={<AdminTaxCompliance />} />
+            <Route path="/admin/billing/audit" element={<AdminAuditLog />} />
             <Route path="/admin/billing/:tenantId" element={<AdminTenantBillingDetail />} />
             <Route path="/users" element={<UserManagement />} />
             <Route path="/users/:userId" element={<UserDetails />} />
