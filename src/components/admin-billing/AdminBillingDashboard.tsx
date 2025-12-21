@@ -241,7 +241,11 @@ export default function AdminBillingDashboard() {
               </thead>
               <tbody className="divide-y divide-[#E5E7EB]">
                 {filteredTenants.map((tenant) => (
-                  <tr key={tenant.id} className="hover:bg-[#F9FAFB] transition-colors">
+                  <tr 
+                    key={tenant.id} 
+                    onClick={() => handleViewDetails(tenant.tenantId)}
+                    className="hover:bg-[#F9FAFB] transition-colors cursor-pointer"
+                  >
                     <td className="px-6 py-4">
                       <div>
                         <p className="font-medium text-[#111827]">{tenant.tenantName}</p>

@@ -35,13 +35,12 @@ import AdminInvoices from './components/admin-billing/AdminInvoices';
 import AdminPaymentsFailures from './components/admin-billing/AdminPaymentsFailures';
 import AdminRevenueAnalytics from './components/admin-billing/AdminRevenueAnalytics';
 import AdminDiscountsCredits from './components/admin-billing/AdminDiscountsCredits';
-import AdminTaxCompliance from './components/admin-billing/AdminTaxCompliance';
 import AdminAuditLog from './components/admin-billing/AdminAuditLog';
 import { Sidebar } from './components/Sidebar';
 import { MobileNav } from './components/MobileNav';
 import { TopHeader } from './components/TopHeader';
 
-type Page = 'welcome' | 'campaigns' | 'terminals' | 'playlists' | 'media' | 'customers' | 'tenants' | 'editions' | 'organization-units' | 'billing' | 'admin-billing' | 'admin-billing-overview' | 'admin-billing-subscriptions' | 'admin-billing-invoices' | 'admin-billing-payments' | 'admin-billing-revenue' | 'admin-billing-discounts' | 'admin-billing-tax' | 'admin-billing-audit' | 'settings' | 'settings-users' | 'settings-language' | 'settings-general' | 'settings-billing' | 'settings-integrations' | 'settings-notifications';
+type Page = 'welcome' | 'campaigns' | 'terminals' | 'playlists' | 'media' | 'customers' | 'tenants' | 'editions' | 'organization-units' | 'billing' | 'admin-billing' | 'admin-billing-overview' | 'admin-billing-subscriptions' | 'admin-billing-invoices' | 'admin-billing-payments' | 'admin-billing-revenue' | 'admin-billing-discounts' | 'admin-billing-audit' | 'settings' | 'settings-users' | 'settings-language' | 'settings-general' | 'settings-billing' | 'settings-integrations' | 'settings-notifications';
 
 function AppContent() {
   const location = useLocation();
@@ -65,7 +64,6 @@ function AppContent() {
     if (path.includes('/admin/billing/payments')) return 'admin-billing-payments';
     if (path.includes('/admin/billing/revenue')) return 'admin-billing-revenue';
     if (path.includes('/admin/billing/discounts')) return 'admin-billing-discounts';
-    if (path.includes('/admin/billing/tax')) return 'admin-billing-tax';
     if (path.includes('/admin/billing/audit')) return 'admin-billing-audit';
     if (path.includes('/admin/billing')) return 'admin-billing';
     if (path.includes('/billing')) return 'billing';
@@ -100,7 +98,6 @@ function AppContent() {
       'admin-billing-payments': '/admin/billing/payments',
       'admin-billing-revenue': '/admin/billing/revenue',
       'admin-billing-discounts': '/admin/billing/discounts',
-      'admin-billing-tax': '/admin/billing/tax',
       'admin-billing-audit': '/admin/billing/audit',
       billing: '/billing',
       users: '/users',
@@ -171,7 +168,6 @@ function AppContent() {
             <Route path="/admin/billing/payments" element={<AdminPaymentsFailures />} />
             <Route path="/admin/billing/revenue" element={<AdminRevenueAnalytics />} />
             <Route path="/admin/billing/discounts" element={<AdminDiscountsCredits />} />
-            <Route path="/admin/billing/tax" element={<AdminTaxCompliance />} />
             <Route path="/admin/billing/audit" element={<AdminAuditLog />} />
             <Route path="/admin/billing/:tenantId" element={<AdminTenantBillingDetail />} />
             <Route path="/users" element={<UserManagement />} />

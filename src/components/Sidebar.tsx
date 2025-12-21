@@ -66,7 +66,6 @@ export function Sidebar({ activePage = 'welcome', onNavigate, isCollapsed = fals
     { id: 'admin-billing-payments', label: 'Payments & Failures', icon: AlertCircle, route: '/admin/billing/payments' },
     { id: 'admin-billing-revenue', label: 'Revenue Analytics', icon: TrendingUp, route: '/admin/billing/revenue' },
     { id: 'admin-billing-discounts', label: 'Discounts & Credits', icon: Percent, route: '/admin/billing/discounts' },
-    { id: 'admin-billing-tax', label: 'Tax & Compliance', icon: Globe, route: '/admin/billing/tax' },
     { id: 'admin-billing-audit', label: 'Audit Log', icon: Activity, route: '/admin/billing/audit' },
   ];
 
