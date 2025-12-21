@@ -48,7 +48,7 @@ export function Sidebar({ activePage = 'welcome', onNavigate, isCollapsed = fals
     { id: 'tenants', label: 'Tenant Management', icon: Building2 },
     { id: 'editions', label: 'Edition Management', icon: Package },
     { id: 'organization-units', label: 'Organization Units', icon: Layers },
-    { id: 'billing', label: 'Billing & Subscription', icon: CreditCard, badge: 'TENANT' },
+    { id: 'billing', label: 'Billing & Subscription', icon: Receipt, badge: 'TENANT' },
     { id: 'customers', label: 'Customers', icon: Users },
     { id: 'campaigns', label: 'Campaigns', icon: Target, active: true },
     { id: 'terminals', label: 'Kiosk Management', icon: Monitor },
@@ -150,13 +150,13 @@ export function Sidebar({ activePage = 'welcome', onNavigate, isCollapsed = fals
                   `}
                   title={isCollapsed ? item.label : undefined}
                 >
-                  <Icon className={`w-5 h-5 ${isCollapsed ? '' : ''} ${ 
+                  {Icon && <Icon className={`w-5 h-5 flex-shrink-0 ${ 
                     item.disabled 
                       ? 'text-[#D1D5DB]' 
                       : isActive 
                         ? 'text-[#D9480F]' 
                         : 'text-[#6B7280]'
-                  }`} />
+                  }`} />}
                   {!isCollapsed && (
                     <>
                       <span className={`text-sm ${isActive ? 'font-medium' : ''}`}>
