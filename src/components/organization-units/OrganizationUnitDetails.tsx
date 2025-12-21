@@ -275,35 +275,111 @@ export default function OrganizationUnitDetails() {
         )}
 
         {activeTab === 'billing' && unit.unitType === 'legal-entity' && unit.billingInformation && (
-          <div className="bg-white border border-[#E5E7EB] rounded-lg p-6">
-            <div className="flex items-center gap-2 mb-4">
-              <Shield className="w-5 h-5 text-[#D9480F]" />
-              <h3 className="font-semibold text-[#111827]">Legal & Billing Information</h3>
+          <div className="space-y-6">
+            <div className="bg-white border border-[#E5E7EB] rounded-lg p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Shield className="w-5 h-5 text-[#D9480F]" />
+                <h3 className="font-semibold text-[#111827]">Legal, Billing & Tax Information</h3>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-[#6B7280] mb-1">Legal Entity Name</p>
+                  <p className="font-medium text-[#111827]">{unit.billingInformation.legalCompanyName}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-[#6B7280] mb-1">PAN Number</p>
+                  <p className="font-medium text-[#111827] font-mono">{unit.billingInformation.taxId}</p>
+                </div>
+                <div className="sm:col-span-2">
+                  <p className="text-sm text-[#6B7280] mb-1">Registered Address</p>
+                  <p className="font-medium text-[#111827]">{unit.billingInformation.billingAddress}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-[#6B7280] mb-1">Invoice Email</p>
+                  <p className="font-medium text-[#111827]">{unit.billingInformation.invoiceEmail}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-[#6B7280] mb-1">State</p>
+                  <p className="font-medium text-[#111827]">
+                    {unit.billingInformation.region}, {unit.billingInformation.country}
+                  </p>
+                </div>
+              </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm text-[#6B7280] mb-1">Legal Company Name</p>
-                <p className="font-medium text-[#111827]">{unit.billingInformation.legalCompanyName}</p>
+
+            {/* GST Compliance Information */}
+            {unit.billingInformation.gstData && (
+              <div className="bg-white border border-[#E5E7EB] rounded-lg p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <Shield className="w-5 h-5 text-[#D9480F]" />
+                  <h3 className="font-semibold text-[#111827]">Tax & GST Compliance</h3>
+                </div>
+                
+                {unit.billingInformation.gstData.isGSTRegistered ? (
+                  <div className="space-y-4">
+                    {/* GST Status Badge */}
+                    <div className="flex items-center gap-2">
+                      <span className="inline-flex items-center px-3 py-1 rounded-md bg-[#D1FAE5] border border-[#6EE7B7] text-[#16A34A] text-sm font-medium">
+                        GST Registered
+                      </span>
+                    </div>
+
+                    {/* GST Details */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-sm text-[#6B7280] mb-1">GSTIN</p>
+                        <p className="font-medium text-[#111827] font-mono">{unit.billingInformation.gstData.gstin}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-[#6B7280] mb-1">State of Registration</p>
+                        <p className="font-medium text-[#111827]">
+                          {unit.billingInformation.gstData.stateName} ({unit.billingInformation.gstData.stateCode})
+                        </p>
+                      </div>
+                      {unit.billingInformation.gstData.gstRegistrationDate && (
+                        <div>
+                          <p className="text-sm text-[#6B7280] mb-1">Registration Date</p>
+                          <p className="font-medium text-[#111827]">
+                            {new Date(unit.billingInformation.gstData.gstRegistrationDate).toLocaleDateString('en-US', {
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric'
+                            })}
+                          </p>
+                        </div>
+                      )}
+                      <div>
+                        <p className="text-sm text-[#6B7280] mb-1">Tax Type</p>
+                        <p className="font-medium text-[#111827]">CGST + SGST / IGST</p>
+                      </div>
+                    </div>
+
+                    {/* Additional GST Details */}
+                    {(unit.billingInformation.gstData.compositionScheme || unit.billingInformation.gstData.reverseChargeApplicable) && (
+                      <div className="flex flex-wrap gap-2 pt-2">
+                        {unit.billingInformation.gstData.compositionScheme && (
+                          <span className="inline-flex items-center px-2 py-1 rounded-md bg-[#DBEAFE] border border-[#93C5FD] text-[#1E40AF] text-xs font-medium">
+                            Composition Scheme
+                          </span>
+                        )}
+                        {unit.billingInformation.gstData.reverseChargeApplicable && (
+                          <span className="inline-flex items-center px-2 py-1 rounded-md bg-[#DBEAFE] border border-[#93C5FD] text-[#1E40AF] text-xs font-medium">
+                            Reverse Charge Applicable
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <span className="inline-flex items-center px-3 py-1 rounded-md bg-[#FEE2E2] border border-[#FCA5A5] text-[#DC2626] text-sm font-medium">
+                      Non-GST Entity
+                    </span>
+                    <p className="text-sm text-[#6B7280]">This entity is not registered under GST</p>
+                  </div>
+                )}
               </div>
-              <div>
-                <p className="text-sm text-[#6B7280] mb-1">Tax ID</p>
-                <p className="font-medium text-[#111827]">{unit.billingInformation.taxId}</p>
-              </div>
-              <div className="sm:col-span-2">
-                <p className="text-sm text-[#6B7280] mb-1">Billing Address</p>
-                <p className="font-medium text-[#111827]">{unit.billingInformation.billingAddress}</p>
-              </div>
-              <div>
-                <p className="text-sm text-[#6B7280] mb-1">Invoice Email</p>
-                <p className="font-medium text-[#111827]">{unit.billingInformation.invoiceEmail}</p>
-              </div>
-              <div>
-                <p className="text-sm text-[#6B7280] mb-1">Country / Region</p>
-                <p className="font-medium text-[#111827]">
-                  {unit.billingInformation.country}, {unit.billingInformation.region}
-                </p>
-              </div>
-            </div>
+            )}
           </div>
         )}
 

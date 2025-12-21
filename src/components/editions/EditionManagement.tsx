@@ -11,7 +11,8 @@ import {
   Archive,
   Plus,
   X,
-  ArrowUpDown
+  ArrowUpDown,
+  Shield
 } from 'lucide-react';
 import { 
   mockEditions,
@@ -80,7 +81,7 @@ export default function EditionManagement() {
           <div>
             <h1 className="text-[#111827] mb-2">Edition Management</h1>
             <p className="text-[#6B7280]">
-              Manage SaaS packages, pricing tiers, and feature access
+              Define plans, limits, and pricing rules for subscriptions
             </p>
           </div>
           <button

@@ -2,6 +2,16 @@ export type UnitType = 'legal-entity' | 'regional-office' | 'sub-agency' | 'depa
 export type UnitStatus = 'active' | 'inactive';
 export type AccessLevel = 'view' | 'manage' | 'admin';
 
+export interface GSTData {
+  isGSTRegistered: boolean;
+  gstin: string;
+  stateCode: string;
+  stateName: string;
+  gstRegistrationDate: string;
+  compositionScheme: boolean;
+  reverseChargeApplicable: boolean;
+}
+
 export interface BillingInformation {
   legalCompanyName: string;
   billingAddress: string;
@@ -10,6 +20,7 @@ export interface BillingInformation {
   country: string;
   region: string;
   inheritedFrom?: string; // Parent unit ID if inherited
+  gstData?: GSTData; // India-specific GST compliance data
 }
 
 export interface UserAssignment {
@@ -344,6 +355,56 @@ export const mockOrganizationUnits: OrganizationUnit[] = [
     ],
     createdDate: '2023-06-01T10:00:00Z',
     lastModified: '2024-11-20T09:15:00Z',
+    createdBy: 'John Smith',
+  },
+  
+  // India Region (Legal Entity with GST)
+  {
+    id: '11',
+    name: 'India Operations',
+    parentId: '1',
+    unitType: 'legal-entity',
+    status: 'active',
+    timezone: 'Asia/Kolkata',
+    currency: 'INR',
+    billingInformation: {
+      legalCompanyName: 'Global Digital Signage India Private Limited',
+      billingAddress: 'Tower A, Block 5, Cyber City, Sector 29, Gurgaon, Haryana - 122002, India',
+      taxId: 'AABCG1234F',
+      invoiceEmail: 'billing.india@globalds.com',
+      country: 'India',
+      region: 'Haryana',
+      gstData: {
+        isGSTRegistered: true,
+        gstin: '06AABCG1234F1Z5',
+        stateCode: '06',
+        stateName: 'Haryana',
+        gstRegistrationDate: '2023-01-15',
+        compositionScheme: false,
+        reverseChargeApplicable: false,
+      },
+    },
+    totalCampaigns: 12,
+    totalMedia: 95,
+    totalPlaylists: 24,
+    totalKiosks: 48,
+    totalUsers: 8,
+    userAssignments: [
+      {
+        userId: '13',
+        userName: 'Rajesh Kumar',
+        userEmail: 'rajesh.kumar@globalds.com',
+        accessLevel: 'admin',
+      },
+      {
+        userId: '14',
+        userName: 'Priya Sharma',
+        userEmail: 'priya.sharma@globalds.com',
+        accessLevel: 'admin',
+      },
+    ],
+    createdDate: '2023-01-15T10:00:00Z',
+    lastModified: '2024-12-15T14:30:00Z',
     createdBy: 'John Smith',
   },
 ];

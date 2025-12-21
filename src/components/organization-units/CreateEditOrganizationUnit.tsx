@@ -20,6 +20,8 @@ import {
   type UnitType,
   type UnitStatus
 } from '../../data/mockOrganizationUnits';
+import GSTComplianceSection, { type GSTData } from './GSTComplianceSection';
+import IndiaLegalBillingForm, { type IndiaLegalBillingData } from './IndiaLegalBillingForm';
 
 export default function CreateEditOrganizationUnit() {
   const navigate = useNavigate();
@@ -31,15 +33,45 @@ export default function CreateEditOrganizationUnit() {
     parentId: '',
     unitType: 'department' as UnitType,
     status: 'active' as UnitStatus,
-    timezone: 'America/New_York',
-    currency: 'USD',
-    // Billing info (only for legal entities)
+    timezone: 'Asia/Kolkata',
+    currency: 'INR',
+    // Legal Entity Information (India-specific)
+    legalEntityName: '',
+    tradeName: '',
+    businessType: '' as 'proprietorship' | 'partnership' | 'llp' | 'private-limited' | 'public-limited' | 'trust-ngo' | '',
+    panNumber: '',
+    // Registered Address (India-specific)
+    addressLine1: '',
+    addressLine2: '',
+    city: '',
+    state: '',
+    pincode: '',
+    // Invoice Configuration
+    invoicePrefix: '',
+    invoiceStartNumber: '1001',
+    invoiceLanguage: 'english-india' as 'english' | 'english-india',
+    // Bank & Payment Details
+    bankName: '',
+    accountHolderName: '',
+    accountNumber: '',
+    ifscCode: '',
+    // Legacy fields (kept for backward compatibility)
     legalCompanyName: '',
     billingAddress: '',
     taxId: '',
     invoiceEmail: '',
-    country: '',
+    country: 'India',
     region: '',
+    // GST Compliance data
+    gstData: {
+      isGSTRegistered: false,
+      gstin: '',
+      stateCode: '',
+      stateName: '',
+      gstRegistrationDate: '',
+      compositionScheme: false,
+      reverseChargeApplicable: false,
+    } as GSTData,
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -55,12 +87,39 @@ export default function CreateEditOrganizationUnit() {
           status: unit.status,
           timezone: unit.timezone,
           currency: unit.currency,
+          // India-specific fields
+          legalEntityName: unit.billingInformation?.legalCompanyName || '',
+          tradeName: '',
+          businessType: '' as any,
+          panNumber: unit.billingInformation?.taxId || '',
+          addressLine1: unit.billingInformation?.billingAddress?.split(',')[0] || '',
+          addressLine2: '',
+          city: '',
+          state: unit.billingInformation?.region || '',
+          pincode: '',
+          invoicePrefix: '',
+          invoiceStartNumber: '1001',
+          invoiceLanguage: 'english-india' as 'english' | 'english-india',
+          bankName: '',
+          accountHolderName: '',
+          accountNumber: '',
+          ifscCode: '',
+          // Legacy fields
           legalCompanyName: unit.billingInformation?.legalCompanyName || '',
           billingAddress: unit.billingInformation?.billingAddress || '',
           taxId: unit.billingInformation?.taxId || '',
           invoiceEmail: unit.billingInformation?.invoiceEmail || '',
-          country: unit.billingInformation?.country || '',
+          country: unit.billingInformation?.country || 'India',
           region: unit.billingInformation?.region || '',
+          gstData: {
+            isGSTRegistered: unit.billingInformation?.gstData?.isGSTRegistered || false,
+            gstin: unit.billingInformation?.gstData?.gstin || '',
+            stateCode: unit.billingInformation?.gstData?.stateCode || '',
+            stateName: unit.billingInformation?.gstData?.stateName || '',
+            gstRegistrationDate: unit.billingInformation?.gstData?.gstRegistrationDate || '',
+            compositionScheme: unit.billingInformation?.gstData?.compositionScheme || false,
+            reverseChargeApplicable: unit.billingInformation?.gstData?.reverseChargeApplicable || false,
+          } as GSTData,
         });
       }
     }
@@ -78,17 +137,48 @@ export default function CreateEditOrganizationUnit() {
     }
 
     if (formData.unitType === 'legal-entity') {
-      if (!formData.legalCompanyName.trim()) {
-        newErrors.legalCompanyName = 'Legal company name is required for legal entities';
+      // India-specific validation
+      if (!formData.legalEntityName.trim()) {
+        newErrors.legalEntityName = 'Legal entity name is required';
       }
-      if (!formData.billingAddress.trim()) {
-        newErrors.billingAddress = 'Billing address is required for legal entities';
+      if (!formData.businessType) {
+        newErrors.businessType = 'Business type is required';
       }
-      if (!formData.taxId.trim()) {
-        newErrors.taxId = 'Tax ID is required for legal entities';
+      
+      // Address validation
+      if (!formData.addressLine1.trim()) {
+        newErrors.addressLine1 = 'Address is required';
       }
-      if (!formData.invoiceEmail.trim()) {
-        newErrors.invoiceEmail = 'Invoice email is required for legal entities';
+      if (!formData.city.trim()) {
+        newErrors.city = 'City is required';
+      }
+      if (!formData.state.trim()) {
+        newErrors.state = 'State is required';
+      }
+      if (!formData.pincode.trim()) {
+        newErrors.pincode = 'Pincode is required';
+      } else {
+        // Validate pincode format
+        const pincodeRegex = /^[1-9][0-9]{5}$/;
+        if (!pincodeRegex.test(formData.pincode)) {
+          newErrors.pincode = 'Invalid pincode format (6 digits)';
+        }
+      }
+      
+      // GST validation
+      if (formData.gstData.isGSTRegistered) {
+        if (!formData.gstData.gstin.trim()) {
+          newErrors.gstin = 'GSTIN is required when GST is enabled';
+        } else {
+          // Validate GSTIN format
+          const gstinRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
+          if (!gstinRegex.test(formData.gstData.gstin)) {
+            newErrors.gstin = 'Invalid GSTIN format (15 characters required)';
+          }
+        }
+        if (!formData.gstData.stateCode) {
+          newErrors.stateCode = 'State of registration is required when GST is enabled';
+        }
       }
     }
 
@@ -312,6 +402,10 @@ export default function CreateEditOrganizationUnit() {
                 onChange={(e) => setFormData({ ...formData, timezone: e.target.value })}
                 className="w-full h-[44px] px-4 border border-[#E5E7EB] rounded-lg text-[#111827] bg-white focus:outline-none focus:ring-2 focus:ring-[#D9480F] focus:border-transparent"
               >
+                <option value="Asia/Kolkata">Asia/Kolkata (IST) - India</option>
+                <option value="Asia/Dubai">Asia/Dubai (GST)</option>
+                <option value="Asia/Singapore">Asia/Singapore (SGT)</option>
+                <option value="Asia/Tokyo">Asia/Tokyo (JST)</option>
                 <option value="America/New_York">America/New York (EST)</option>
                 <option value="America/Chicago">America/Chicago (CST)</option>
                 <option value="America/Denver">America/Denver (MST)</option>
@@ -319,8 +413,6 @@ export default function CreateEditOrganizationUnit() {
                 <option value="Europe/London">Europe/London (GMT)</option>
                 <option value="Europe/Paris">Europe/Paris (CET)</option>
                 <option value="Europe/Berlin">Europe/Berlin (CET)</option>
-                <option value="Asia/Tokyo">Asia/Tokyo (JST)</option>
-                <option value="Asia/Dubai">Asia/Dubai (GST)</option>
                 <option value="Australia/Sydney">Australia/Sydney (AEDT)</option>
               </select>
             </div>
@@ -334,132 +426,65 @@ export default function CreateEditOrganizationUnit() {
                 onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
                 className="w-full h-[44px] px-4 border border-[#E5E7EB] rounded-lg text-[#111827] bg-white focus:outline-none focus:ring-2 focus:ring-[#D9480F] focus:border-transparent"
               >
+                <option value="INR">INR - Indian Rupee (₹)</option>
                 <option value="USD">USD - US Dollar ($)</option>
                 <option value="EUR">EUR - Euro (€)</option>
                 <option value="GBP">GBP - British Pound (£)</option>
                 <option value="JPY">JPY - Japanese Yen (¥)</option>
                 <option value="AUD">AUD - Australian Dollar (A$)</option>
                 <option value="CAD">CAD - Canadian Dollar (C$)</option>
-                <option value="INR">INR - Indian Rupee (₹)</option>
               </select>
             </div>
           </div>
         </div>
 
-        {/* Legal & Billing Information (only for legal entities) */}
+        {/* Legal, Billing & Tax Information (only for legal entities - India-specific) */}
         {formData.unitType === 'legal-entity' && (
           <div className="bg-white border border-[#E5E7EB] rounded-lg p-6">
-            <div className="flex items-center gap-2 mb-4">
-              <Shield className="w-5 h-5 text-[#D9480F]" />
-              <h2 className="font-semibold text-[#111827]">Legal & Billing Information</h2>
-            </div>
-            <p className="text-sm text-[#6B7280] mb-4">
-              Required for legal entities that manage their own billing and invoicing.
-            </p>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-[#111827] mb-2">
-                  Legal Company Name <span className="text-[#DC2626]">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={formData.legalCompanyName}
-                  onChange={(e) => setFormData({ ...formData, legalCompanyName: e.target.value })}
-                  placeholder="e.g., Acme Corporation Ltd."
-                  className={`w-full h-[44px] px-4 border ${
-                    errors.legalCompanyName ? 'border-[#DC2626]' : 'border-[#E5E7EB]'
-                  } rounded-lg text-[#111827] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#D9480F] focus:border-transparent`}
-                />
-                {errors.legalCompanyName && (
-                  <p className="mt-1 text-sm text-[#DC2626]">{errors.legalCompanyName}</p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-[#111827] mb-2">
-                  Billing Address <span className="text-[#DC2626]">*</span>
-                </label>
-                <textarea
-                  value={formData.billingAddress}
-                  onChange={(e) => setFormData({ ...formData, billingAddress: e.target.value })}
-                  placeholder="Full billing address"
-                  rows={3}
-                  className={`w-full px-4 py-3 border ${
-                    errors.billingAddress ? 'border-[#DC2626]' : 'border-[#E5E7EB]'
-                  } rounded-lg text-[#111827] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#D9480F] focus:border-transparent`}
-                />
-                {errors.billingAddress && (
-                  <p className="mt-1 text-sm text-[#DC2626]">{errors.billingAddress}</p>
-                )}
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-[#111827] mb-2">
-                    Tax ID / VAT / GST <span className="text-[#DC2626]">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.taxId}
-                    onChange={(e) => setFormData({ ...formData, taxId: e.target.value })}
-                    placeholder="e.g., US-12-3456789"
-                    className={`w-full h-[44px] px-4 border ${
-                      errors.taxId ? 'border-[#DC2626]' : 'border-[#E5E7EB]'
-                    } rounded-lg text-[#111827] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#D9480F] focus:border-transparent`}
-                  />
-                  {errors.taxId && (
-                    <p className="mt-1 text-sm text-[#DC2626]">{errors.taxId}</p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-[#111827] mb-2">
-                    Invoice Email <span className="text-[#DC2626]">*</span>
-                  </label>
-                  <input
-                    type="email"
-                    value={formData.invoiceEmail}
-                    onChange={(e) => setFormData({ ...formData, invoiceEmail: e.target.value })}
-                    placeholder="billing@company.com"
-                    className={`w-full h-[44px] px-4 border ${
-                      errors.invoiceEmail ? 'border-[#DC2626]' : 'border-[#E5E7EB]'
-                    } rounded-lg text-[#111827] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#D9480F] focus:border-transparent`}
-                  />
-                  {errors.invoiceEmail && (
-                    <p className="mt-1 text-sm text-[#DC2626]">{errors.invoiceEmail}</p>
-                  )}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-[#111827] mb-2">
-                    Country
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.country}
-                    onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-                    placeholder="e.g., United States"
-                    className="w-full h-[44px] px-4 border border-[#E5E7EB] rounded-lg text-[#111827] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#D9480F] focus:border-transparent"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-[#111827] mb-2">
-                    Region / State
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.region}
-                    onChange={(e) => setFormData({ ...formData, region: e.target.value })}
-                    placeholder="e.g., New York"
-                    className="w-full h-[44px] px-4 border border-[#E5E7EB] rounded-lg text-[#111827] placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#D9480F] focus:border-transparent"
-                  />
-                </div>
-              </div>
-            </div>
+            <IndiaLegalBillingForm
+              data={{
+                legalEntityName: formData.legalEntityName,
+                tradeName: formData.tradeName,
+                businessType: formData.businessType,
+                panNumber: formData.panNumber,
+                addressLine1: formData.addressLine1,
+                addressLine2: formData.addressLine2,
+                city: formData.city,
+                state: formData.state,
+                pincode: formData.pincode,
+                invoiceEmail: formData.invoiceEmail,
+                invoicePrefix: formData.invoicePrefix,
+                invoiceStartNumber: formData.invoiceStartNumber,
+                invoiceLanguage: formData.invoiceLanguage,
+                bankName: formData.bankName,
+                accountHolderName: formData.accountHolderName,
+                accountNumber: formData.accountNumber,
+                ifscCode: formData.ifscCode,
+                gstData: formData.gstData,
+              }}
+              onChange={(newData) => setFormData({ 
+                ...formData,
+                legalEntityName: newData.legalEntityName,
+                tradeName: newData.tradeName,
+                businessType: newData.businessType,
+                panNumber: newData.panNumber,
+                addressLine1: newData.addressLine1,
+                addressLine2: newData.addressLine2,
+                city: newData.city,
+                state: newData.state,
+                pincode: newData.pincode,
+                invoiceEmail: newData.invoiceEmail,
+                invoicePrefix: newData.invoicePrefix,
+                invoiceStartNumber: newData.invoiceStartNumber,
+                invoiceLanguage: newData.invoiceLanguage,
+                bankName: newData.bankName,
+                accountHolderName: newData.accountHolderName,
+                accountNumber: newData.accountNumber,
+                ifscCode: newData.ifscCode,
+                gstData: newData.gstData,
+              })}
+              errors={errors}
+            />
           </div>
         )}
       </div>

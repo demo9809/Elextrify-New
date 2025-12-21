@@ -191,14 +191,14 @@ export default function EditionDetails() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="p-4 bg-[#F9FAFB] rounded-lg">
-                <p className="text-sm text-[#6B7280] mb-1">Monthly Price</p>
+                <p className="text-sm text-[#6B7280] mb-1">Base Monthly Price</p>
                 <p className="text-2xl font-semibold text-[#111827]">{getCurrencySymbol(edition.currency)}{edition.monthlyPrice}</p>
                 <p className="text-xs text-[#6B7280] mt-1">per month</p>
               </div>
               <div className="p-4 bg-[#F9FAFB] rounded-lg">
-                <p className="text-sm text-[#6B7280] mb-1">Yearly Price</p>
+                <p className="text-sm text-[#6B7280] mb-1">Base Yearly Price</p>
                 <p className="text-2xl font-semibold text-[#111827]">{getCurrencySymbol(edition.currency)}{edition.yearlyPrice}</p>
-                <p className="text-xs text-[#16A34A] mt-1">{yearlyDiscount}% discount</p>
+                <p className="text-xs text-[#16A34A] mt-1">{yearlyDiscount}% savings vs monthly</p>
               </div>
               <div className="p-4 bg-[#F9FAFB] rounded-lg">
                 <p className="text-sm text-[#6B7280] mb-1">Currency</p>
@@ -208,6 +208,30 @@ export default function EditionDetails() {
                 <p className="text-sm text-[#6B7280] mb-1">Tax Behavior</p>
                 <p className="text-xl font-semibold text-[#111827] capitalize">{edition.taxBehavior}</p>
               </div>
+            </div>
+
+            {/* Plan-Level Discounts Indicator */}
+            <div className="mt-6 pt-6 border-t border-[#E5E7EB]">
+              <h4 className="font-medium text-[#111827] mb-3">Active Discounts</h4>
+              <div className="bg-[#EFF6FF] border border-[#BFDBFE] rounded-lg p-4">
+                <p className="text-sm text-[#1E40AF]">
+                  No plan-level discounts currently configured. Edit this edition to add standard or seasonal discounts.
+                </p>
+              </div>
+            </div>
+
+            {/* Pricing Update History */}
+            <div className="mt-6 pt-6 border-t border-[#E5E7EB]">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="font-medium text-[#111827]">Pricing History</h4>
+                <span className="inline-flex items-center px-2 py-1 rounded-md bg-[#F9FAFB] border border-[#E5E7EB] text-[#6B7280] text-xs">
+                  <Clock className="w-3 h-3 mr-1" />
+                  Last Updated: {formatDate(edition.updatedAt)}
+                </span>
+              </div>
+              <p className="text-sm text-[#6B7280]">
+                All pricing changes are logged with timestamps for audit purposes
+              </p>
             </div>
           </div>
 

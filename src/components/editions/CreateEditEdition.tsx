@@ -11,7 +11,17 @@ import {
   Zap,
   Shield,
   HelpCircle,
-  Globe
+  Globe,
+  ChevronDown,
+  ChevronUp,
+  Percent,
+  Calendar,
+  Tag,
+  AlertTriangle,
+  CheckCircle2,
+  Clock,
+  Plus,
+  Edit
 } from 'lucide-react';
 import { toast } from 'sonner@2.0.3';
 import {
@@ -23,6 +33,23 @@ import {
   type EditionStatus,
   type EnforcementBehavior
 } from '../../data/mockEditions';
+import PricingConfirmDialog from './PricingConfirmDialog';
+import SeasonalDiscountSection from './SeasonalDiscountSection';
+import SeasonalDiscountForm from './SeasonalDiscountForm';
+import SeasonalDiscountModal from './SeasonalDiscountModal';
+
+type DiscountType = 'percent' | 'flat';
+
+interface SeasonalDiscount {
+  id: string;
+  name: string;
+  appliesTo: 'monthly' | 'yearly' | 'both';
+  discountType: DiscountType;
+  discountValue: number;
+  startDate: string;
+  endDate: string;
+  active: boolean;
+}
 
 export default function CreateEditEdition() {
   const { editionId } = useParams();
@@ -32,6 +59,8 @@ export default function CreateEditEdition() {
   const existingEdition = isEditMode ? mockEditions.find(e => e.id === editionId) : null;
 
   const [activeSection, setActiveSection] = useState(1);
+  const [showPlanDiscounts, setShowPlanDiscounts] = useState(false);
+  const [pricingConfirmed, setPricingConfirmed] = useState(false);
   
   const [formData, setFormData] = useState({
     // Section 1: Basic Information
@@ -46,6 +75,12 @@ export default function CreateEditEdition() {
     yearlyPrice: existingEdition?.yearlyPrice || 0,
     currency: existingEdition?.currency || 'USD',
     taxBehavior: (existingEdition?.taxBehavior || 'exclusive') as 'exclusive' | 'inclusive',
+    
+    // Plan-Level Discounts (NEW)
+    monthlyDiscountType: 'percent' as DiscountType,
+    monthlyDiscountValue: 0,
+    yearlyDiscountType: 'percent' as DiscountType,
+    yearlyDiscountValue: 0,
     
     // Section 3: Usage Limits
     maxScreens: existingEdition?.usageLimits.maxScreens || 10,
@@ -80,8 +115,140 @@ export default function CreateEditEdition() {
     gracePeriodDays: existingEdition?.enforcementRules.gracePeriodDays || 7,
   });
 
-  const handleSave = () => {
-    // Validate form
+  const [seasonalDiscounts, setSeasonalDiscounts] = useState<SeasonalDiscount[]>([]);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [showSeasonalForm, setShowSeasonalForm] = useState(false);
+  const [editingSeasonalId, setEditingSeasonalId] = useState<string | null>(null);
+  const [seasonalFormData, setSeasonalFormData] = useState<Omit<SeasonalDiscount, 'id' | 'active'>>({
+    name: '',
+    appliesTo: 'both',
+    discountType: 'percent',
+    discountValue: 0,
+    startDate: '',
+    endDate: '',
+  });
+
+  // Calculate effective pricing with discounts
+  const calculateEffectivePrice = (basePrice: number, discountType: DiscountType, discountValue: number) => {
+    if (discountValue === 0) return basePrice;
+    if (discountType === 'percent') {
+      return basePrice - (basePrice * discountValue / 100);
+    }
+    return basePrice - discountValue;
+  };
+
+  const effectiveMonthlyPrice = calculateEffectivePrice(
+    formData.monthlyPrice,
+    formData.monthlyDiscountType,
+    formData.monthlyDiscountValue
+  );
+
+  const effectiveYearlyPrice = calculateEffectivePrice(
+    formData.yearlyPrice,
+    formData.yearlyDiscountType,
+    formData.yearlyDiscountValue
+  );
+
+  // Get active seasonal discount
+  const activeSeasonalDiscount = seasonalDiscounts.find(d => d.active);
+
+  // Calculate additional pricing metrics using effective prices (after plan-level discounts)
+  const effectiveMonthlyTotal = effectiveMonthlyPrice * 12;
+  const yearlyDiscount = calculateYearlyDiscount(effectiveMonthlyPrice, effectiveYearlyPrice);
+
+  const hasStandardDiscounts = formData.monthlyDiscountValue > 0 || formData.yearlyDiscountValue > 0;
+  const hasSeasonalDiscounts = seasonalDiscounts.length > 0;
+  const hasPricingChanges = isEditMode && (
+    formData.monthlyPrice !== existingEdition?.monthlyPrice ||
+    formData.yearlyPrice !== existingEdition?.yearlyPrice ||
+    hasStandardDiscounts ||
+    hasSeasonalDiscounts
+  );
+
+  const handleAddSeasonalDiscount = () => {
+    // Validate dates
+    if (!seasonalFormData.name.trim()) {
+      toast.error('Discount name is required');
+      return;
+    }
+    if (!seasonalFormData.startDate || !seasonalFormData.endDate) {
+      toast.error('Start and end dates are required');
+      return;
+    }
+    if (new Date(seasonalFormData.endDate) <= new Date(seasonalFormData.startDate)) {
+      toast.error('End date must be after start date');
+      return;
+    }
+
+    // Check for overlapping seasonal discounts
+    const newStart = new Date(seasonalFormData.startDate);
+    const newEnd = new Date(seasonalFormData.endDate);
+    const hasOverlap = seasonalDiscounts.some(discount => {
+      if (editingSeasonalId && discount.id === editingSeasonalId) return false;
+      const existingStart = new Date(discount.startDate);
+      const existingEnd = new Date(discount.endDate);
+      return (newStart <= existingEnd && newEnd >= existingStart);
+    });
+
+    if (hasOverlap) {
+      toast.error('Seasonal discounts cannot overlap with existing discounts');
+      return;
+    }
+
+    if (editingSeasonalId) {
+      // Update existing
+      setSeasonalDiscounts(prev =>
+        prev.map(d =>
+          d.id === editingSeasonalId
+            ? { ...seasonalFormData, id: d.id, active: d.active }
+            : d
+        )
+      );
+      toast.success('Seasonal discount updated');
+    } else {
+      // Add new
+      const newDiscount: SeasonalDiscount = {
+        ...seasonalFormData,
+        id: `seasonal_${Date.now()}`,
+        active: false, // Will be activated based on date range
+      };
+      setSeasonalDiscounts(prev => [...prev, newDiscount]);
+      toast.success('Seasonal discount added');
+    }
+
+    // Reset form
+    setSeasonalFormData({
+      name: '',
+      appliesTo: 'both',
+      discountType: 'percent',
+      discountValue: 0,
+      startDate: '',
+      endDate: '',
+    });
+    setShowSeasonalForm(false);
+    setEditingSeasonalId(null);
+  };
+
+  const handleEditSeasonalDiscount = (discount: SeasonalDiscount) => {
+    setSeasonalFormData({
+      name: discount.name,
+      appliesTo: discount.appliesTo,
+      discountType: discount.discountType,
+      discountValue: discount.discountValue,
+      startDate: discount.startDate,
+      endDate: discount.endDate,
+    });
+    setEditingSeasonalId(discount.id);
+    setShowSeasonalForm(true);
+  };
+
+  const handleDeleteSeasonalDiscount = (id: string) => {
+    setSeasonalDiscounts(prev => prev.filter(d => d.id !== id));
+    toast.success('Seasonal discount removed');
+  };
+
+  const handleSaveWithConfirmation = () => {
+    // Validate form first
     if (!formData.name.trim()) {
       toast.error('Edition name is required');
       setActiveSection(1);
@@ -94,15 +261,51 @@ export default function CreateEditEdition() {
       return;
     }
 
+    // Show confirmation if pricing changed
+    if (hasPricingChanges || !isEditMode) {
+      setShowConfirmDialog(true);
+    } else {
+      handleConfirmedSave();
+    }
+  };
+
+  const handleConfirmedSave = () => {
+    setShowConfirmDialog(false);
+    
+    // Create audit log entry
+    const auditEntry = {
+      timestamp: new Date().toISOString(),
+      action: isEditMode ? 'edition_updated' : 'edition_created',
+      changes: {
+        monthlyPrice: { old: existingEdition?.monthlyPrice, new: formData.monthlyPrice },
+        yearlyPrice: { old: existingEdition?.yearlyPrice, new: formData.yearlyPrice },
+        standardDiscounts: {
+          monthly: formData.monthlyDiscountValue > 0 ? {
+            type: formData.monthlyDiscountType,
+            value: formData.monthlyDiscountValue
+          } : null,
+          yearly: formData.yearlyDiscountValue > 0 ? {
+            type: formData.yearlyDiscountType,
+            value: formData.yearlyDiscountValue
+          } : null,
+        },
+        seasonalDiscounts: seasonalDiscounts.length,
+      },
+      performedBy: 'SaaS Admin', // In real app, get from auth context
+    };
+
+    console.log('Audit Log Entry:', auditEntry);
+
     // Simulate API call
     setTimeout(() => {
-      toast.success(isEditMode ? 'Edition updated successfully' : 'Edition created successfully');
+      toast.success(
+        isEditMode 
+          ? 'Edition updated successfully. Pricing changes logged.' 
+          : 'Edition created successfully'
+      );
       navigate('/editions');
     }, 500);
   };
-
-  const yearlyDiscount = calculateYearlyDiscount(formData.monthlyPrice, formData.yearlyPrice);
-  const calculatedYearlyPrice = formData.monthlyPrice * 12;
 
   const sections = [
     { id: 1, title: 'Basic Information', icon: Package },
@@ -140,7 +343,7 @@ export default function CreateEditEdition() {
                 Cancel
               </button>
               <button
-                onClick={handleSave}
+                onClick={handleSaveWithConfirmation}
                 className="flex items-center gap-2 px-6 h-[44px] bg-[#D9480F] hover:bg-[#C23D0D] text-white rounded-lg transition-colors font-medium"
               >
                 <Save className="w-5 h-5" />
@@ -263,10 +466,50 @@ export default function CreateEditEdition() {
             <div className="bg-white border border-[#E5E7EB] rounded-lg p-6 space-y-6">
               <div>
                 <h3 className="font-semibold text-[#111827] mb-1">Pricing Configuration</h3>
-                <p className="text-sm text-[#6B7280]">Set monthly and yearly pricing</p>
+                <p className="text-sm text-[#6B7280]">Set base pricing and configure plan-level discounts</p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Active Seasonal Pricing Badge */}
+              {activeSeasonalDiscount && (
+                <div className="bg-[#DCFCE7] border border-[#BBF7D0] rounded-lg p-4">
+                  <div className="flex items-start gap-3">
+                    <Tag className="w-5 h-5 text-[#16A34A] flex-shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <p className="font-medium text-[#16A34A]">Seasonal Pricing Active</p>
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-[#16A34A] text-white text-xs font-medium">
+                          LIVE
+                        </span>
+                      </div>
+                      <p className="text-sm text-[#15803D]">
+                        "{activeSeasonalDiscount.name}" is currently active and will override base pricing from{' '}
+                        {new Date(activeSeasonalDiscount.startDate).toLocaleDateString()} to{' '}
+                        {new Date(activeSeasonalDiscount.endDate).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Important Notice */}
+              <div className="bg-[#EFF6FF] border border-[#BFDBFE] rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <Info className="w-5 h-5 text-[#1E40AF] flex-shrink-0 mt-0.5" />
+                  <div className="text-sm text-[#1E40AF]">
+                    <p className="font-medium mb-1">Important: Pricing Strategy Tool</p>
+                    <p>Plan-level discounts set here define the <strong>pricing strategy</strong> for this edition. They do NOT retroactively apply to existing subscriptions or override tenant-specific billing adjustments. For operational discounts, use the Billing Admin panel.</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Base Pricing Section */}
+              <div>
+                <div className="flex items-center gap-2 mb-4">
+                  <h4 className="font-medium text-[#111827]">Base Pricing</h4>
+                  <span className="text-xs text-[#6B7280] bg-[#F9FAFB] px-2 py-1 rounded">Pre-discount prices</span>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-[#111827] mb-2">
                     Monthly Price <span className="text-[#DC2626]">*</span>
@@ -282,7 +525,7 @@ export default function CreateEditEdition() {
                       className="w-full h-[44px] pl-10 pr-4 border border-[#E5E7EB] rounded-lg text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#D9480F] focus:border-transparent"
                     />
                   </div>
-                  <p className="mt-1 text-sm text-[#6B7280]">Per month billing</p>
+                  <p className="mt-1 text-sm text-[#6B7280]">Base monthly subscription price</p>
                 </div>
 
                 <div>
@@ -300,7 +543,7 @@ export default function CreateEditEdition() {
                       className="w-full h-[44px] pl-10 pr-4 border border-[#E5E7EB] rounded-lg text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#D9480F] focus:border-transparent"
                     />
                   </div>
-                  <p className="mt-1 text-sm text-[#6B7280]">Annual billing amount</p>
+                  <p className="mt-1 text-sm text-[#6B7280]">Base annual subscription price (billed once per year)</p>
                 </div>
 
                 <div>
@@ -320,7 +563,6 @@ export default function CreateEditEdition() {
                     <option value="CAD">CAD - Canadian Dollar (C$)</option>
                     <option value="INR">INR - Indian Rupee (₹)</option>
                   </select>
-                  <p className="mt-1 text-sm text-[#6B7280]">All prices for this edition will be in {formData.currency}</p>
                 </div>
 
                 <div>
@@ -332,27 +574,142 @@ export default function CreateEditEdition() {
                     onChange={(e) => setFormData({ ...formData, taxBehavior: e.target.value as 'exclusive' | 'inclusive' })}
                     className="w-full h-[44px] px-4 border border-[#E5E7EB] rounded-lg text-[#111827] bg-white focus:outline-none focus:ring-2 focus:ring-[#D9480F] focus:border-transparent"
                   >
-                    <option value="exclusive">Tax Exclusive</option>
-                    <option value="inclusive">Tax Inclusive</option>
+                    <option value="exclusive">Tax Exclusive (tax added at checkout)</option>
+                    <option value="inclusive">Tax Inclusive (tax already included)</option>
                   </select>
                 </div>
               </div>
+              </div>
+
+              {/* Plan-Level Discounts */}
+              <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-4">
+                <div className="flex items-center justify-between mb-1">
+                  <h4 className="font-medium text-[#111827]">Plan-Level Discounts</h4>
+                  {hasStandardDiscounts && (
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-[#DCFCE7] border border-[#BBF7D0] text-[#16A34A] text-xs font-medium">
+                      CONFIGURED
+                    </span>
+                  )}
+                </div>
+                <p className="text-sm text-[#6B7280] mb-4">
+                  Optional discounts that apply to all new subscriptions of this edition
+                </p>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-[#111827] mb-2">
+                      Monthly Discount (Optional)
+                    </label>
+                    <div className="flex items-center gap-3">
+                      <select
+                        value={formData.monthlyDiscountType}
+                        onChange={(e) => setFormData({ ...formData, monthlyDiscountType: e.target.value as DiscountType })}
+                        className="w-32 h-[44px] px-4 border border-[#E5E7EB] rounded-lg text-[#111827] bg-white focus:outline-none focus:ring-2 focus:ring-[#D9480F] focus:border-transparent"
+                      >
+                        <option value="percent">Percent (%)</option>
+                        <option value="flat">Flat ($)</option>
+                      </select>
+                      <input
+                        type="number"
+                        value={formData.monthlyDiscountValue}
+                        onChange={(e) => setFormData({ ...formData, monthlyDiscountValue: parseFloat(e.target.value) || 0 })}
+                        min="0"
+                        step="0.01"
+                        placeholder="0.00"
+                        className="flex-1 h-[44px] px-4 border border-[#E5E7EB] rounded-lg text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#D9480F] focus:border-transparent"
+                      />
+                    </div>
+                    <p className="mt-1 text-sm text-[#6B7280]">
+                      Applies to monthly subscriptions. Leave at 0 for no discount.
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-[#111827] mb-2">
+                      Yearly Discount (Optional)
+                    </label>
+                    <div className="flex items-center gap-3">
+                      <select
+                        value={formData.yearlyDiscountType}
+                        onChange={(e) => setFormData({ ...formData, yearlyDiscountType: e.target.value as DiscountType })}
+                        className="w-32 h-[44px] px-4 border border-[#E5E7EB] rounded-lg text-[#111827] bg-white focus:outline-none focus:ring-2 focus:ring-[#D9480F] focus:border-transparent"
+                      >
+                        <option value="percent">Percent (%)</option>
+                        <option value="flat">Flat ($)</option>
+                      </select>
+                      <input
+                        type="number"
+                        value={formData.yearlyDiscountValue}
+                        onChange={(e) => setFormData({ ...formData, yearlyDiscountValue: parseFloat(e.target.value) || 0 })}
+                        min="0"
+                        step="0.01"
+                        placeholder="0.00"
+                        className="flex-1 h-[44px] px-4 border border-[#E5E7EB] rounded-lg text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#D9480F] focus:border-transparent"
+                      />
+                    </div>
+                    <p className="mt-1 text-sm text-[#6B7280]">
+                      Applies to yearly subscriptions. Leave at 0 for no discount.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Discount Warning */}
+                {hasStandardDiscounts && (
+                  <div className="mt-4 bg-[#FFFBEB] border border-[#FEF3C7] rounded-lg p-3">
+                    <p className="text-sm text-[#92400E]">
+                      <AlertTriangle className="w-4 h-4 inline mr-1" />
+                      <strong>Note:</strong> These discounts will only apply to <strong>new subscriptions</strong> created after saving. Existing subscriptions remain unchanged.
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Seasonal Discounts Section */}
+              <SeasonalDiscountSection
+                seasonalDiscounts={seasonalDiscounts}
+                onAdd={() => setShowSeasonalForm(true)}
+                onEdit={handleEditSeasonalDiscount}
+                onDelete={handleDeleteSeasonalDiscount}
+              />
 
               {/* Pricing Preview */}
               <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-4">
                 <h4 className="font-medium text-[#111827] mb-3">Pricing Preview</h4>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div>
-                    <p className="text-sm text-[#6B7280] mb-1">Monthly Total (12 months)</p>
-                    <p className="text-lg font-semibold text-[#111827]">${calculatedYearlyPrice.toFixed(2)}</p>
+                <div className="space-y-4">
+                  {/* Base Prices */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm text-[#6B7280] mb-1">Monthly Price</p>
+                      <p className="text-lg font-semibold text-[#111827]">${formData.monthlyPrice.toFixed(2)}</p>
+                      {formData.monthlyDiscountValue > 0 && (
+                        <p className="text-sm text-[#16A34A]">
+                          After discount: ${effectiveMonthlyPrice.toFixed(2)}
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      <p className="text-sm text-[#6B7280] mb-1">Yearly Price</p>
+                      <p className="text-lg font-semibold text-[#111827]">${formData.yearlyPrice.toFixed(2)}</p>
+                      {formData.yearlyDiscountValue > 0 && (
+                        <p className="text-sm text-[#16A34A]">
+                          After discount: ${effectiveYearlyPrice.toFixed(2)}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm text-[#6B7280] mb-1">Yearly Price</p>
-                    <p className="text-lg font-semibold text-[#111827]">${formData.yearlyPrice.toFixed(2)}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-[#6B7280] mb-1">Yearly Discount</p>
-                    <p className="text-lg font-semibold text-[#16A34A]">{yearlyDiscount}%</p>
+
+                  {/* Yearly Savings */}
+                  <div className="border-t border-[#E5E7EB] pt-3">
+                    <p className="text-sm text-[#6B7280] mb-1">Yearly vs Monthly (12 months)</p>
+                    <div className="flex items-baseline gap-2">
+                      <p className="text-lg font-semibold text-[#16A34A]">{yearlyDiscount}% savings</p>
+                      {hasStandardDiscounts && (
+                        <span className="text-xs text-[#6B7280]">(calculated with discounts applied)</span>
+                      )}
+                    </div>
+                    <p className="text-xs text-[#6B7280] mt-1">
+                      Monthly × 12 = ${effectiveMonthlyTotal.toFixed(2)} vs Yearly = ${effectiveYearlyPrice.toFixed(2)}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -697,6 +1054,31 @@ export default function CreateEditEdition() {
           )}
         </div>
       </div>
+
+      {/* Pricing Confirmation Dialog */}
+      <PricingConfirmDialog
+        isOpen={showConfirmDialog}
+        onClose={() => setShowConfirmDialog(false)}
+        onConfirm={handleConfirmedSave}
+        isEdit={isEditMode}
+        hasStandardDiscounts={hasStandardDiscounts}
+        hasSeasonalDiscounts={hasSeasonalDiscounts}
+        monthlyPrice={formData.monthlyPrice}
+        yearlyPrice={formData.yearlyPrice}
+      />
+
+      {/* Seasonal Discount Modal */}
+      <SeasonalDiscountModal
+        isOpen={showSeasonalForm}
+        formData={seasonalFormData}
+        isEdit={!!editingSeasonalId}
+        onChange={setSeasonalFormData}
+        onSave={handleAddSeasonalDiscount}
+        onCancel={() => {
+          setShowSeasonalForm(false);
+          setEditingSeasonalId(null);
+        }}
+      />
     </div>
   );
 }
