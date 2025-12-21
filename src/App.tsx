@@ -36,11 +36,13 @@ import AdminPaymentsFailures from './components/admin-billing/AdminPaymentsFailu
 import AdminRevenueAnalytics from './components/admin-billing/AdminRevenueAnalytics';
 import AdminDiscountsCredits from './components/admin-billing/AdminDiscountsCredits';
 import AdminAuditLog from './components/admin-billing/AdminAuditLog';
+import HelpSupport from './components/pages/HelpSupport';
+import Documentation from './components/pages/Documentation';
 import { Sidebar } from './components/Sidebar';
 import { MobileNav } from './components/MobileNav';
 import { TopHeader } from './components/TopHeader';
 
-type Page = 'welcome' | 'campaigns' | 'terminals' | 'playlists' | 'media' | 'customers' | 'tenants' | 'editions' | 'organization-units' | 'billing' | 'admin-billing' | 'admin-billing-overview' | 'admin-billing-subscriptions' | 'admin-billing-invoices' | 'admin-billing-payments' | 'admin-billing-revenue' | 'admin-billing-discounts' | 'admin-billing-audit' | 'settings' | 'settings-users' | 'settings-language' | 'settings-general' | 'settings-billing' | 'settings-integrations' | 'settings-notifications';
+type Page = 'welcome' | 'campaigns' | 'terminals' | 'playlists' | 'media' | 'customers' | 'tenants' | 'editions' | 'organization-units' | 'billing' | 'admin-billing' | 'admin-billing-overview' | 'admin-billing-subscriptions' | 'admin-billing-invoices' | 'admin-billing-payments' | 'admin-billing-revenue' | 'admin-billing-discounts' | 'admin-billing-audit' | 'settings' | 'settings-users' | 'settings-language' | 'settings-general' | 'settings-billing' | 'settings-integrations' | 'settings-notifications' | 'help-support' | 'documentation';
 
 function AppContent() {
   const location = useLocation();
@@ -74,6 +76,8 @@ function AppContent() {
     if (path.includes('/settings/notifications')) return 'settings-notifications';
     if (path.includes('/settings')) return 'settings';
     if (path.includes('/users')) return 'settings-users';
+    if (path.includes('/help-support')) return 'help-support';
+    if (path.includes('/documentation')) return 'documentation';
     return 'welcome';
   };
 
@@ -108,6 +112,8 @@ function AppContent() {
       'settings-billing': '/settings/billing',
       'settings-integrations': '/settings/integrations',
       'settings-notifications': '/settings/notifications',
+      'help-support': '/help-support',
+      'documentation': '/documentation',
     };
     navigate(routeMap[page] || '/');
   };
@@ -183,6 +189,8 @@ function AppContent() {
             <Route path="/settings/integrations" element={<IntegrationsSettings />} />
             <Route path="/settings/notifications" element={<NotificationSettings />} />
             <Route path="/settings/security" element={<SecuritySettings />} />
+            <Route path="/help-support" element={<HelpSupport />} />
+            <Route path="/documentation" element={<Documentation />} />
           </Routes>
         </div>
       </div>

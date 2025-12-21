@@ -271,3 +271,191 @@ export const getCycleSavings = (monthlyPrice: number): number => {
   const savings = (monthlyPrice * 12) - yearlyPrice;
   return Math.round(savings);
 };
+
+// Detailed invoice data for invoice preview
+export interface InvoiceLineItem {
+  id: string;
+  description: string;
+  unit: string;
+  quantity: number;
+  rate: number;
+  total: number;
+}
+
+export interface InvoiceUsageSummary {
+  totalHoursRun: number;
+  totalScreensUsed: number;
+  regionsCovered: string[];
+}
+
+export interface DetailedInvoice {
+  invoiceNumber: string;
+  tenantName: string;
+  billingPeriod: string;
+  status: InvoiceStatus;
+  invoiceDate: string;
+  dueDate: string;
+  paidDate?: string;
+  
+  // Usage data (DOOH-specific)
+  usageSummary: InvoiceUsageSummary;
+  
+  // Line items
+  lineItems: InvoiceLineItem[];
+  
+  // Totals
+  subtotal: number;
+  discount: number;
+  discountDescription?: string;
+  tax: number;
+  taxRate: number;
+  taxDescription?: string;
+  grandTotal: number;
+  currency: string;
+}
+
+// Mock function to get detailed invoice data
+export const getDetailedInvoice = (invoiceId: string): DetailedInvoice => {
+  // Mock detailed data for different invoices
+  const detailedInvoices: Record<string, DetailedInvoice> = {
+    'inv_1': {
+      invoiceNumber: 'INV-2024-12-001',
+      tenantName: 'Digital Signage Corp',
+      billingPeriod: 'December 1 - December 31, 2024',
+      status: 'paid',
+      invoiceDate: '2024-12-01T00:00:00Z',
+      dueDate: '2024-12-08T00:00:00Z',
+      paidDate: '2024-12-02T10:30:00Z',
+      
+      usageSummary: {
+        totalHoursRun: 12480,
+        totalScreensUsed: 42,
+        regionsCovered: ['Delhi', 'Mumbai', 'Bangalore', 'Chennai', 'Hyderabad'],
+      },
+      
+      lineItems: [
+        {
+          id: 'li_1',
+          description: 'Campaign Playback - North India',
+          unit: 'Hours',
+          quantity: 5200,
+          rate: 0.012,
+          total: 62.40,
+        },
+        {
+          id: 'li_2',
+          description: 'Campaign Playback - South India',
+          unit: 'Hours',
+          quantity: 4800,
+          rate: 0.012,
+          total: 57.60,
+        },
+        {
+          id: 'li_3',
+          description: 'Campaign Playback - West India',
+          unit: 'Hours',
+          quantity: 2480,
+          rate: 0.012,
+          total: 29.76,
+        },
+        {
+          id: 'li_4',
+          description: 'Platform Subscription Fee - Professional',
+          unit: 'Month',
+          quantity: 1,
+          rate: 99.00,
+          total: 99.00,
+        },
+      ],
+      
+      subtotal: 248.76,
+      discount: 0,
+      tax: 0,
+      taxRate: 0,
+      grandTotal: 149.00,
+      currency: 'USD',
+    },
+    'inv_2': {
+      invoiceNumber: 'INV-2024-11-001',
+      tenantName: 'Digital Signage Corp',
+      billingPeriod: 'November 1 - November 30, 2024',
+      status: 'paid',
+      invoiceDate: '2024-11-01T00:00:00Z',
+      dueDate: '2024-11-08T00:00:00Z',
+      paidDate: '2024-11-03T14:20:00Z',
+      
+      usageSummary: {
+        totalHoursRun: 11520,
+        totalScreensUsed: 38,
+        regionsCovered: ['Delhi', 'Mumbai', 'Bangalore', 'Pune'],
+      },
+      
+      lineItems: [
+        {
+          id: 'li_1',
+          description: 'Campaign Playback - North India',
+          unit: 'Hours',
+          quantity: 4800,
+          rate: 0.012,
+          total: 57.60,
+        },
+        {
+          id: 'li_2',
+          description: 'Campaign Playback - South India',
+          unit: 'Hours',
+          quantity: 4320,
+          rate: 0.012,
+          total: 51.84,
+        },
+        {
+          id: 'li_3',
+          description: 'Campaign Playback - West India',
+          unit: 'Hours',
+          quantity: 2400,
+          rate: 0.012,
+          total: 28.80,
+        },
+        {
+          id: 'li_4',
+          description: 'Platform Subscription Fee - Professional',
+          unit: 'Month',
+          quantity: 1,
+          rate: 99.00,
+          total: 99.00,
+        },
+      ],
+      
+      subtotal: 237.24,
+      discount: 0,
+      tax: 0,
+      taxRate: 0,
+      grandTotal: 149.00,
+      currency: 'USD',
+    },
+  };
+  
+  // Return detailed data if available, otherwise return a default structure
+  return detailedInvoices[invoiceId] || {
+    invoiceNumber: 'INV-2024-XX-XXX',
+    tenantName: 'Digital Signage Corp',
+    billingPeriod: 'Period Not Available',
+    status: 'paid',
+    invoiceDate: new Date().toISOString(),
+    dueDate: new Date().toISOString(),
+    
+    usageSummary: {
+      totalHoursRun: 0,
+      totalScreensUsed: 0,
+      regionsCovered: [],
+    },
+    
+    lineItems: [],
+    
+    subtotal: 0,
+    discount: 0,
+    tax: 0,
+    taxRate: 0,
+    grandTotal: 0,
+    currency: 'USD',
+  };
+};

@@ -28,7 +28,8 @@ import {
   Percent,
   Globe,
   Activity,
-  Server
+  Server,
+  BookOpen
 } from 'lucide-react';
 import React from 'react';
 
@@ -497,11 +498,25 @@ export function Sidebar({ activePage = 'welcome', onNavigate, isCollapsed = fals
               </button>
               
               <button
-                onClick={() => setShowUserMenu(false)}
+                onClick={() => {
+                  setShowUserMenu(false);
+                  onNavigate?.('help-support');
+                }}
                 className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-[#111827] hover:bg-[#F9FAFB] transition-colors"
               >
                 <HelpCircle className="w-4 h-4 text-[#6B7280]" />
                 <span>Help & Support</span>
+              </button>
+              
+              <button
+                onClick={() => {
+                  setShowUserMenu(false);
+                  onNavigate?.('documentation');
+                }}
+                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-[#111827] hover:bg-[#F9FAFB] transition-colors"
+              >
+                <BookOpen className="w-4 h-4 text-[#6B7280]" />
+                <span>Documentation</span>
               </button>
               
               <div className="border-t border-[#E5E7EB] my-1" />

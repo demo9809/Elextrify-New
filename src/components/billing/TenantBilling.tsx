@@ -16,6 +16,7 @@ import {
   RefreshCw,
   Receipt,
   FileText,
+  Eye,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -29,12 +30,14 @@ import {
   getUsageColor,
   formatCurrency,
   getCycleSavings,
+  getDetailedInvoice,
   type BillingData,
   type UsageLimit,
 } from '../../data/mockBillingData';
 import UpgradePlanModal from './UpgradePlanModal';
 import ChangeBillingCycleModal from './ChangeBillingCycleModal';
 import UpdatePaymentMethodModal from './UpdatePaymentMethodModal';
+import InvoicePreview from './InvoicePreview';
 
 export default function TenantBilling() {
   const [billingData] = useState<BillingData>(mockBillingData);
@@ -42,6 +45,7 @@ export default function TenantBilling() {
   const [showChangePlanModal, setShowChangePlanModal] = useState(false);
   const [showChangeCycleModal, setShowChangeCycleModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [selectedInvoiceId, setSelectedInvoiceId] = useState<string | null>(null);
   const [isAdmin] = useState(true); // In real app, this comes from user context
 
   const { subscription, usage, invoices, paymentMethods } = billingData;
@@ -482,13 +486,22 @@ export default function TenantBilling() {
                             </p>
                           </td>
                           <td className="px-6 py-4 text-right">
-                            <button
-                              onClick={() => handleDownloadInvoice(invoice.invoiceNumber)}
-                              className="inline-flex items-center gap-1 px-3 h-[32px] text-sm text-[#D9480F] hover:text-[#C23D0D] font-medium"
-                            >
-                              <Download className="w-4 h-4" />
-                              Download
-                            </button>
+                            <div className="flex items-center justify-end gap-2">
+                              <button
+                                onClick={() => setSelectedInvoiceId(invoice.id)}
+                                className="inline-flex items-center gap-1 px-3 h-[32px] text-sm text-[#D9480F] hover:text-[#C23D0D] font-medium"
+                              >
+                                <Eye className="w-4 h-4" />
+                                View Invoice
+                              </button>
+                              <button
+                                onClick={() => handleDownloadInvoice(invoice.invoiceNumber)}
+                                className="inline-flex items-center gap-1 px-3 h-[32px] text-sm text-[#6B7280] hover:text-[#111827] font-medium"
+                              >
+                                <Download className="w-4 h-4" />
+                                Download
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -525,13 +538,22 @@ export default function TenantBilling() {
                             {formatCurrency(invoice.amount, invoice.currency)}
                           </p>
                         </div>
-                        <button
-                          onClick={() => handleDownloadInvoice(invoice.invoiceNumber)}
-                          className="flex items-center gap-1 px-3 h-[36px] text-sm text-[#D9480F] hover:text-[#C23D0D] font-medium border border-[#E5E7EB] rounded-lg"
-                        >
-                          <Download className="w-4 h-4" />
-                          Download
-                        </button>
+                        <div className="flex flex-col gap-2">
+                          <button
+                            onClick={() => setSelectedInvoiceId(invoice.id)}
+                            className="flex items-center gap-1 px-3 h-[36px] text-sm text-[#D9480F] hover:text-[#C23D0D] font-medium border border-[#E5E7EB] rounded-lg justify-center"
+                          >
+                            <Eye className="w-4 h-4" />
+                            View
+                          </button>
+                          <button
+                            onClick={() => handleDownloadInvoice(invoice.invoiceNumber)}
+                            className="flex items-center gap-1 px-3 h-[36px] text-sm text-[#6B7280] hover:text-[#111827] font-medium border border-[#E5E7EB] rounded-lg justify-center"
+                          >
+                            <Download className="w-4 h-4" />
+                            Download
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -563,6 +585,12 @@ export default function TenantBilling() {
       )}
       {showPaymentModal && (
         <UpdatePaymentMethodModal onClose={() => setShowPaymentModal(false)} />
+      )}
+      {selectedInvoiceId && (
+        <InvoicePreview
+          invoiceId={selectedInvoiceId}
+          onClose={() => setSelectedInvoiceId(null)}
+        />
       )}
     </div>
   );
