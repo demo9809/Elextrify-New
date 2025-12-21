@@ -13,7 +13,8 @@ import {
   Building2,
   Package,
   Layers,
-  CreditCard
+  CreditCard,
+  Receipt
 } from 'lucide-react';
 
 interface MobileNavProps {
@@ -30,6 +31,7 @@ export function MobileNav({ activePage = 'welcome', onNavigate }: MobileNavProps
     { id: 'tenants', label: 'Tenants', icon: Building2 },
     { id: 'editions', label: 'Editions', icon: Package },
     { id: 'organization-units', label: 'Org Units', icon: Layers },
+    { id: 'admin-billing', label: 'Admin Billing', icon: Receipt },
     { id: 'billing', label: 'Billing', icon: CreditCard },
     { id: 'customers', label: 'Customers', icon: Users },
     { id: 'campaigns', label: 'Campaigns', icon: Target },

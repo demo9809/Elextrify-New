@@ -20,7 +20,8 @@ import {
   Shield,
   Building2,
   Package,
-  Layers
+  Layers,
+  Receipt
 } from 'lucide-react';
 import React from 'react';
 
@@ -41,6 +42,7 @@ export function Sidebar({ activePage = 'welcome', onNavigate, isCollapsed = fals
     { id: 'tenants', label: 'Tenant Management', icon: Building2 },
     { id: 'editions', label: 'Edition Management', icon: Package },
     { id: 'organization-units', label: 'Organization Units', icon: Layers },
+    { id: 'admin-billing', label: 'Billing Administration', icon: Receipt, badge: 'ADMIN' },
     { id: 'billing', label: 'Billing & Subscription', icon: CreditCard, badge: 'TENANT' },
     { id: 'customers', label: 'Customers', icon: Users },
     { id: 'campaigns', label: 'Campaigns', icon: Target, active: true },

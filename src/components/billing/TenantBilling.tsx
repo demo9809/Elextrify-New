@@ -30,10 +30,14 @@ import {
   type BillingData,
   type UsageLimit
 } from '../../data/mockBillingData';
+import UpgradePlanModal from './UpgradePlanModal';
+import ChangeBillingCycleModal from './ChangeBillingCycleModal';
+import UpdatePaymentMethodModal from './UpdatePaymentMethodModal';
 
 export default function TenantBilling() {
   const [billingData] = useState<BillingData>(mockBillingData);
   const [showChangePlanModal, setShowChangePlanModal] = useState(false);
+  const [showChangeCycleModal, setShowChangeCycleModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [isAdmin] = useState(true); // In real app, this comes from user context
 
@@ -64,7 +68,7 @@ export default function TenantBilling() {
       toast.error('Only administrators can change the billing cycle');
       return;
     }
-    toast.success('Billing cycle change flow would open here');
+    setShowChangeCycleModal(true);
   };
 
   const handleUpdatePayment = () => {
@@ -459,6 +463,31 @@ export default function TenantBilling() {
           </div>
         )}
       </div>
+
+      {/* Modals */}
+      {showChangePlanModal && (
+        <UpgradePlanModal
+          currentPlanId={subscription.editionId}
+          currentBillingCycle={subscription.billingCycle}
+          onClose={() => setShowChangePlanModal(false)}
+        />
+      )}
+      {showChangeCycleModal && (
+        <ChangeBillingCycleModal
+          currentCycle={subscription.billingCycle}
+          monthlyPrice={subscription.billingCycle === 'monthly' ? subscription.price : 149}
+          yearlyPrice={subscription.billingCycle === 'yearly' ? subscription.price : 1430}
+          currency={subscription.currency}
+          planName={subscription.editionName}
+          nextBillingDate={subscription.nextBillingDate}
+          onClose={() => setShowChangeCycleModal(false)}
+        />
+      )}
+      {showPaymentModal && (
+        <UpdatePaymentMethodModal
+          onClose={() => setShowPaymentModal(false)}
+        />
+      )}
     </div>
   );
 }

@@ -28,11 +28,13 @@ import CreateEditOrganizationUnit from './components/organization-units/CreateEd
 import OrganizationUnitDetails from './components/organization-units/OrganizationUnitDetails';
 import UserAccessManagement from './components/organization-units/UserAccessManagement';
 import TenantBilling from './components/billing/TenantBilling';
+import AdminBillingDashboard from './components/admin-billing/AdminBillingDashboard';
+import AdminTenantBillingDetail from './components/admin-billing/AdminTenantBillingDetail';
 import { Sidebar } from './components/Sidebar';
 import { MobileNav } from './components/MobileNav';
 import { TopHeader } from './components/TopHeader';
 
-type Page = 'welcome' | 'campaigns' | 'terminals' | 'playlists' | 'media' | 'customers' | 'tenants' | 'editions' | 'organization-units' | 'billing' | 'settings' | 'settings-users' | 'settings-language' | 'settings-general' | 'settings-billing' | 'settings-integrations' | 'settings-notifications';
+type Page = 'welcome' | 'campaigns' | 'terminals' | 'playlists' | 'media' | 'customers' | 'tenants' | 'editions' | 'organization-units' | 'billing' | 'admin-billing' | 'settings' | 'settings-users' | 'settings-language' | 'settings-general' | 'settings-billing' | 'settings-integrations' | 'settings-notifications';
 
 function AppContent() {
   const location = useLocation();
@@ -50,6 +52,7 @@ function AppContent() {
     if (path.includes('/customers') || path.includes('/clients')) return 'customers';
     if (path.includes('/editions')) return 'editions';
     if (path.includes('/organization-units')) return 'organization-units';
+    if (path.includes('/admin/billing')) return 'admin-billing';
     if (path.includes('/billing')) return 'billing';
     if (path.includes('/settings/language')) return 'settings-language';
     if (path.includes('/settings/general')) return 'settings-general';
@@ -75,6 +78,7 @@ function AppContent() {
       tenants: '/tenants',
       editions: '/editions',
       'organization-units': '/organization-units',
+      'admin-billing': '/admin/billing',
       billing: '/billing',
       users: '/users',
       settings: '/settings',
@@ -138,6 +142,8 @@ function AppContent() {
             <Route path="/organization-units/:unitId" element={<OrganizationUnitDetails />} />
             <Route path="/organization-units/:unitId/access" element={<UserAccessManagement />} />
             <Route path="/billing" element={<TenantBilling />} />
+            <Route path="/admin/billing" element={<AdminBillingDashboard />} />
+            <Route path="/admin/billing/:tenantId" element={<AdminTenantBillingDetail />} />
             <Route path="/users" element={<UserManagement />} />
             <Route path="/users/:userId" element={<UserDetails />} />
             <Route path="/users/roles" element={<RolesManagement />} />
