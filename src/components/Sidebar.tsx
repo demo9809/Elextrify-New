@@ -23,7 +23,8 @@ import {
   AlertCircle,
   Percent,
   Activity,
-  BookOpen
+  BookOpen,
+  ShieldCheck
 } from 'lucide-react';
 import React from 'react';
 import { useAuth } from '../contexts/AuthContext';
@@ -39,13 +40,14 @@ export function Sidebar({ activePage = 'welcome', onNavigate, isCollapsed = fals
   const { user } = useAuth();
   const userRole = user?.role || 'tenant-user';
   
-  const [settingsExpanded, setSettingsExpanded] = React.useState(false);
+  const [administrationExpanded, setAdministrationExpanded] = React.useState(false);
   const [billingExpanded, setBillingExpanded] = React.useState(false);
   const [hostAdminExpanded, setHostAdminExpanded] = React.useState(false);
 
   // Primary Daily-Use Items (Top Section)
   const primaryMenuItems = [
     { id: 'welcome', label: 'Welcome', icon: Home },
+    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'customers', label: 'Customers', icon: Users },
     { id: 'campaigns', label: 'Campaigns', icon: Target },
     { id: 'media', label: 'Media', icon: Film },
@@ -53,14 +55,16 @@ export function Sidebar({ activePage = 'welcome', onNavigate, isCollapsed = fals
     { id: 'terminals', label: 'Kiosk Management', icon: Monitor },
   ];
 
-  // Structure Items (After First Divider)
-  const structureItems = [
-    { id: 'organization-units', label: 'Organization Units', icon: Layers },
-  ];
+  // Media Billing (After First Divider)
+  const mediaBillingItem = { id: 'media-billing', label: 'Media Billing', icon: Receipt };
 
-  // Billing Items (After Second Divider)
-  const billingItems = [
-    { id: 'media-billing', label: 'Media Billing', icon: Receipt },
+  // Administration Items (Collapsible Section)
+  const administrationItems = [
+    { id: 'organization-units', label: 'Organization Units', icon: Layers },
+    { id: 'settings-users', label: 'User Management', icon: Users },
+    { id: 'settings-account', label: 'Account', icon: Settings },
+    { id: 'settings-workspace', label: 'Workspace', icon: Building2 },
+    { id: 'settings-system', label: 'System', icon: ShieldCheck },
   ];
 
   // SaaS Admin Menu Items
@@ -83,15 +87,13 @@ export function Sidebar({ activePage = 'welcome', onNavigate, isCollapsed = fals
     { id: 'admin-billing-audit', label: 'Audit Log', icon: Activity, route: '/admin/billing/audit' },
   ];
 
-  // Settings Items - Simplified to 3 top-level items
-  const settingsItems = [
-    { id: 'settings-account', label: 'Account', route: '/settings/account' },
-    { id: 'settings-workspace', label: 'Workspace', route: '/settings/workspace' },
-    { id: 'settings-system', label: 'System', route: '/settings/system' },
-  ];
-
-  // Check if current page is a settings page
-  const isSettingsActive = activePage === 'settings' || activePage.startsWith('settings-');
+  // Check if current page is in administration
+  const isAdministrationActive = activePage === 'organization-units' || 
+                                   activePage === 'settings-users' || 
+                                   activePage === 'settings-account' || 
+                                   activePage === 'settings-workspace' || 
+                                   activePage === 'settings-system' ||
+                                   activePage === 'users';
   
   // Check if current page is a billing admin page
   const isBillingAdminActive = activePage === 'admin-billing' || activePage.startsWith('admin-billing-');
@@ -105,12 +107,12 @@ export function Sidebar({ activePage = 'welcome', onNavigate, isCollapsed = fals
   // Determine if user can see Workspace section
   const canViewWorkspaceSettings = userRole !== 'user';
 
-  // Auto-expand settings if a settings page is active
+  // Auto-expand administration if a settings page is active
   React.useEffect(() => {
-    if (isSettingsActive && !isCollapsed) {
-      setSettingsExpanded(true);
+    if (isAdministrationActive && !isCollapsed) {
+      setAdministrationExpanded(true);
     }
-  }, [isSettingsActive, isCollapsed]);
+  }, [isAdministrationActive, isCollapsed]);
 
   // Auto-expand billing if a billing admin page is active
   React.useEffect(() => {
@@ -226,54 +228,44 @@ export function Sidebar({ activePage = 'welcome', onNavigate, isCollapsed = fals
               {/* Divider 1 */}
               <MenuDivider />
 
-              {/* Organization Units */}
-              {structureItems.map((item) => (
-                <MenuItem key={item.id} item={item} isActive={item.id === activePage} />
-              ))}
+              {/* Media Billing */}
+              <MenuItem key={mediaBillingItem.id} item={mediaBillingItem} isActive={mediaBillingItem.id === activePage} />
 
               {/* Divider 2 */}
               <MenuDivider />
 
-              {/* Media Billing */}
-              {billingItems.map((item) => (
-                <MenuItem key={item.id} item={item} isActive={item.id === activePage} />
-              ))}
-
-              {/* Divider 3 */}
-              <MenuDivider />
-
-              {/* Settings */}
+              {/* Administration */}
               <div className="relative group">
                 <button
                   onClick={() => {
                     if (isCollapsed) {
                       onNavigate?.('settings');
                     } else {
-                      setSettingsExpanded(!settingsExpanded);
+                      setAdministrationExpanded(!administrationExpanded);
                     }
                   }}
                   className={`
                     w-full flex items-center rounded-lg transition-colors text-left
                     ${isCollapsed ? 'justify-center px-0 py-3' : 'gap-3 px-4 py-2.5'}
-                    ${isSettingsActive 
+                    ${isAdministrationActive 
                       ? 'bg-[#FEF2F2] text-[#D9480F]' 
                       : 'text-[#6B7280] hover:bg-[#F9FAFB]'
                     }
-                    ${isSettingsActive && !isCollapsed ? 'border-l-4 border-[#D9480F] -ml-[4px] pl-[20px]' : ''}
+                    ${isAdministrationActive && !isCollapsed ? 'border-l-4 border-[#D9480F] -ml-[4px] pl-[20px]' : ''}
                   `}
-                  title={isCollapsed ? 'Settings' : undefined}
+                  title={isCollapsed ? 'Administration' : undefined}
                 >
                   <Settings className={`w-5 h-5 ${ 
-                    isSettingsActive ? 'text-[#D9480F]' : 'text-[#6B7280]'
+                    isAdministrationActive ? 'text-[#D9480F]' : 'text-[#6B7280]'
                   }`} />
                   {!isCollapsed && (
                     <>
-                      <span className={`text-sm flex-1 ${isSettingsActive ? 'font-medium' : ''}`}>
-                        Settings
+                      <span className={`text-sm flex-1 ${isAdministrationActive ? 'font-medium' : ''}`}>
+                        Administration
                       </span>
                       <ChevronDown className={`w-4 h-4 transition-transform ${
-                        settingsExpanded ? 'rotate-180' : ''
-                      } ${isSettingsActive ? 'text-[#D9480F]' : 'text-[#6B7280]'}`} />
+                        administrationExpanded ? 'rotate-180' : ''
+                      } ${isAdministrationActive ? 'text-[#D9480F]' : 'text-[#6B7280]'}`} />
                     </>
                   )}
                 </button>
@@ -281,15 +273,15 @@ export function Sidebar({ activePage = 'welcome', onNavigate, isCollapsed = fals
                 {/* Tooltip for collapsed state */}
                 {isCollapsed && (
                   <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-[#111827] text-white text-sm rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50 pointer-events-none">
-                    Settings
+                    Administration
                     <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-[#111827]"></div>
                   </div>
                 )}
 
-                {/* Settings Submenu */}
-                {settingsExpanded && !isCollapsed && (
+                {/* Administration Submenu */}
+                {administrationExpanded && !isCollapsed && (
                   <div className="mt-1 ml-4 pl-4 border-l-2 border-[#E5E7EB] space-y-1">
-                    {settingsItems
+                    {administrationItems
                       .filter(item => item.id !== 'settings-system' || canViewSystemSettings)
                       .filter(item => item.id !== 'settings-workspace' || canViewWorkspaceSettings)
                       .map((subItem) => {
@@ -405,31 +397,31 @@ export function Sidebar({ activePage = 'welcome', onNavigate, isCollapsed = fals
                     if (isCollapsed) {
                       onNavigate?.('settings');
                     } else {
-                      setSettingsExpanded(!settingsExpanded);
+                      setAdministrationExpanded(!administrationExpanded);
                     }
                   }}
                   className={`
                     w-full flex items-center rounded-lg transition-colors text-left
                     ${isCollapsed ? 'justify-center px-0 py-3' : 'gap-3 px-4 py-2.5'}
-                    ${isSettingsActive 
+                    ${isAdministrationActive 
                       ? 'bg-[#FEF2F2] text-[#D9480F]' 
                       : 'text-[#6B7280] hover:bg-[#F9FAFB]'
                     }
-                    ${isSettingsActive && !isCollapsed ? 'border-l-4 border-[#D9480F] -ml-[4px] pl-[20px]' : ''}
+                    ${isAdministrationActive && !isCollapsed ? 'border-l-4 border-[#D9480F] -ml-[4px] pl-[20px]' : ''}
                   `}
                   title={isCollapsed ? 'Settings' : undefined}
                 >
                   <Settings className={`w-5 h-5 ${ 
-                    isSettingsActive ? 'text-[#D9480F]' : 'text-[#6B7280]'
+                    isAdministrationActive ? 'text-[#D9480F]' : 'text-[#6B7280]'
                   }`} />
                   {!isCollapsed && (
                     <>
-                      <span className={`text-sm flex-1 ${isSettingsActive ? 'font-medium' : ''}`}>
+                      <span className={`text-sm flex-1 ${isAdministrationActive ? 'font-medium' : ''}`}>
                         Settings
                       </span>
                       <ChevronDown className={`w-4 h-4 transition-transform ${
-                        settingsExpanded ? 'rotate-180' : ''
-                      } ${isSettingsActive ? 'text-[#D9480F]' : 'text-[#6B7280]'}`} />
+                        administrationExpanded ? 'rotate-180' : ''
+                      } ${isAdministrationActive ? 'text-[#D9480F]' : 'text-[#6B7280]'}`} />
                     </>
                   )}
                 </button>
@@ -443,9 +435,9 @@ export function Sidebar({ activePage = 'welcome', onNavigate, isCollapsed = fals
                 )}
 
                 {/* Simple Submenu - only show when expanded and not collapsed */}
-                {settingsExpanded && !isCollapsed && (
+                {administrationExpanded && !isCollapsed && (
                   <div className="mt-1 ml-4 pl-4 border-l-2 border-[#E5E7EB] space-y-1">
-                    {settingsItems
+                    {administrationItems
                       .filter(item => item.id !== 'settings-system' || canViewSystemSettings)
                       .filter(item => item.id !== 'settings-workspace' || canViewWorkspaceSettings)
                       .map((subItem) => {
@@ -546,100 +538,6 @@ export function Sidebar({ activePage = 'welcome', onNavigate, isCollapsed = fals
             </>
           )}
         </nav>
-      </div>
-
-      {/* Fixed Footer - Support Section with Version */}
-      <div className="border-t border-[#E5E7EB] flex-shrink-0">
-        <div className="mx-4 my-4 px-4 py-5 bg-[#FAFAFA] rounded-2xl shadow-sm">
-          {/* Support Header */}
-          {!isCollapsed && (
-            <div className="flex items-center gap-2.5 mb-4 px-1">
-              <div className="w-1.5 h-1.5 rounded-full bg-[#D9480F] opacity-40"></div>
-              <p className="text-[11px] text-[#374151] uppercase tracking-[0.1em] font-semibold">
-                Support
-              </p>
-            </div>
-          )}
-          
-          {/* Support Links */}
-          <div className="space-y-1.5">
-            {/* Help & Support */}
-            <div className="relative group">
-              <button
-                onClick={() => onNavigate?.('help-support')}
-                className={`
-                  w-full flex items-center rounded-xl transition-all duration-200 text-left
-                  ${isCollapsed ? 'justify-center px-0 py-3' : 'gap-3 px-3.5 py-3'}
-                  ${activePage === 'help-support' 
-                    ? 'bg-white shadow-sm text-[#D9480F]' 
-                    : 'text-[#374151] hover:bg-white hover:shadow-sm hover:text-[#111827]'
-                  }
-                `}
-                title={isCollapsed ? 'Help & Support' : undefined}
-              >
-                <HelpCircle className={`w-[18px] h-[18px] flex-shrink-0 transition-colors ${
-                  activePage === 'help-support' ? 'text-[#D9480F]' : 'text-[#6B7280] group-hover:text-[#D9480F]'
-                }`} />
-                {!isCollapsed && (
-                  <span className="text-[13px] font-medium flex-1">
-                    Help & Support
-                  </span>
-                )}
-              </button>
-              
-              {/* Tooltip for collapsed state */}
-              {isCollapsed && (
-                <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-[#111827] text-white text-sm rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50 pointer-events-none">
-                  Help & Support
-                  <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-[#111827]"></div>
-                </div>
-              )}
-            </div>
-
-            {/* Documentation */}
-            <div className="relative group">
-              <button
-                onClick={() => onNavigate?.('documentation')}
-                className={`
-                  w-full flex items-center rounded-xl transition-all duration-200 text-left
-                  ${isCollapsed ? 'justify-center px-0 py-3' : 'gap-3 px-3.5 py-3'}
-                  ${activePage === 'documentation' 
-                    ? 'bg-white shadow-sm text-[#D9480F]' 
-                    : 'text-[#374151] hover:bg-white hover:shadow-sm hover:text-[#111827]'
-                  }
-                `}
-                title={isCollapsed ? 'Documentation' : undefined}
-              >
-                <BookOpen className={`w-[18px] h-[18px] flex-shrink-0 transition-colors ${
-                  activePage === 'documentation' ? 'text-[#D9480F]' : 'text-[#6B7280] group-hover:text-[#D9480F]'
-                }`} />
-                {!isCollapsed && (
-                  <span className="text-[13px] font-medium flex-1">
-                    Documentation
-                  </span>
-                )}
-              </button>
-              
-              {/* Tooltip for collapsed state */}
-              {isCollapsed && (
-                <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-[#111827] text-white text-sm rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50 pointer-events-none">
-                  Documentation
-                  <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-[#111827]"></div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Version Information */}
-          {!isCollapsed && (
-            <div className="mt-5 px-3.5">
-              <div className="text-[11px] font-medium text-[#9CA3AF] leading-relaxed space-y-0.5">
-                <div>Version 1.8.2</div>
-                <div className="text-[10px] text-[#C4C4C4] font-normal">Build 2025.01.18</div>
-              </div>
-            </div>
-          )}
-        </div>
       </div>
     </div>
   );

@@ -13,7 +13,9 @@ import {
   Trash2 
 } from 'lucide-react';
 import { mockUsers, getRoleLabel, getStatusLabel, getStatusColor, getRoleColor } from '../../data/mockUsers';
-import InviteUserPanel from './InviteUserPanel';
+import InviteUserWizard from './InviteUserWizard';
+import { mockOrganizationUnits, mockClients, PRIMARY_LEGAL_ENTITY_ID } from '../../data/mockAccessScopes';
+import { toast } from 'sonner@2.0.3';
 
 // Import types
 type UserRole = 'owner' | 'admin' | 'manager' | 'media-operator' | 'viewer';
@@ -67,6 +69,13 @@ export default function UserManagement() {
 
   const handleUserClick = (userId: string) => {
     navigate(`/users/${userId}`);
+  };
+
+  const handleInvite = (inviteData: any) => {
+    console.log('Invite Data:', inviteData);
+    toast.success(`Invitation sent to ${inviteData.email}`, {
+      description: `User will have ${inviteData.role} access to ${inviteData.organizationUnits.length} organization unit(s)`,
+    });
   };
 
   const formatLastLogin = (dateString?: string) => {
@@ -393,7 +402,14 @@ export default function UserManagement() {
 
       {/* Invite User Panel */}
       {showInvitePanel && (
-        <InviteUserPanel onClose={() => setShowInvitePanel(false)} />
+        <InviteUserWizard
+          isOpen={showInvitePanel}
+          onClose={() => setShowInvitePanel(false)}
+          onInvite={handleInvite}
+          organizationUnits={mockOrganizationUnits}
+          clients={mockClients}
+          primaryLegalEntityId={PRIMARY_LEGAL_ENTITY_ID}
+        />
       )}
     </div>
   );
