@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BrowserRouter, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation, useNavigate, Navigate } from 'react-router-dom';
 import { Sidebar } from './components/Sidebar';
 import { MobileNav } from './components/MobileNav';
 import { TopHeader } from './components/TopHeader';
@@ -46,7 +46,6 @@ import SettingsWorkspace from './components/settings/SettingsWorkspace';
 import SettingsSystem from './components/settings/SettingsSystem';
 import LanguageSettings from './components/settings/LanguageSettings';
 import GeneralSettings from './components/settings/GeneralSettings';
-import BillingSettings from './components/settings/BillingSettings';
 import IntegrationsSettings from './components/settings/IntegrationsSettings';
 import NotificationSettings from './components/settings/NotificationSettings';
 import SecuritySettings from './components/settings/SecuritySettings';
@@ -62,7 +61,8 @@ import NotificationPreferences from './components/settings/account/NotificationP
 import LanguageTimezone from './components/settings/account/LanguageTimezone';
 import HelpSupport from './components/pages/HelpSupport';
 import Documentation from './components/pages/Documentation';
-import NotificationsPage from './components/notifications/NotificationsPage';
+import EnhancedNotificationsPage from './components/notifications/EnhancedNotificationsPage';
+import GlobalAlertBanner from './components/GlobalAlertBanner';
 
 type Page = 'welcome' | 'campaigns' | 'terminals' | 'playlists' | 'media' | 'customers' | 'tenants' | 'editions' | 'organization-units' | 'billing' | 'media-billing' | 'admin-billing' | 'admin-billing-overview' | 'admin-billing-subscriptions' | 'admin-billing-invoices' | 'admin-billing-payments' | 'admin-billing-revenue' | 'admin-billing-discounts' | 'admin-billing-audit' | 'settings' | 'settings-account' | 'settings-workspace' | 'settings-system' | 'settings-users' | 'settings-language' | 'settings-general' | 'settings-billing' | 'settings-integrations' | 'settings-notifications' | 'settings-security' | 'settings-email' | 'settings-api' | 'help-support' | 'documentation' | 'notifications';
 
@@ -155,7 +155,7 @@ function AppContent() {
       'settings-system': '/settings/system',
       'settings-language': '/settings/language',
       'settings-general': '/settings/general',
-      'settings-billing': '/settings/billing',
+      'settings-billing': '/billing',
       'settings-integrations': '/settings/integrations',
       'settings-notifications': '/settings/notifications',
       'settings-security': '/settings/security',
@@ -198,6 +198,11 @@ function AppContent() {
             isSidebarCollapsed={isSidebarCollapsed} 
             onNavigate={handleNavigate}
           />
+        </div>
+
+        {/* Global Alert Banner - Sticky positioned below header */}
+        <div className="sticky top-14 lg:top-16 z-40">
+          <GlobalAlertBanner />
         </div>
 
         <div className="flex-1">
@@ -243,7 +248,7 @@ function AppContent() {
             <Route path="/settings/system" element={<SettingsSystem />} />
             <Route path="/settings/language" element={<LanguageSettings />} />
             <Route path="/settings/general" element={<GeneralSettings />} />
-            <Route path="/settings/billing" element={<BillingSettings />} />
+            <Route path="/settings/billing" element={<Navigate to="/billing" replace />} />
             <Route path="/settings/integrations" element={<IntegrationsSettings />} />
             <Route path="/settings/notifications" element={<NotificationSettings />} />
             <Route path="/settings/security" element={<SecuritySettings />} />
@@ -259,7 +264,7 @@ function AppContent() {
             <Route path="/settings/account/language-timezone" element={<LanguageTimezone />} />
             <Route path="/help-support" element={<HelpSupport />} />
             <Route path="/documentation" element={<Documentation />} />
-            <Route path="/notifications" element={<NotificationsPage />} />
+            <Route path="/notifications" element={<EnhancedNotificationsPage />} />
           </Routes>
         </div>
       </div>

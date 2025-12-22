@@ -51,9 +51,8 @@ export default function SettingsHub() {
       title: 'Billing & Subscription',
       description: 'Manage your subscription, payment methods, and invoices',
       icon: CreditCard,
-      route: '/settings/billing',
-      available: false,
-      comingSoon: true,
+      route: '/billing',
+      available: true,
     },
     {
       id: 'integrations',

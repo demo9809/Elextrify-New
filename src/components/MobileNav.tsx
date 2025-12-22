@@ -60,7 +60,7 @@ export function MobileNav({ activePage = 'welcome', onNavigate }: MobileNavProps
   return (
     <>
       {/* Mobile Top Header */}
-      <div className="fixed top-0 left-0 right-0 h-14 bg-white border-b border-[#E5E7EB] z-40 lg:hidden flex items-center justify-between px-4">
+      <div className="fixed top-0 left-0 right-0 h-14 bg-white border-b border-[#E5E7EB] z-50 lg:hidden flex items-center justify-between px-4">
         <div className="flex items-center gap-3">
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}

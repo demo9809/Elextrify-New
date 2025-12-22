@@ -17,6 +17,8 @@ import {
   Receipt,
   FileText,
   Eye,
+  Info,
+  ExternalLink,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -37,7 +39,7 @@ import {
 import UpgradePlanModal from './UpgradePlanModal';
 import ChangeBillingCycleModal from './ChangeBillingCycleModal';
 import UpdatePaymentMethodModal from './UpdatePaymentMethodModal';
-import InvoicePreview from './InvoicePreview';
+import SubscriptionInvoicePreview from './SubscriptionInvoicePreview';
 
 export default function TenantBilling() {
   const [billingData] = useState<BillingData>(mockBillingData);
@@ -118,6 +120,28 @@ export default function TenantBilling() {
       </div>
 
       <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto">
+        {/* Billing Scope Clarifier */}
+        <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="flex items-start gap-3">
+            <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <h3 className="font-medium text-blue-900 mb-1">Platform Subscription</h3>
+              <p className="text-sm text-blue-800 mb-3">
+                This page shows your platform access fees, including screens, users, and system limits. 
+                These invoices cover your subscription to use the DOOH SaaS platform.
+              </p>
+              <a
+                href="/media-billing"
+                className="inline-flex items-center gap-1 text-sm font-medium text-blue-700 hover:text-blue-900 transition-colors"
+              >
+                <span>Looking for customer delivery charges?</span>
+                <ArrowRight className="w-4 h-4" />
+                <span>Go to Media Billing</span>
+              </a>
+            </div>
+          </div>
+        </div>
+
         {/* Tabs Container */}
         <div className="bg-white border border-[#E5E7EB] rounded-lg overflow-hidden">
           {/* Tab Navigation */}
@@ -282,22 +306,6 @@ export default function TenantBilling() {
                   <div className="mb-6">
                     <h2 className="font-semibold text-[#111827] mb-1">Usage & Limits</h2>
                     <p className="text-sm text-[#6B7280]">Track your usage against plan limits</p>
-                  </div>
-
-                  {/* Info Card */}
-                  <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <div className="flex gap-3">
-                      <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                      <div>
-                        <h4 className="font-medium text-blue-900 mb-1">
-                          Platform Subscription Only
-                        </h4>
-                        <p className="text-sm text-blue-800">
-                          This section shows your platform subscription fees and limits. 
-                          For customer delivery charges and campaign-based invoices, visit the Media Billing module.
-                        </p>
-                      </div>
-                    </div>
                   </div>
 
                   <div className="space-y-6">
@@ -603,7 +611,7 @@ export default function TenantBilling() {
         <UpdatePaymentMethodModal onClose={() => setShowPaymentModal(false)} />
       )}
       {selectedInvoiceId && (
-        <InvoicePreview
+        <SubscriptionInvoicePreview
           invoiceId={selectedInvoiceId}
           onClose={() => setSelectedInvoiceId(null)}
         />

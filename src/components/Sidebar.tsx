@@ -123,7 +123,7 @@ export function Sidebar({ activePage = 'welcome', onNavigate, isCollapsed = fals
 
   return (
     <div 
-      className={`bg-white border-r border-[#E5E7EB] h-screen flex flex-col fixed left-0 top-0 z-30 transition-all duration-300 ${
+      className={`bg-white border-r border-[#E5E7EB] h-screen flex flex-col fixed left-0 top-0 z-20 transition-all duration-300 ${
         isCollapsed ? 'w-[72px]' : 'w-[240px]'
       }`}
     >

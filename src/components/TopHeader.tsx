@@ -1,10 +1,13 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Bell, HelpCircle, Settings, LogOut, User, CreditCard } from 'lucide-react';
 import NotificationModal from './notifications/NotificationModal';
 import { mockNotifications, getUnreadCount } from '../data/mockNotifications';
 import { useAuth } from '../contexts/AuthContext';
 import { LogoutModal } from './LogoutModal';
+import SubscriptionStatusBadge from './subscription/SubscriptionStatusBadge';
+import SubscriptionStatusPanel from './subscription/SubscriptionStatusPanel';
+import { mockSubscription, shouldShowIndicator } from '../data/mockSubscription';
 
 interface TopHeaderProps {
   isSidebarCollapsed?: boolean;
@@ -15,9 +18,15 @@ export function TopHeader({ isSidebarCollapsed = false, onNavigate }: TopHeaderP
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [showSubscriptionPanel, setShowSubscriptionPanel] = useState(false);
   const unreadCount = getUnreadCount(mockNotifications);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const subscriptionStatusRef = useRef<HTMLDivElement>(null);
+
+  // Only show subscription indicator for Tenant Admins
+  const canViewSubscription = user?.role === 'tenant-user';
+  const showSubscriptionIndicator = canViewSubscription && shouldShowIndicator(mockSubscription);
 
   const handleLogout = () => {
     setShowUserMenu(false);
@@ -109,6 +118,22 @@ export function TopHeader({ isSidebarCollapsed = false, onNavigate }: TopHeaderP
           <button className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-[#F9FAFB] transition-colors">
             <Settings className="w-5 h-5 text-[#6B7280]" />
           </button>
+
+          {/* Subscription Status - Only for Tenant Admins */}
+          {showSubscriptionIndicator && (
+            <div className="relative" ref={subscriptionStatusRef}>
+              <SubscriptionStatusBadge
+                subscription={mockSubscription}
+                onClick={() => setShowSubscriptionPanel(!showSubscriptionPanel)}
+              />
+              <SubscriptionStatusPanel
+                subscription={mockSubscription}
+                isOpen={showSubscriptionPanel}
+                onClose={() => setShowSubscriptionPanel(false)}
+                anchorRef={subscriptionStatusRef}
+              />
+            </div>
+          )}
 
           {/* User Menu */}
           <div className="relative">

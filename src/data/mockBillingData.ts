@@ -288,6 +288,42 @@ export interface InvoiceUsageSummary {
   regionsCovered: string[];
 }
 
+// Subscription Invoice (Platform SaaS billing - what tenant pays to platform)
+export interface SubscriptionInvoice {
+  invoiceNumber: string;
+  tenantName: string;
+  billingPeriod: string;
+  status: InvoiceStatus;
+  invoiceDate: string;
+  dueDate: string;
+  paidDate?: string;
+  
+  // Subscription details
+  planName: string;
+  billingCycle: 'monthly' | 'annual';
+  
+  // Line items (plan + add-ons)
+  baseSubscription: {
+    description: string;
+    amount: number;
+  };
+  addOns?: {
+    id: string;
+    description: string;
+    amount: number;
+  }[];
+  
+  // Totals
+  subtotal: number;
+  discount: number;
+  discountDescription?: string;
+  tax: number;
+  taxRate: number;
+  taxDescription?: string;
+  grandTotal: number;
+  currency: string;
+}
+
 export interface DetailedInvoice {
   invoiceNumber: string;
   tenantName: string;
@@ -450,6 +486,181 @@ export const getDetailedInvoice = (invoiceId: string): DetailedInvoice => {
     },
     
     lineItems: [],
+    
+    subtotal: 0,
+    discount: 0,
+    tax: 0,
+    taxRate: 0,
+    grandTotal: 0,
+    currency: 'USD',
+  };
+};
+
+// Mock function to get subscription invoice data (platform billing)
+export const getSubscriptionInvoice = (invoiceId: string): SubscriptionInvoice => {
+  const subscriptionInvoices: Record<string, SubscriptionInvoice> = {
+    'inv_1': {
+      invoiceNumber: 'SUB-INV-2024-12-001',
+      tenantName: 'Digital Signage Corp',
+      billingPeriod: 'December 1 - December 31, 2024',
+      status: 'paid',
+      invoiceDate: '2024-12-01T00:00:00Z',
+      dueDate: '2024-12-08T00:00:00Z',
+      paidDate: '2024-12-02T10:30:00Z',
+      
+      planName: 'Professional Plan',
+      billingCycle: 'monthly',
+      
+      baseSubscription: {
+        description: 'Professional Plan - Monthly Subscription',
+        amount: 149.00,
+      },
+      addOns: [
+        {
+          id: 'addon_1',
+          description: 'Extra Storage (50GB)',
+          amount: 20.00,
+        },
+        {
+          id: 'addon_2',
+          description: 'Additional User Seats (5)',
+          amount: 25.00,
+        },
+      ],
+      
+      subtotal: 194.00,
+      discount: 19.40,
+      discountDescription: '10% Volume Discount',
+      tax: 31.33,
+      taxRate: 18,
+      taxDescription: 'GST (India)',
+      grandTotal: 205.93,
+      currency: 'USD',
+    },
+    'inv_2': {
+      invoiceNumber: 'SUB-INV-2024-11-001',
+      tenantName: 'Digital Signage Corp',
+      billingPeriod: 'November 1 - November 30, 2024',
+      status: 'paid',
+      invoiceDate: '2024-11-01T00:00:00Z',
+      dueDate: '2024-11-08T00:00:00Z',
+      paidDate: '2024-11-03T14:20:00Z',
+      
+      planName: 'Professional Plan',
+      billingCycle: 'monthly',
+      
+      baseSubscription: {
+        description: 'Professional Plan - Monthly Subscription',
+        amount: 149.00,
+      },
+      addOns: [
+        {
+          id: 'addon_1',
+          description: 'Extra Storage (50GB)',
+          amount: 20.00,
+        },
+      ],
+      
+      subtotal: 169.00,
+      discount: 0,
+      tax: 30.42,
+      taxRate: 18,
+      taxDescription: 'GST (India)',
+      grandTotal: 199.42,
+      currency: 'USD',
+    },
+    'inv_3': {
+      invoiceNumber: 'SUB-INV-2024-10-001',
+      tenantName: 'Digital Signage Corp',
+      billingPeriod: 'October 1 - October 31, 2024',
+      status: 'paid',
+      invoiceDate: '2024-10-01T00:00:00Z',
+      dueDate: '2024-10-08T00:00:00Z',
+      paidDate: '2024-10-05T09:15:00Z',
+      
+      planName: 'Professional Plan',
+      billingCycle: 'monthly',
+      
+      baseSubscription: {
+        description: 'Professional Plan - Monthly Subscription',
+        amount: 149.00,
+      },
+      
+      subtotal: 149.00,
+      discount: 0,
+      tax: 26.82,
+      taxRate: 18,
+      taxDescription: 'GST (India)',
+      grandTotal: 175.82,
+      currency: 'USD',
+    },
+    'inv_4': {
+      invoiceNumber: 'SUB-INV-2024-09-001',
+      tenantName: 'Digital Signage Corp',
+      billingPeriod: 'September 1 - September 30, 2024',
+      status: 'paid',
+      invoiceDate: '2024-09-01T00:00:00Z',
+      dueDate: '2024-09-08T00:00:00Z',
+      paidDate: '2024-09-04T11:45:00Z',
+      
+      planName: 'Professional Plan',
+      billingCycle: 'monthly',
+      
+      baseSubscription: {
+        description: 'Professional Plan - Monthly Subscription',
+        amount: 149.00,
+      },
+      
+      subtotal: 149.00,
+      discount: 0,
+      tax: 26.82,
+      taxRate: 18,
+      taxDescription: 'GST (India)',
+      grandTotal: 175.82,
+      currency: 'USD',
+    },
+    'inv_5': {
+      invoiceNumber: 'SUB-INV-2024-08-001',
+      tenantName: 'Digital Signage Corp',
+      billingPeriod: 'August 1 - August 31, 2024',
+      status: 'paid',
+      invoiceDate: '2024-08-01T00:00:00Z',
+      dueDate: '2024-08-08T00:00:00Z',
+      paidDate: '2024-08-06T16:30:00Z',
+      
+      planName: 'Professional Plan',
+      billingCycle: 'monthly',
+      
+      baseSubscription: {
+        description: 'Professional Plan - Monthly Subscription',
+        amount: 149.00,
+      },
+      
+      subtotal: 149.00,
+      discount: 0,
+      tax: 26.82,
+      taxRate: 18,
+      taxDescription: 'GST (India)',
+      grandTotal: 175.82,
+      currency: 'USD',
+    },
+  };
+  
+  return subscriptionInvoices[invoiceId] || {
+    invoiceNumber: 'SUB-INV-2024-XX-XXX',
+    tenantName: 'Digital Signage Corp',
+    billingPeriod: 'Period Not Available',
+    status: 'paid',
+    invoiceDate: new Date().toISOString(),
+    dueDate: new Date().toISOString(),
+    
+    planName: 'Professional Plan',
+    billingCycle: 'monthly',
+    
+    baseSubscription: {
+      description: 'Professional Plan - Monthly Subscription',
+      amount: 0,
+    },
     
     subtotal: 0,
     discount: 0,

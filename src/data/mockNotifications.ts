@@ -1,5 +1,6 @@
 export type NotificationCategory = 'billing' | 'campaigns' | 'devices' | 'system' | 'security';
 export type NotificationPriority = 'low' | 'medium' | 'high' | 'critical';
+export type NotificationSeverity = 'info' | 'warning' | 'critical';
 
 export interface Notification {
   id: string;
@@ -9,7 +10,10 @@ export interface Notification {
   fullDescription?: string;
   timestamp: string;
   isRead: boolean;
+  isArchived: boolean;
+  isCleared: boolean;
   priority: NotificationPriority;
+  severity: NotificationSeverity;
   actionUrl?: string;
   source?: string;
   metadata?: {
@@ -18,6 +22,39 @@ export interface Notification {
     entityType?: string;
   };
 }
+
+// Global system alerts (banner notifications)
+export interface GlobalAlert {
+  id: string;
+  type: 'maintenance' | 'feature' | 'warning' | 'critical';
+  severity: 'info' | 'warning' | 'critical';
+  message: string;
+  ctaText?: string;
+  ctaUrl?: string;
+  isVisible: boolean;
+  isDismissible: boolean;
+  dismissedBy: string[]; // User IDs who dismissed it
+  validFrom: string;
+  validUntil?: string;
+  roleVisibility: 'all' | 'tenant_admin' | 'saas_admin';
+}
+
+export const mockGlobalAlerts: GlobalAlert[] = [
+  {
+    id: 'alert_1',
+    type: 'maintenance',
+    severity: 'warning',
+    message: 'Scheduled maintenance on Jan 25, 2025 from 2:00 AM - 4:00 AM IST. Services may be temporarily unavailable.',
+    ctaText: 'View Details',
+    ctaUrl: '/maintenance',
+    isVisible: true,
+    isDismissible: true,
+    dismissedBy: [],
+    validFrom: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+    validUntil: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+    roleVisibility: 'all',
+  },
+];
 
 export const mockNotifications: Notification[] = [
   {
@@ -28,7 +65,10 @@ export const mockNotifications: Notification[] = [
     fullDescription: 'Your monthly subscription payment of $149.00 has been processed successfully. The invoice INV-2024-12-001 is now available for download in your billing section.',
     timestamp: new Date(Date.now() - 5 * 60 * 1000).toISOString(), // 5 minutes ago
     isRead: false,
+    isArchived: false,
+    isCleared: false,
     priority: 'medium',
+    severity: 'info',
     actionUrl: '/billing',
     source: 'Billing System',
     metadata: {
@@ -45,7 +85,10 @@ export const mockNotifications: Notification[] = [
     fullDescription: 'Your campaign "Diwali 2025 Offer" is now live across 15 kiosks in Delhi, Mumbai, and Bangalore. Content is being displayed according to your scheduled times.',
     timestamp: new Date(Date.now() - 45 * 60 * 1000).toISOString(), // 45 minutes ago
     isRead: false,
+    isArchived: false,
+    isCleared: false,
     priority: 'high',
+    severity: 'info',
     actionUrl: '/campaigns',
     source: 'Campaign Manager',
     metadata: {
@@ -62,7 +105,10 @@ export const mockNotifications: Notification[] = [
     fullDescription: '3 kiosks in Mumbai region (Phoenix Mall - KSK-101, Infiniti Mall - KSK-102, Oberoi Mall - KSK-103) have gone offline and are not responding. Your campaigns may not be displaying on these screens. Please check device connectivity or contact support.',
     timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
     isRead: false,
+    isArchived: false,
+    isCleared: false,
     priority: 'critical',
+    severity: 'critical',
     actionUrl: '/terminals',
     source: 'Device Monitor',
     metadata: {
@@ -77,7 +123,10 @@ export const mockNotifications: Notification[] = [
     fullDescription: 'A new login was detected from Chrome on Windows in Mumbai, India at 2:30 PM today. If this was not you, please secure your account immediately by changing your password.',
     timestamp: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(), // 3 hours ago
     isRead: true,
+    isArchived: false,
+    isCleared: false,
     priority: 'high',
+    severity: 'warning',
     actionUrl: '/settings/security',
     source: 'Security Monitor',
   },
@@ -89,7 +138,10 @@ export const mockNotifications: Notification[] = [
     fullDescription: 'Your subscription was upgraded from Starter to Professional plan. The new features are now available for use. Billing will reflect this change from your next billing cycle starting January 21, 2025.',
     timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), // 1 day ago
     isRead: true,
+    isArchived: false,
+    isCleared: false,
     priority: 'medium',
+    severity: 'info',
     actionUrl: '/billing',
     source: 'Billing System',
   },
@@ -101,7 +153,10 @@ export const mockNotifications: Notification[] = [
     fullDescription: 'Your campaign "Winter Sale" has reached 80% of its scheduled playtime. It will automatically end on December 25, 2024. Consider extending the campaign if you want to continue showing this content.',
     timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days ago
     isRead: true,
+    isArchived: false,
+    isCleared: false,
     priority: 'low',
+    severity: 'info',
     actionUrl: '/campaigns',
     source: 'Campaign Manager',
     metadata: {
@@ -118,7 +173,10 @@ export const mockNotifications: Notification[] = [
     fullDescription: 'Your media library is using 85GB of your 100GB storage limit. Consider deleting unused media files or upgrading your plan to get more storage space.',
     timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(), // 3 days ago
     isRead: true,
+    isArchived: false,
+    isCleared: false,
     priority: 'medium',
+    severity: 'warning',
     actionUrl: '/media',
     source: 'System Monitor',
   },
@@ -130,7 +188,10 @@ export const mockNotifications: Notification[] = [
     fullDescription: 'Phoenix Mall kiosk (KSK-101) in Mumbai is back online and displaying content. All campaigns scheduled for this device have resumed normal operation.',
     timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(), // 3 days ago
     isRead: true,
+    isArchived: false,
+    isCleared: false,
     priority: 'low',
+    severity: 'info',
     actionUrl: '/terminals',
     source: 'Device Monitor',
     metadata: {
@@ -147,7 +208,10 @@ export const mockNotifications: Notification[] = [
     fullDescription: 'Your invoice INV-2024-11-001 for November 2024 billing period is ready for download. The amount of $149.00 was successfully charged to your card ending in 4242.',
     timestamp: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), // 5 days ago
     isRead: true,
+    isArchived: false,
+    isCleared: false,
     priority: 'low',
+    severity: 'info',
     actionUrl: '/billing',
     source: 'Billing System',
     metadata: {
@@ -164,7 +228,10 @@ export const mockNotifications: Notification[] = [
     fullDescription: 'We\'ve added advanced targeting options to the campaign editor. You can now target campaigns based on venue types, regions, and custom audience segments. Check out the documentation to learn more.',
     timestamp: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days ago
     isRead: true,
+    isArchived: false,
+    isCleared: false,
     priority: 'low',
+    severity: 'info',
     actionUrl: '/documentation',
     source: 'Product Updates',
   },
@@ -219,4 +286,31 @@ export const formatRelativeTime = (timestamp: string): string => {
     day: 'numeric',
     year: 'numeric',
   });
+};
+
+export const getSeverityColor = (severity: NotificationSeverity): string => {
+  const colors = {
+    info: '#3B82F6',
+    warning: '#F59E0B',
+    critical: '#DC2626',
+  };
+  return colors[severity];
+};
+
+export const getSeverityBgColor = (severity: NotificationSeverity): string => {
+  const colors = {
+    info: '#EFF6FF',
+    warning: '#FEF3C7',
+    critical: '#FEF2F2',
+  };
+  return colors[severity];
+};
+
+export const getSeverityBorderColor = (severity: NotificationSeverity): string => {
+  const colors = {
+    info: '#DBEAFE',
+    warning: '#FDE68A',
+    critical: '#FECACA',
+  };
+  return colors[severity];
 };

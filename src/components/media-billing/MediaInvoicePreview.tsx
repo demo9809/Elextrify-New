@@ -37,7 +37,15 @@ export default function MediaInvoicePreview({ invoiceId, onClose }: MediaInvoice
       <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-[#E5E7EB]">
-          <h2 className="font-semibold text-[#111827]">Invoice Preview</h2>
+          <div>
+            <div className="flex items-center gap-2">
+              <h2 className="font-semibold text-[#111827]">Media Usage Invoice</h2>
+              <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-[#FEF2F2] border border-[#FECACA] text-xs font-medium text-[#DC2626]">
+                Customer Billing
+              </span>
+            </div>
+            <p className="text-sm text-[#6B7280] mt-1">{invoice.invoiceNumber}</p>
+          </div>
           <button
             onClick={onClose}
             className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#F9FAFB] transition-colors"
@@ -52,7 +60,8 @@ export default function MediaInvoicePreview({ invoiceId, onClose }: MediaInvoice
             {/* Invoice Header */}
             <div className="flex items-start justify-between mb-8">
               <div>
-                <h1 className="text-3xl font-bold text-[#111827] mb-2">INVOICE</h1>
+                <h1 className="text-3xl font-bold text-[#111827] mb-2">MEDIA USAGE INVOICE</h1>
+                <p className="text-sm text-[#DC2626] font-medium mb-2">What you charge your customers</p>
                 <div className="text-sm text-[#6B7280]">
                   <div>{invoice.invoiceNumber}</div>
                   <div>Issued: {formatDate(invoice.issuedDate)}</div>
