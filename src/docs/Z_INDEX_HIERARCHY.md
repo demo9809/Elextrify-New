@@ -100,15 +100,32 @@ This document defines the complete z-index layering system for the DOOH SaaS pla
 - System status messages
 
 **Behavior:**
-- Sticky positioned below header
+- Sticky positioned below header (part of document flow!)
 - Non-blocking (informational only)
 - Does NOT interfere with dropdowns
+- Sticky at top-14 (mobile) / top-16 (desktop)
+- Adjusts width based on sidebar state
+- **Layout-aware:** Pushes page content down when visible
+- Smooth collapse animation on dismiss
 
 **Implementation:**
 ```tsx
-<div className="sticky top-14 lg:top-16 z-40">
-  <GlobalAlertBanner />
+<div className="sticky top-14 lg:top-16 z-30 bg-white">
+  <GlobalAlertBanner 
+    isSidebarCollapsed={isSidebarCollapsed}
+  />
 </div>
+```
+
+**Positioning:**
+```tsx
+// In GlobalAlertBanner.tsx - Part of document flow (not fixed!)
+const baseClasses = 'w-full border-b flex items-center justify-between px-6 py-3 transition-all duration-300';
+
+// Smooth collapse animation
+const heightClasses = isCollapsing 
+  ? 'max-h-0 opacity-0 py-0 overflow-hidden' 
+  : 'max-h-20 opacity-100';
 ```
 
 **File:** `/components/GlobalAlertBanner.tsx`
@@ -118,9 +135,11 @@ This document defines the complete z-index layering system for the DOOH SaaS pla
 ┌──────────────────────────────────┐
 │  Top Header (z-30)               │ ← Fixed at top
 ├──────────────────────────────────┤
-│  Alert Banner (z-40)             │ ← Sticks below header
+│  Alert Banner (z-30, sticky)     │ ← Sticky below header
 ├──────────────────────────────────┤
-│  Content (scrollable)            │
+│  Page Header                     │ ← Pushed down by banner
+├──────────────────────────────────┤
+│  Content (scrollable)            │ ← Layout flows naturally
 │                                  │
 └──────────────────────────────────┘
 ```

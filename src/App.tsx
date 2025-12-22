@@ -4,6 +4,7 @@ import { Sidebar } from './components/Sidebar';
 import { MobileNav } from './components/MobileNav';
 import { TopHeader } from './components/TopHeader';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { LegalEntityProvider } from './contexts/LegalEntityContext';
 import LoginScreen from './components/auth/LoginScreen';
 import AccessRestricted from './components/auth/AccessRestricted';
 import React from 'react';
@@ -200,11 +201,14 @@ function AppContent() {
           />
         </div>
 
-        {/* Global Alert Banner - Sticky positioned below header */}
-        <div className="sticky top-14 lg:top-16 z-40">
-          <GlobalAlertBanner />
+        {/* Global Alert Banner - Sticky layout component below header */}
+        <div className="sticky top-14 lg:top-16 z-30 bg-white">
+          <GlobalAlertBanner 
+            isSidebarCollapsed={isSidebarCollapsed}
+          />
         </div>
 
+        {/* Page Content - Naturally pushed down by banner when visible */}
         <div className="flex-1">
           <Routes>
             <Route path="/" element={<WelcomeScreen onNavigate={(route) => navigate(route)} />} />
@@ -275,13 +279,15 @@ function AppContent() {
 function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/login" element={<LoginScreen />} />
-          <Route path="/access-restricted" element={<AccessRestricted />} />
-          <Route path="*" element={<AppContent />} />
-        </Routes>
-      </BrowserRouter>
+      <LegalEntityProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/login" element={<LoginScreen />} />
+            <Route path="/access-restricted" element={<AccessRestricted />} />
+            <Route path="*" element={<AppContent />} />
+          </Routes>
+        </BrowserRouter>
+      </LegalEntityProvider>
     </AuthProvider>
   );
 }

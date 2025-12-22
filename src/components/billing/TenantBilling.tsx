@@ -40,6 +40,8 @@ import UpgradePlanModal from './UpgradePlanModal';
 import ChangeBillingCycleModal from './ChangeBillingCycleModal';
 import UpdatePaymentMethodModal from './UpdatePaymentMethodModal';
 import SubscriptionInvoicePreview from './SubscriptionInvoicePreview';
+import LegalEntityIndicator from '../legal-entity/LegalEntityIndicator';
+import { useLegalEntity } from '../../contexts/LegalEntityContext';
 
 export default function TenantBilling() {
   const [billingData] = useState<BillingData>(mockBillingData);
@@ -49,6 +51,7 @@ export default function TenantBilling() {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedInvoiceId, setSelectedInvoiceId] = useState<string | null>(null);
   const [isAdmin] = useState(true); // In real app, this comes from user context
+  const { activeLegalEntity } = useLegalEntity();
 
   const { subscription, usage, invoices, paymentMethods } = billingData;
   const primaryPaymentMethod = paymentMethods.find((pm) => pm.isDefault);

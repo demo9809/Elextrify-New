@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Bell, HelpCircle, Settings, LogOut, User, CreditCard } from 'lucide-react';
+import { Search, Bell, LogOut, User, CreditCard } from 'lucide-react';
 import NotificationModal from './notifications/NotificationModal';
 import { mockNotifications, getUnreadCount } from '../data/mockNotifications';
 import { useAuth } from '../contexts/AuthContext';
@@ -8,6 +8,7 @@ import { LogoutModal } from './LogoutModal';
 import SubscriptionStatusBadge from './subscription/SubscriptionStatusBadge';
 import SubscriptionStatusPanel from './subscription/SubscriptionStatusPanel';
 import { mockSubscription, shouldShowIndicator } from '../data/mockSubscription';
+import LegalEntitySwitcher from './legal-entity/LegalEntitySwitcher';
 
 interface TopHeaderProps {
   isSidebarCollapsed?: boolean;
@@ -61,23 +62,12 @@ export function TopHeader({ isSidebarCollapsed = false, onNavigate }: TopHeaderP
       <div className={`bg-white border-b border-[#E5E7EB] h-16 flex items-center px-6 gap-4 fixed top-0 left-0 right-0 z-30 transition-all duration-300 ${
         isSidebarCollapsed ? 'lg:left-[72px]' : 'lg:left-[240px]'
       }`}>
-        {/* Context Badge - Non-dismissable */}
-        <div className="hidden lg:flex items-center">
-          <div className={`px-3 py-1.5 rounded-lg border-2 flex items-center gap-2 ${
-            user?.role === 'tenant-user' 
-              ? 'bg-blue-50 border-blue-200' 
-              : 'bg-purple-50 border-purple-200'
-          }`}>
-            <div className={`w-2 h-2 rounded-full ${
-              user?.role === 'tenant-user' ? 'bg-blue-500' : 'bg-purple-500'
-            }`} />
-            <span className={`text-xs font-semibold ${
-              user?.role === 'tenant-user' ? 'text-blue-700' : 'text-purple-700'
-            }`}>
-              {user?.role === 'tenant-user' ? 'Tenant View' : 'SaaS Admin View'}
-            </span>
+        {/* Legal Entity Switcher - Only for Tenant Users */}
+        {user?.role === 'tenant-user' && (
+          <div className="hidden lg:block">
+            <LegalEntitySwitcher />
           </div>
-        </div>
+        )}
 
         {/* Search Bar */}
         <div className="flex-1 max-w-[560px]">
@@ -107,16 +97,6 @@ export function TopHeader({ isSidebarCollapsed = false, onNavigate }: TopHeaderP
                 {unreadCount > 99 ? '99+' : unreadCount}
               </span>
             )}
-          </button>
-
-          {/* Help */}
-          <button className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-[#F9FAFB] transition-colors">
-            <HelpCircle className="w-5 h-5 text-[#6B7280]" />
-          </button>
-
-          {/* Settings */}
-          <button className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-[#F9FAFB] transition-colors">
-            <Settings className="w-5 h-5 text-[#6B7280]" />
           </button>
 
           {/* Subscription Status - Only for Tenant Admins */}
