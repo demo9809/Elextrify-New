@@ -1,25 +1,25 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import TenantWelcomeDashboard from './TenantWelcomeDashboard';
-import SaaSFinanceDashboard from '../saas-finance/SaaSFinanceDashboard';
+import SaaSAdminDashboard from '../admin-dashboard/SaaSAdminDashboard';
+import { Welcome } from './Welcome';
 
 interface WelcomeScreenProps {
   onNavigate: (path: string) => void;
 }
 
 export function WelcomeScreen({ onNavigate }: WelcomeScreenProps) {
-  const { userRole } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   // Role-based rendering
-  // SaaS Admin / Host Admin → SaaS Finance Dashboard
+  // SaaS Admin → Platform Dashboard (Executive View)
   // Tenant users → Welcome/Onboarding Dashboard
-  const isSaaSAdmin = userRole === 'saas-admin' || userRole === 'host-admin';
+  const isSaaSAdmin = user?.role === 'saas-admin';
 
   if (isSaaSAdmin) {
-    return <SaaSFinanceDashboard />;
+    return <SaaSAdminDashboard />;
   }
 
-  return <TenantWelcomeDashboard onNavigate={onNavigate} />;
+  return <Welcome onNavigate={onNavigate} />;
 }

@@ -1,291 +1,267 @@
 import { useState } from 'react';
 import { 
-  CheckCircle2, 
-  Circle, 
-  User, 
   Monitor, 
   Building2, 
   Upload, 
   ListVideo, 
   Calendar,
-  ArrowRight,
-  Crown,
-  Clock,
-  LifeBuoy,
+  Zap,
+  PlayCircle,
   BookOpen,
   MessageCircle,
-  ExternalLink,
-  Zap
+  Clock
 } from 'lucide-react';
 
-interface OnboardingStep {
-  id: string;
-  title: string;
-  description: string;
-  status: 'pending' | 'in-progress' | 'completed';
-  icon: React.ElementType;
-  action: string;
-  route: string;
-}
-
 interface WelcomeProps {
-  userFirstName?: string;
-  planName?: string;
-  trialDaysLeft?: number;
   onNavigate: (route: string) => void;
 }
 
-export function Welcome({ 
-  userFirstName = 'User',
-  planName = 'Professional',
-  trialDaysLeft = 14,
-  onNavigate
-}: WelcomeProps) {
-  // Mock initial state - in production, this would come from backend
-  const [steps, setSteps] = useState<OnboardingStep[]>([
-    {
-      id: 'profile',
-      title: 'Complete Profile',
-      description: 'Add your business details and preferences',
-      status: 'completed',
-      icon: User,
-      action: 'Go to Profile',
-      route: '/settings/profile'
-    },
-    {
-      id: 'kiosk',
-      title: 'Add First Kiosk',
-      description: 'Register and pair your first display device',
-      status: 'completed',
-      icon: Monitor,
-      action: 'Register Kiosk',
-      route: '/terminal'
-    },
-    {
-      id: 'client',
-      title: 'Create First Client',
-      description: 'Set up a client to organize your campaigns',
-      status: 'in-progress',
-      icon: Building2,
-      action: 'Create Client',
-      route: '/clients'
-    },
-    {
-      id: 'media',
-      title: 'Upload Media',
-      description: 'Add images or videos to your media library',
-      status: 'pending',
-      icon: Upload,
-      action: 'Upload Media',
-      route: '/media'
-    },
-    {
-      id: 'playlist',
-      title: 'Build Playlist',
-      description: 'Create your first content playlist',
-      status: 'pending',
-      icon: ListVideo,
-      action: 'Build Playlist',
-      route: '/playlists'
-    },
-    {
-      id: 'campaign',
-      title: 'Schedule Campaign',
-      description: 'Launch your first campaign to displays',
-      status: 'pending',
-      icon: Calendar,
-      action: 'Schedule Campaign',
-      route: '/campaigns'
-    }
-  ]);
-
-  const completedSteps = steps.filter(s => s.status === 'completed').length;
-  const totalSteps = steps.length;
-  const progressPercentage = (completedSteps / totalSteps) * 100;
-
-  const handleStepClick = (route: string) => {
-    onNavigate(route);
-  };
+export function Welcome({ onNavigate }: WelcomeProps) {
+  const [progress] = useState(0); // 0 of 5 steps completed
+  const [kiosks] = useState(0);
+  const [campaigns] = useState(0);
+  const [playlists] = useState(0);
+  const trialDaysLeft = 30;
 
   return (
     <div className="min-h-screen bg-[#F9FAFB] p-8">
       <div className="max-w-[1200px] mx-auto space-y-6">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-[#111827] mb-2">Welcome back, {userFirstName}</h1>
-          <p className="text-[#6B7280]">Complete the steps below to get your platform running</p>
-        </div>
-
-        {/* Plan Status Card */}
-        <div className="bg-white border border-[#E5E7EB] rounded-xl p-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-[#FFF7ED] rounded-xl flex items-center justify-center">
-                <Crown className="w-6 h-6 text-[#D9480F]" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <h3 className="text-[#111827]">{planName} Plan</h3>
-                  {trialDaysLeft > 0 && (
-                    <span className="px-2 py-1 bg-[#EFF6FF] text-[#3B82F6] rounded text-xs font-medium">
-                      Trial
-                    </span>
-                  )}
-                </div>
-                <p className="text-sm text-[#6B7280]">
-                  {trialDaysLeft > 0 ? (
-                    <>
-                      <Clock className="w-4 h-4 inline mr-1.5" />
-                      {trialDaysLeft} days remaining in your trial
-                    </>
-                  ) : (
-                    'Active subscription'
-                  )}
-                </p>
-              </div>
+        
+        {/* Trial Banner */}
+        <div className="bg-[#FFF4ED] border border-[#FDBA74] rounded-lg px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 bg-[#D9480F] rounded-lg flex items-center justify-center">
+              <Zap className="w-5 h-5 text-white" />
             </div>
-            <button className="px-4 h-10 bg-[#F9FAFB] border border-[#E5E7EB] text-[#111827] rounded-lg hover:bg-[#F3F4F6] transition-colors text-sm font-medium">
-              View Plan Details
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-[#111827] font-semibold">You're on the Free Trial</span>
+                <span className="px-2 py-0.5 bg-[#D9480F] text-white text-xs rounded-full">
+                  {trialDaysLeft} days remaining
+                </span>
+              </div>
+              <p className="text-sm text-[#6B7280]">Trial Kiosk Limit: 0 of 5 kpaired</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={() => onNavigate('/billing')}
+              className="px-6 h-10 bg-[#D9480F] text-white rounded-lg hover:bg-[#C13F0D] transition-colors font-medium"
+            >
+              Upgrade Your Plan
+            </button>
+            <button className="px-6 h-10 bg-white border border-[#E5E7EB] text-[#111827] rounded-lg hover:bg-[#F9FAFB] transition-colors font-medium">
+              Compare Plans
             </button>
           </div>
         </div>
 
-        {/* Onboarding Checklist */}
-        <div className="bg-white border border-[#E5E7EB] rounded-xl">
-          {/* Header */}
-          <div className="px-6 py-5 border-b border-[#E5E7EB]">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-[#111827] mb-1">Getting Started</h2>
-                <p className="text-sm text-[#6B7280]">
-                  {completedSteps} of {totalSteps} steps completed
-                </p>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="text-right">
-                  <p className="text-2xl font-semibold text-[#111827]">{Math.round(progressPercentage)}%</p>
-                  <p className="text-xs text-[#6B7280]">Complete</p>
-                </div>
-              </div>
-            </div>
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-12 gap-6">
+          
+          {/* Left Column - Main Welcome */}
+          <div className="col-span-8 space-y-6">
             
-            {/* Progress Bar */}
-            <div className="mt-4 h-2 bg-[#F3F4F6] rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-[#D9480F] transition-all duration-500"
-                style={{ width: `${progressPercentage}%` }}
-              ></div>
-            </div>
-          </div>
+            {/* Get Started Section */}
+            <div className="bg-white border border-[#E5E7EB] rounded-xl p-8">
+              <div className="flex items-start gap-4 mb-6">
+                <div className="w-12 h-12 bg-[#FFF4ED] rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Zap className="w-6 h-6 text-[#D9480F]" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <h2 className="text-[#111827]">Get Started in Minutes</h2>
+                  </div>
+                  <p className="text-[#6B7280] mb-6">
+                    Welcome to Your Digital Signage Platform
+                  </p>
+                  <p className="text-[#6B7280]">
+                    Transform how you display content across all your screens. Get your first campaign live in just a few clicks.
+                  </p>
+                </div>
+              </div>
 
-          {/* Steps Grid */}
-          <div className="p-6">
-            <div className="grid grid-cols-2 gap-4">
-              {steps.map((step, index) => (
-                <OnboardingStepCard
-                  key={step.id}
-                  step={step}
-                  stepNumber={index + 1}
-                  onClick={() => handleStepClick(step.route)}
+              {/* Progress Section */}
+              <div className="border-t border-[#E5E7EB] pt-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="text-[#111827] mb-1">Your Progress</h3>
+                    <p className="text-sm text-[#6B7280]">0 of 5 steps completed</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-3xl font-semibold text-[#D9480F]">{progress}%</p>
+                    <p className="text-sm text-[#6B7280]">Complete</p>
+                  </div>
+                </div>
+
+                {/* Stats Cards */}
+                <div className="grid grid-cols-3 gap-4 mb-6">
+                  <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-4 text-center">
+                    <Monitor className="w-5 h-5 text-[#6B7280] mx-auto mb-2" />
+                    <div className="text-2xl font-semibold text-[#111827] mb-1">{kiosks}</div>
+                    <div className="text-sm text-[#6B7280]">Kiosks</div>
+                    <button 
+                      onClick={() => onNavigate('/terminals')}
+                      className="text-xs text-[#D9480F] hover:underline mt-1"
+                    >
+                      Add your first
+                    </button>
+                  </div>
+
+                  <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-4 text-center">
+                    <Calendar className="w-5 h-5 text-[#6B7280] mx-auto mb-2" />
+                    <div className="text-2xl font-semibold text-[#111827] mb-1">{campaigns}</div>
+                    <div className="text-sm text-[#6B7280]">Campaigns</div>
+                    <button 
+                      onClick={() => onNavigate('/campaigns')}
+                      className="text-xs text-[#D9480F] hover:underline mt-1"
+                    >
+                      Launch one
+                    </button>
+                  </div>
+
+                  <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-4 text-center">
+                    <ListVideo className="w-5 h-5 text-[#6B7280] mx-auto mb-2" />
+                    <div className="text-2xl font-semibold text-[#111827] mb-1">{playlists}</div>
+                    <div className="text-sm text-[#6B7280]">Playlists</div>
+                    <button 
+                      onClick={() => onNavigate('/playlists')}
+                      className="text-xs text-[#D9480F] hover:underline mt-1"
+                    >
+                      Create one
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Start Actions */}
+            <div className="bg-white border border-[#E5E7EB] rounded-xl p-8">
+              <div className="mb-6">
+                <h2 className="text-[#111827] mb-2">Quick Start Actions</h2>
+                <p className="text-sm text-[#6B7280]">Complete these steps to launch your first campaign</p>
+              </div>
+
+              <div className="grid grid-cols-5 gap-4">
+                {/* Step 1 */}
+                <ActionCard
+                  number={1}
+                  title="Add Your First Kiosk"
+                  description="Connect a display device"
+                  time="2 min"
+                  icon={Monitor}
+                  iconBg="bg-[#FFF4ED]"
+                  iconColor="text-[#D9480F]"
+                  badge="Popular"
+                  onClick={() => onNavigate('/terminals')}
                 />
-              ))}
+
+                {/* Step 2 */}
+                <ActionCard
+                  number={2}
+                  title="Create a Client"
+                  description="Add your first Customer"
+                  time="1 min"
+                  icon={Building2}
+                  iconBg="bg-[#DBEAFE]"
+                  iconColor="text-[#3B82F6]"
+                  onClick={() => onNavigate('/customers')}
+                />
+
+                {/* Step 3 */}
+                <ActionCard
+                  number={3}
+                  title="Upload Media"
+                  description="Add images & videos"
+                  time="3 min"
+                  icon={Upload}
+                  iconBg="bg-[#F3E8FF]"
+                  iconColor="text-[#9333EA]"
+                  onClick={() => onNavigate('/media')}
+                />
+
+                {/* Step 4 */}
+                <ActionCard
+                  number={4}
+                  title="Build a Playlist"
+                  description="Create content sequence"
+                  time="5 min"
+                  icon={ListVideo}
+                  iconBg="bg-[#FCE7F3]"
+                  iconColor="text-[#EC4899]"
+                  onClick={() => onNavigate('/playlists')}
+                />
+
+                {/* Step 5 */}
+                <ActionCard
+                  number={5}
+                  title="Launch Campaign"
+                  description="Schedule your content"
+                  time="4 min"
+                  icon={Calendar}
+                  iconBg="bg-[#D1FAE5]"
+                  iconColor="text-[#16A34A]"
+                  badge="Popular"
+                  onClick={() => onNavigate('/campaigns')}
+                />
+              </div>
+            </div>
+
+            {/* Learning Resources */}
+            <div className="grid grid-cols-3 gap-4">
+              <button className="bg-white border border-[#E5E7EB] rounded-xl p-6 text-left hover:shadow-md transition-all group">
+                <PlayCircle className="w-6 h-6 text-[#6B7280] mb-3" />
+                <h3 className="text-[#111827] mb-1">Platform Walkthrough</h3>
+                <p className="text-sm text-[#6B7280] mb-3">5 minute video tour</p>
+                <p className="text-xs text-[#9CA3AF]">5 min</p>
+              </button>
+
+              <button className="bg-white border border-[#E5E7EB] rounded-xl p-6 text-left hover:shadow-md transition-all group">
+                <BookOpen className="w-6 h-6 text-[#6B7280] mb-3" />
+                <h3 className="text-[#111827] mb-1">Quick Start Guide</h3>
+                <p className="text-sm text-[#6B7280] mb-3">Step-by-step documentation</p>
+                <p className="text-xs text-[#9CA3AF]">10 min read</p>
+              </button>
+
+              <button className="bg-white border border-[#E5E7EB] rounded-xl p-6 text-left hover:shadow-md transition-all group">
+                <MessageCircle className="w-6 h-6 text-[#6B7280] mb-3" />
+                <h3 className="text-[#111827] mb-1">Live Chat Support</h3>
+                <p className="text-sm text-[#6B7280] mb-3">Get help from our team</p>
+                <div className="flex items-center gap-1">
+                  <div className="w-2 h-2 bg-[#16A34A] rounded-full"></div>
+                  <p className="text-xs text-[#16A34A]">Available now</p>
+                </div>
+              </button>
             </div>
           </div>
-        </div>
 
-        {/* Bottom Grid: Progress Summary + Support */}
-        <div className="grid grid-cols-2 gap-6">
-          {/* Progress Summary */}
-          <div className="bg-white border border-[#E5E7EB] rounded-xl p-6">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-[#EFF6FF] rounded-lg flex items-center justify-center">
-                <Zap className="w-5 h-5 text-[#3B82F6]" />
+          {/* Right Column - Launch Campaign CTA */}
+          <div className="col-span-4">
+            <div className="bg-gradient-to-br from-[#FFF4ED] to-[#FFEDD5] border border-[#FDBA74] rounded-xl p-8 sticky top-24">
+              <div className="w-16 h-16 bg-[#FFF7ED] rounded-2xl flex items-center justify-center mx-auto mb-6">
+                <Calendar className="w-8 h-8 text-[#D9480F]" />
               </div>
-              <div>
-                <h3 className="text-[#111827]">Quick Stats</h3>
-                <p className="text-xs text-[#6B7280]">Your platform overview</p>
-              </div>
-            </div>
+              
+              <h2 className="text-center text-[#111827] mb-3">Launch Your First Campaign</h2>
+              <p className="text-center text-sm text-[#6B7280] mb-6">
+                Follow the quick actions below to get your content live on screens in minutes
+              </p>
 
-            <div className="space-y-4">
-              <div className="flex items-center justify-between py-3 border-b border-[#F3F4F6]">
-                <span className="text-sm text-[#6B7280]">Active Kiosks</span>
-                <span className="text-sm font-semibold text-[#111827]">
-                  {steps.find(s => s.id === 'kiosk')?.status === 'completed' ? '1' : '0'}
-                </span>
+              <div className="flex items-center justify-center gap-2 mb-6">
+                <Clock className="w-4 h-4 text-[#D9480F]" />
+                <span className="text-sm text-[#6B7280]">~15 minutes to complete</span>
               </div>
-              <div className="flex items-center justify-between py-3 border-b border-[#F3F4F6]">
-                <span className="text-sm text-[#6B7280]">Total Clients</span>
-                <span className="text-sm font-semibold text-[#111827]">
-                  {steps.find(s => s.id === 'client')?.status === 'completed' ? '1' : '0'}
-                </span>
-              </div>
-              <div className="flex items-center justify-between py-3 border-b border-[#F3F4F6]">
-                <span className="text-sm text-[#6B7280]">Media Files</span>
-                <span className="text-sm font-semibold text-[#111827]">
-                  {steps.find(s => s.id === 'media')?.status === 'completed' ? '5' : '0'}
-                </span>
-              </div>
-              <div className="flex items-center justify-between py-3">
-                <span className="text-sm text-[#6B7280]">Active Campaigns</span>
-                <span className="text-sm font-semibold text-[#111827]">
-                  {steps.find(s => s.id === 'campaign')?.status === 'completed' ? '1' : '0'}
-                </span>
-              </div>
-            </div>
-          </div>
 
-          {/* Support & Resources */}
-          <div className="bg-white border border-[#E5E7EB] rounded-xl p-6">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-[#F0FDF4] rounded-lg flex items-center justify-center">
-                <LifeBuoy className="w-5 h-5 text-[#16A34A]" />
-              </div>
-              <div>
-                <h3 className="text-[#111827]">Support & Resources</h3>
-                <p className="text-xs text-[#6B7280]">Get help when you need it</p>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <button className="w-full flex items-center justify-between p-3 rounded-lg hover:bg-[#F9FAFB] transition-colors group">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-[#F9FAFB] rounded-lg flex items-center justify-center group-hover:bg-white">
-                    <BookOpen className="w-4 h-4 text-[#6B7280]" />
-                  </div>
-                  <div className="text-left">
-                    <p className="text-sm font-medium text-[#111827]">Documentation</p>
-                    <p className="text-xs text-[#6B7280]">Browse guides and tutorials</p>
-                  </div>
-                </div>
-                <ExternalLink className="w-4 h-4 text-[#9CA3AF]" />
+              <button 
+                onClick={() => onNavigate('/campaigns')}
+                className="w-full h-12 bg-[#D9480F] text-white rounded-lg hover:bg-[#C13F0D] transition-colors font-medium mb-4"
+              >
+                Start Now
               </button>
 
-              <button className="w-full flex items-center justify-between p-3 rounded-lg hover:bg-[#F9FAFB] transition-colors group">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-[#F9FAFB] rounded-lg flex items-center justify-center group-hover:bg-white">
-                    <MessageCircle className="w-4 h-4 text-[#6B7280]" />
-                  </div>
-                  <div className="text-left">
-                    <p className="text-sm font-medium text-[#111827]">Live Chat</p>
-                    <p className="text-xs text-[#6B7280]">Chat with our support team</p>
-                  </div>
-                </div>
-                <div className="w-2 h-2 bg-[#16A34A] rounded-full"></div>
-              </button>
-
-              <button className="w-full flex items-center justify-between p-3 rounded-lg hover:bg-[#F9FAFB] transition-colors group">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-[#F9FAFB] rounded-lg flex items-center justify-center group-hover:bg-white">
-                    <LifeBuoy className="w-4 h-4 text-[#6B7280]" />
-                  </div>
-                  <div className="text-left">
-                    <p className="text-sm font-medium text-[#111827]">Contact Support</p>
-                    <p className="text-xs text-[#6B7280]">Email us for assistance</p>
-                  </div>
-                </div>
-                <ExternalLink className="w-4 h-4 text-[#9CA3AF]" />
-              </button>
+              <p className="text-xs text-center text-[#9CA3AF]">
+                No credit card required during trial
+              </p>
             </div>
           </div>
         </div>
@@ -294,95 +270,52 @@ export function Welcome({
   );
 }
 
-interface OnboardingStepCardProps {
-  step: OnboardingStep;
-  stepNumber: number;
+interface ActionCardProps {
+  number: number;
+  title: string;
+  description: string;
+  time: string;
+  icon: React.ElementType;
+  iconBg: string;
+  iconColor: string;
+  badge?: string;
   onClick: () => void;
 }
 
-function OnboardingStepCard({ step, stepNumber, onClick }: OnboardingStepCardProps) {
-  const Icon = step.icon;
-  
-  const getStatusColor = () => {
-    switch (step.status) {
-      case 'completed':
-        return {
-          bg: 'bg-[#DCFCE7]',
-          border: 'border-[#BBF7D0]',
-          icon: 'text-[#16A34A]',
-          iconBg: 'bg-[#16A34A]'
-        };
-      case 'in-progress':
-        return {
-          bg: 'bg-[#FFF7ED]',
-          border: 'border-[#FED7AA]',
-          icon: 'text-[#D9480F]',
-          iconBg: 'bg-[#D9480F]'
-        };
-      default:
-        return {
-          bg: 'bg-white',
-          border: 'border-[#E5E7EB]',
-          icon: 'text-[#6B7280]',
-          iconBg: 'bg-[#E5E7EB]'
-        };
-    }
-  };
-
-  const colors = getStatusColor();
-
+function ActionCard({ 
+  number, 
+  title, 
+  description, 
+  time, 
+  icon: Icon, 
+  iconBg, 
+  iconColor, 
+  badge,
+  onClick 
+}: ActionCardProps) {
   return (
     <button
       onClick={onClick}
-      className={`${colors.bg} border ${colors.border} rounded-xl p-5 text-left hover:shadow-md transition-all group`}
+      className="bg-white border border-[#E5E7EB] rounded-xl p-5 text-left hover:shadow-lg transition-all group relative"
     >
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex items-center gap-3">
-          {/* Status Indicator */}
-          <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
-            step.status === 'completed' ? colors.iconBg : 
-            step.status === 'in-progress' ? 'border-2 border-[#D9480F]' : 
-            'border-2 border-[#E5E7EB]'
-          }`}>
-            {step.status === 'completed' ? (
-              <CheckCircle2 className="w-4 h-4 text-white" />
-            ) : (
-              <span className={`text-xs font-semibold ${
-                step.status === 'in-progress' ? 'text-[#D9480F]' : 'text-[#9CA3AF]'
-              }`}>
-                {stepNumber}
-              </span>
-            )}
-          </div>
-          
-          {/* Icon */}
-          <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-            step.status === 'completed' ? 'bg-[#BBF7D0]' :
-            step.status === 'in-progress' ? 'bg-[#FED7AA]' :
-            'bg-[#F3F4F6]'
-          }`}>
-            <Icon className={`w-5 h-5 ${colors.icon}`} />
-          </div>
+      {badge && (
+        <div className="absolute -top-2 -right-2 px-2 py-1 bg-[#D9480F] text-white text-xs rounded-full font-medium">
+          {badge}
         </div>
-
-        {/* Arrow */}
-        <ArrowRight className={`w-5 h-5 opacity-0 group-hover:opacity-100 transition-opacity ${colors.icon}`} />
+      )}
+      
+      <div className="text-xs font-semibold text-[#9CA3AF] mb-3">{number}</div>
+      
+      <div className={`w-12 h-12 ${iconBg} rounded-xl flex items-center justify-center mb-4`}>
+        <Icon className={`w-6 h-6 ${iconColor}`} />
       </div>
 
-      <div>
-        <h4 className="text-[#111827] mb-1">{step.title}</h4>
-        <p className="text-sm text-[#6B7280] mb-4">{step.description}</p>
-        
-        {/* Action Label */}
-        <div className="flex items-center gap-2">
-          <span className={`text-sm font-medium ${
-            step.status === 'completed' ? 'text-[#16A34A]' :
-            step.status === 'in-progress' ? 'text-[#D9480F]' :
-            'text-[#6B7280]'
-          }`}>
-            {step.status === 'completed' ? 'View Details' : step.action}
-          </span>
-        </div>
+      <h3 className="text-sm font-semibold text-[#111827] mb-2">{title}</h3>
+      <p className="text-xs text-[#6B7280] mb-3">{description}</p>
+      
+      <div className="flex items-center gap-1 text-xs text-[#9CA3AF]">
+        <Clock className="w-3 h-3" />
+        <span>{time}</span>
       </div>
     </button>
   );
