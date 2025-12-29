@@ -14,7 +14,8 @@ import {
   Package,
   Layers,
   CreditCard,
-  Receipt
+  Receipt,
+  CheckCircle
 } from 'lucide-react';
 
 interface MobileNavProps {
@@ -34,10 +35,12 @@ export function MobileNav({ activePage = 'welcome', onNavigate }: MobileNavProps
     { id: 'admin-billing', label: 'Admin Billing', icon: Receipt },
     { id: 'billing', label: 'Billing', icon: CreditCard },
     { id: 'customers', label: 'Customers', icon: Users },
-    { id: 'campaigns', label: 'Campaigns', icon: Target },
+    { id: 'ad-slotting', label: 'Ad Slotting', icon: Target },
     { id: 'terminals', label: 'Kiosks', icon: Monitor },
     { id: 'media', label: 'Media', icon: Film },
     { id: 'playlists', label: 'Playlists', icon: List },
+    { id: 'media-billing', label: 'Media Billing', icon: Receipt },
+    { id: 'proof-of-play', label: 'Proof of Play', icon: CheckCircle },
   ];
 
   const settingsItems = [

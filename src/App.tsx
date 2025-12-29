@@ -1,24 +1,23 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter, Routes, Route, useLocation, useNavigate, Navigate } from 'react-router-dom';
+import { Toaster } from 'sonner@2.0.3';
 import { Sidebar } from './components/Sidebar';
 import { MobileNav } from './components/MobileNav';
 import { TopHeader } from './components/TopHeader';
 import { GlobalFooter } from './components/GlobalFooter';
+import { LoginScreen } from './components/auth/LoginScreen';
+import { AccessRestricted } from './components/auth/AccessRestricted';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { LegalEntityProvider } from './contexts/LegalEntityContext';
-import LoginScreen from './components/auth/LoginScreen';
-import AccessRestricted from './components/auth/AccessRestricted';
-import React from 'react';
-import { Toaster } from 'sonner@2.0.3';
-
-// Import all page components
 import { WelcomeScreen } from './components/welcome/WelcomeScreen';
 import DashboardContainer from './components/operational-dashboard/DashboardContainer';
-import { CampaignScheduler } from './components/pages/CampaignScheduler';
+import { CampaignHub } from './components/campaigns/CampaignHub';
+import { AdSlottingHub } from './components/ad-slotting/AdSlottingHub';
 import { TerminalManagement } from './components/terminal/TerminalManagement';
 import { PlaylistManager } from './components/playlists/PlaylistManager';
 import { MediaManager } from './components/media/MediaManager';
 import { ClientManager } from './components/clients/ClientManager';
+import { ProofOfPlayDashboard } from './components/proof-of-play/ProofOfPlayDashboard';
 import TenantManagement from './components/tenants/TenantManagement';
 import TenantDetails from './components/tenants/TenantDetails';
 import TenantOrganizationUnitsReadOnly from './components/tenants/TenantOrganizationUnitsReadOnly';
@@ -68,7 +67,7 @@ import Documentation from './components/pages/Documentation';
 import EnhancedNotificationsPage from './components/notifications/EnhancedNotificationsPage';
 import GlobalAlertBanner from './components/GlobalAlertBanner';
 
-type Page = 'welcome' | 'dashboard' | 'campaigns' | 'terminals' | 'playlists' | 'media' | 'customers' | 'tenants' | 'editions' | 'organization-units' | 'billing' | 'media-billing' | 'admin-billing' | 'admin-billing-overview' | 'admin-billing-subscriptions' | 'admin-billing-invoices' | 'admin-billing-payments' | 'admin-billing-revenue' | 'admin-billing-discounts' | 'admin-billing-audit' | 'settings' | 'settings-account' | 'settings-workspace' | 'settings-system' | 'settings-users' | 'settings-language' | 'settings-general' | 'settings-billing' | 'settings-integrations' | 'settings-notifications' | 'settings-security' | 'settings-email' | 'settings-api' | 'help-support' | 'documentation' | 'notifications';
+type Page = 'welcome' | 'dashboard' | 'campaigns' | 'ad-slotting' | 'terminals' | 'playlists' | 'media' | 'customers' | 'proof-of-play' | 'tenants' | 'editions' | 'organization-units' | 'billing' | 'media-billing' | 'admin-billing' | 'admin-billing-overview' | 'admin-billing-subscriptions' | 'admin-billing-invoices' | 'admin-billing-payments' | 'admin-billing-revenue' | 'admin-billing-discounts' | 'admin-billing-audit' | 'settings' | 'settings-account' | 'settings-workspace' | 'settings-system' | 'settings-users' | 'settings-language' | 'settings-general' | 'settings-billing' | 'settings-integrations' | 'settings-notifications' | 'settings-security' | 'settings-email' | 'settings-api' | 'help-support' | 'documentation' | 'notifications';
 
 function AppContent() {
   const location = useLocation();
@@ -87,6 +86,7 @@ function AppContent() {
   const getCurrentPage = (): Page => {
     const path = location.pathname;
     if (path === '/dashboard') return 'dashboard';
+    if (path.includes('/ad-slotting')) return 'ad-slotting';
     if (path.includes('/campaigns')) return 'campaigns';
     if (path.includes('/tenants')) return 'tenants';
     if (path.includes('/terminals') || path.includes('/kiosks')) return 'terminals';
@@ -94,6 +94,7 @@ function AppContent() {
     if (path.includes('/media-billing')) return 'media-billing';
     if (path.includes('/media')) return 'media';
     if (path.includes('/customers') || path.includes('/clients')) return 'customers';
+    if (path.includes('/proof-of-play')) return 'proof-of-play';
     if (path.includes('/editions')) return 'editions';
     if (path.includes('/organization-units')) return 'organization-units';
     if (path === '/admin/billing') return 'admin-billing-overview';
@@ -136,10 +137,12 @@ function AppContent() {
       welcome: '/',
       dashboard: '/dashboard',
       campaigns: '/campaigns',
+      'ad-slotting': '/ad-slotting',
       terminals: '/terminals',
       playlists: '/playlists',
       media: '/media',
       customers: '/customers',
+      'proof-of-play': '/proof-of-play',
       tenants: '/tenants',
       editions: '/editions',
       'organization-units': '/organization-units',
@@ -218,12 +221,14 @@ function AppContent() {
           <Routes>
             <Route path="/" element={<WelcomeScreen onNavigate={(route) => navigate(route)} />} />
             <Route path="/dashboard" element={<DashboardContainer />} />
-            <Route path="/campaigns" element={<CampaignScheduler />} />
+            <Route path="/campaigns" element={<CampaignHub />} />
+            <Route path="/ad-slotting" element={<AdSlottingHub />} />
             <Route path="/terminals" element={<TerminalManagement />} />
             <Route path="/playlists" element={<PlaylistManager />} />
             <Route path="/media" element={<MediaManager />} />
             <Route path="/customers" element={<ClientManager />} />
             <Route path="/clients" element={<ClientManager />} />
+            <Route path="/proof-of-play" element={<ProofOfPlayDashboard />} />
             <Route path="/tenants" element={<TenantManagement />} />
             <Route path="/tenants/:tenantId" element={<TenantDetails />} />
             <Route path="/tenants/:tenantId/organization-units" element={<TenantOrganizationUnitsReadOnly />} />

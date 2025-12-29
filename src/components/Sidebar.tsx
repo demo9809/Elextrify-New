@@ -24,7 +24,8 @@ import {
   Percent,
   Activity,
   BookOpen,
-  ShieldCheck
+  ShieldCheck,
+  CheckCircle
 } from 'lucide-react';
 import React from 'react';
 import { useAuth } from '../contexts/AuthContext';
@@ -49,7 +50,7 @@ export function Sidebar({ activePage = 'welcome', onNavigate, isCollapsed = fals
     { id: 'welcome', label: 'Welcome', icon: Home },
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'customers', label: 'Customers', icon: Users },
-    { id: 'campaigns', label: 'Campaigns', icon: Target },
+    { id: 'ad-slotting', label: 'Ad Slotting & Scheduling', icon: Target },
     { id: 'media', label: 'Media', icon: Film },
     { id: 'playlists', label: 'Playlists', icon: List },
     { id: 'terminals', label: 'Kiosk Management', icon: Monitor },
@@ -230,6 +231,13 @@ export function Sidebar({ activePage = 'welcome', onNavigate, isCollapsed = fals
 
               {/* Media Billing */}
               <MenuItem key={mediaBillingItem.id} item={mediaBillingItem} isActive={mediaBillingItem.id === activePage} />
+
+              {/* Proof of Play */}
+              <MenuItem 
+                key="proof-of-play" 
+                item={{ id: 'proof-of-play', label: 'Proof of Play', icon: CheckCircle }} 
+                isActive={'proof-of-play' === activePage} 
+              />
 
               {/* Divider 2 */}
               <MenuDivider />

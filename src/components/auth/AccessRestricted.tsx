@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { ShieldOff, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
-export default function AccessRestricted() {
+export function AccessRestricted() {
   const navigate = useNavigate();
   const { user } = useAuth();
 

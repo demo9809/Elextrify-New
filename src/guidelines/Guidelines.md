@@ -667,4 +667,53 @@ Select at least one kiosk to target
 
 ---
 
+## Advanced Ad Scheduling & Hardware Management
+
+This module manages the core operational logic of the DOOH application, focusing on high-density slot management and real-time hardware control.
+
+### 1. Core Concept: Slot-First Architecture
+
+**Hardware-Centric Logic:** Move away from traditional "Campaign" definitions; the system must manage Hardware Slots as the primary entity.
+
+**Slot Hierarchies:** Define primary time blocks (e.g., 1-hour "Master Slots") that can be subdivided into granular increments of 5, 10, 15, or 30 seconds.
+
+**Media-to-Client Linking:** Ad references are tied to the Media files; the client is identified through the media assigned to a specific timeline slot.
+
+### 2. The Single-Window Scheduler
+
+**Visual Interface:** A high-density, Google Calendar-style weekly view must be used to visualize all billboard and kiosk occupancy.
+
+**Occupancy Status:** Use distinct color-coding to show the "Engagement" of the week:
+
+- **Engaged (Booked):** High-contrast blocks; clicking reveals client details, ad media, and specific run parameters.
+- **Free:** Light/Grey blocks indicating available inventory for immediate booking.
+
+**Point-and-Click Booking:** Admins should be able to select an ad from the media library and assign it directly to a free slot on the timeline.
+
+### 3. Algorithmic Distribution Logic
+
+**Targeted Scheduling:** Support fixed-time bookings for specific intervals (e.g., "Run exactly from 09:30 to 09:45").
+
+**Random Frequency (Stacking):** Implement window-based running where an ad plays for a total duration within a larger timeframe (e.g., "Play for 5 minutes total anytime between 09:30 and 11:00").
+
+**Multi-Client Concurrency:** The algorithm must allow up to 10 different clients to share a single hour, managing rotation based on priority or random series.
+
+**Peak vs. Non-Peak Slots:** Slots must be defined with Price Categories (Peak/Non-Peak) during the setup, which dictates the automated billing rates.
+
+### 4. Safety & Operational Controls (The Danger Zone)
+
+**Emergency Recall:** Every scheduled ad must feature a high-visibility Recall/Stop button.
+
+**Immediate Withdrawal:** Triggering a Recall must instantly remove the ad from the hardware timeline and push a command to the device to cease playback immediately for regulatory or sensitivity reasons.
+
+### 5. Proof of Play (PoP) & Invoicing Integration
+
+**PoP Validation:** Scheduling data must be cross-referenced with Actual Run Time (PoP); billing is triggered only for the time the ad successfully played.
+
+**Hardware Intelligence:** Integrate sensor and ML data showing "Walk-ins" and "Attentiveness" within the schedule details to provide ROI proof to the client.
+
+**Downtime Exclusion:** Billing logic must automatically exclude periods of power failure or hardware issues reported by the IoT sensors.
+
+---
+
 **Note:** Some base shadcn/ui components may have default styling (gap, typography). Explicitly set all styling from these guidelines in generated React code to override defaults.

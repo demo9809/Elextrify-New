@@ -3,7 +3,7 @@ import { useAuth, UserRole } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Shield, Users, ArrowRight } from 'lucide-react';
 
-export default function LoginScreen() {
+export function LoginScreen() {
   const { login } = useAuth();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
