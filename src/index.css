@@ -4187,8 +4187,24 @@
     color: #9ca3af;
   }
 
+  .disabled\:opacity-40:disabled {
+    opacity: .4;
+  }
+
   .disabled\:opacity-50:disabled {
     opacity: .5;
+  }
+
+  @media (hover: hover) {
+    .disabled\:hover\:bg-white:disabled:hover {
+      background-color: var(--color-white);
+    }
+  }
+
+  @media (hover: hover) {
+    .disabled\:hover\:text-\[\#6B7280\]:disabled:hover {
+      color: #6b7280;
+    }
   }
 
   .has-\[\:checked\]\:border-green-600:has(:checked) {

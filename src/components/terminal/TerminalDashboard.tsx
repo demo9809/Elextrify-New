@@ -19,6 +19,7 @@ import {
   CheckCircle2,
   AlertCircle
 } from 'lucide-react';
+import { Pagination } from '../shared/Pagination';
 
 interface Terminal {
   id: string;
@@ -187,8 +188,8 @@ export function TerminalDashboard({ onViewDevice, onRegisterDevice, onOpenLocati
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'online' | 'offline' | 'warning'>('all');
   const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
-  const itemsPerPage = 10;
 
   // Calculate stats
   const stats = {
@@ -825,41 +826,20 @@ export function TerminalDashboard({ onViewDevice, onRegisterDevice, onOpenLocati
           )}
 
           {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="px-6 py-4 border-t border-[#E5E7EB] flex items-center justify-between">
-              <p className="text-sm text-[#6B7280]">
-                Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, filteredTerminals.length)} of {filteredTerminals.length} terminals
-              </p>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                  disabled={currentPage === 1}
-                  className="w-9 h-9 flex items-center justify-center rounded-lg border border-[#E5E7EB] text-[#6B7280] hover:bg-[#F9FAFB] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                </button>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                  <button
-                    key={page}
-                    onClick={() => setCurrentPage(page)}
-                    className={`w-9 h-9 flex items-center justify-center rounded-lg text-sm transition-colors ${
-                      page === currentPage
-                        ? 'bg-[#D9480F] text-white'
-                        : 'border border-[#E5E7EB] text-[#6B7280] hover:bg-[#F9FAFB]'
-                    }`}
-                  >
-                    {page}
-                  </button>
-                ))}
-                <button
-                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                  disabled={currentPage === totalPages}
-                  className="w-9 h-9 flex items-center justify-center rounded-lg border border-[#E5E7EB] text-[#6B7280] hover:bg-[#F9FAFB] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
+          {filteredTerminals.length > 0 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={filteredTerminals.length}
+              itemsPerPage={itemsPerPage}
+              onPageChange={(page) => setCurrentPage(page)}
+              onItemsPerPageChange={(newItemsPerPage) => {
+                setItemsPerPage(newItemsPerPage);
+                setCurrentPage(1); // Reset to first page when changing items per page
+              }}
+              startIndex={startIndex}
+              endIndex={Math.min(startIndex + itemsPerPage, filteredTerminals.length)}
+            />
           )}
         </div>
       </div>
