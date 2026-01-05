@@ -2,10 +2,12 @@ import { useState, useMemo } from 'react';
 import { Monitor, Search, SlidersHorizontal, Calendar, LayoutGrid, ChevronLeft, ChevronRight, CheckSquare, Square, Layers } from 'lucide-react';
 import { BookingPanel } from './BookingPanel';
 import { FilterPanel } from './FilterPanel';
+import { SmartFilterPanel } from './SmartFilterPanel';
 import { CalendarView } from './CalendarView';
 import { BookingDetailsPanel } from './BookingDetailsPanel';
 import { SlotBookingsModal } from './SlotBookingsModal';
 import { MultiDeviceBookingPanel } from './MultiDeviceBookingPanel';
+import { SchedulerEmptyState } from './SchedulerEmptyState';
 
 interface SlotConfiguration {
   id: string;
@@ -173,7 +175,7 @@ export function InventoryScheduler() {
   const [slotBookingsModal, setSlotBookingsModal] = useState<TimeSlot | null>(null);
   const [selectedBooking, setSelectedBooking] = useState<SlotBooking | null>(null);
   const [filterOpen, setFilterOpen] = useState(false);
-  const [filters, setFilters] = useState<any>({ slotConfig: 'all' }); // 'all' = show all devices
+  const [filters, setFilters] = useState<any>({}); // Start with empty filters
   const [bookings, setBookings] = useState<Map<string, SlotBooking[]>>(new Map()); // Store bookings by slotId
   
   // Multi-device booking state
@@ -181,8 +183,16 @@ export function InventoryScheduler() {
   const [selectedDevices, setSelectedDevices] = useState<Set<string>>(new Set());
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<{ hour: number } | null>(null);
 
+  // Track if screens have been loaded
+  const [screensLoaded, setScreensLoaded] = useState(false);
+
   const handleFiltersChange = (newFilters: any) => {
     setFilters(newFilters);
+    // When filters are applied and user clicks "Load Screens", set screensLoaded to true
+    // This will be triggered from the SmartFilterPanel
+    if (Object.keys(newFilters).length > 0) {
+      setScreensLoaded(true);
+    }
   };
 
   const handleCalendarSlotClick = (date: string, deviceId: string) => {
@@ -362,10 +372,34 @@ export function InventoryScheduler() {
   const filteredDevices = useMemo(() => {
     let devices = MOCK_DEVICES;
     
+    // Filter by venue types
+    if (filters.venueTypes && filters.venueTypes.length > 0) {
+      devices = devices.filter(d => {
+        const venueTypeLower = d.venueType.toLowerCase();
+        return filters.venueTypes.some((filterType: string) => {
+          // Map filter IDs to device venue types
+          const venueMap: { [key: string]: string[] } = {
+            'mall': ['mall'],
+            'airport': ['airport'],
+            'transit': ['transit'],
+            'gym': ['gym'],
+            'retail': ['retail'],
+            'restaurant': ['restaurant']
+          };
+          const matchTypes = venueMap[filterType] || [];
+          return matchTypes.some(type => venueTypeLower.includes(type));
+        });
+      });
+    }
+    
     // Filter by slot configuration
     if (filters.slotConfig && filters.slotConfig !== 'all') {
       devices = devices.filter(d => d.slotConfigId === filters.slotConfig);
     }
+    
+    // Note: Location tier, foot traffic, and audience interests would require
+    // additional metadata on devices in a real implementation
+    // For now, we're filtering by venue type and slot config
     
     return devices;
   }, [filters]);
@@ -401,32 +435,12 @@ export function InventoryScheduler() {
   };
 
   return (
-    <div className="h-full flex flex-col bg-[#F9FAFB]">
-      {/* Header */}
-      <div className="bg-white border-b border-[#E5E7EB] px-8 py-6">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-semibold text-[#111827] mb-2">Inventory Scheduler</h1>
-            <p className="text-[#6B7280]">
-              Hardware-first booking interface. Click open slots to place bookings.
-            </p>
-          </div>
-        </div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-4 gap-4">
-          <StatCard label="Total Devices" value={MOCK_DEVICES.length} status="info" />
-          <StatCard label="Open Slots Today" value="42" status="success" />
-          <StatCard label="Occupied Slots" value="28" status="warning" />
-          <StatCard label="Revenue Potential" value="$2,100" status="primary" />
-        </div>
-      </div>
-
-      {/* Controls */}
-      <div className="bg-white border-b border-[#E5E7EB] px-8 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            {/* View Mode Toggle */}
+    <>
+      <div className="h-full flex flex-col bg-[#F9FAFB]">
+        {/* Minimal Header - Single Row Controls */}
+        <div className="bg-white border-b border-[#E5E7EB] px-8 py-4">
+          <div className="flex items-center justify-between">
+            {/* Left: View Mode */}
             <div className="flex items-center gap-2 bg-[#F9FAFB] rounded-lg p-1">
               <button
                 onClick={() => setViewMode('day')}
@@ -463,7 +477,7 @@ export function InventoryScheduler() {
               </button>
             </div>
 
-            {/* Date Navigation (Day View Only) */}
+            {/* Center: Date Navigation (Day View Only) */}
             {viewMode === 'day' && (
               <div className="flex items-center gap-2 bg-[#F9FAFB] rounded-lg p-1">
                 <button
@@ -493,359 +507,372 @@ export function InventoryScheduler() {
                 </button>
               </div>
             )}
-          </div>
 
-          <div className="flex items-center gap-4">
-            {/* Multi-Device Mode Toggle */}
-            <button
-              onClick={() => {
-                setMultiDeviceMode(!multiDeviceMode);
-                if (!multiDeviceMode) {
-                  // Entering multi-device mode - clear selections
-                  setSelectedDevices(new Set());
-                  setSelectedTimeSlot(null);
-                }
-              }}
-              className={`h-9 px-4 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors ${
-                multiDeviceMode
-                  ? 'bg-[#D9480F] text-white hover:bg-[#C13C09]'
-                  : 'bg-[#F9FAFB] text-[#111827] hover:bg-[#F3F4F6]'
-              }`}
-            >
-              <Layers className="w-4 h-4" />
-              <span>Multi-Device Mode</span>
-              {multiDeviceMode && selectedDevices.size > 0 && (
-                <span className="ml-1 px-2 py-0.5 bg-white text-[#D9480F] rounded-full text-xs font-semibold">
-                  {selectedDevices.size}
-                </span>
-              )}
-            </button>
-            
-            {/* Filter */}
-            <button
-              onClick={() => setFilterOpen(!filterOpen)}
-              className="h-9 px-4 bg-[#F9FAFB] text-[#111827] rounded-lg hover:bg-[#F3F4F6] text-sm font-medium flex items-center gap-2"
-            >
-              <SlidersHorizontal className="w-4 h-4" />
-              <span>Filters</span>
-            </button>
+            {/* Right: Action Buttons */}
+            <div className="flex items-center gap-3">
+              {/* Multi-Device Mode Toggle */}
+              <button
+                onClick={() => {
+                  setMultiDeviceMode(!multiDeviceMode);
+                  if (!multiDeviceMode) {
+                    setSelectedDevices(new Set());
+                    setSelectedTimeSlot(null);
+                  }
+                }}
+                className={`h-10 px-4 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors ${
+                  multiDeviceMode
+                    ? 'bg-[#D9480F] text-white hover:bg-[#C13C09]'
+                    : 'bg-[#F9FAFB] text-[#111827] hover:bg-[#F3F4F6] border border-[#E5E7EB]'
+                }`}
+              >
+                <Layers className="w-4 h-4" />
+                <span>Multi-Device Mode</span>
+                {multiDeviceMode && selectedDevices.size > 0 && (
+                  <span className="ml-1 px-2 py-0.5 bg-white text-[#D9480F] rounded-full text-xs font-semibold">
+                    {selectedDevices.size}
+                  </span>
+                )}
+              </button>
+              
+              {/* Filters Button */}
+              <button
+                onClick={() => setFilterOpen(true)}
+                className="h-10 px-4 bg-[#F9FAFB] text-[#111827] rounded-lg hover:bg-[#F3F4F6] text-sm font-medium flex items-center gap-2 border border-[#E5E7EB]"
+              >
+                <SlidersHorizontal className="w-4 h-4" />
+                <span>Filters</span>
+              </button>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* View Content */}
-      {viewMode === 'day' ? (
-        <>
-          {/* Scheduler Grid */}
-          <div className="flex-1 overflow-auto">
-            <div className="min-w-max">
-              {/* Time Header */}
-              <div className="sticky top-0 z-10 bg-white border-b border-[#E5E7EB]">
-                <div className="flex">
-                  <div className="w-64 flex-shrink-0 border-r border-[#E5E7EB] p-4">
-                    <p className="text-xs font-semibold text-[#6B7280] uppercase">Device / Time</p>
-                  </div>
-                  {hours.map(hour => (
-                    <div key={hour} className="w-32 flex-shrink-0 border-r border-[#E5E7EB] p-4 text-center">
-                      <p className="text-xs font-semibold text-[#6B7280]">
-                        {hour.toString().padStart(2, '0')}:00
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Device Rows */}
-              {filteredDevices.map(device => {
-                const deviceSlots = timeSlots.filter(s => s.deviceId === device.id);
-                
-                return (
-                  <div key={device.id} className="border-b border-[#E5E7EB] hover:bg-[#FAFAFA]">
-                    <div className="flex">
-                      {/* Device Info */}
-                      <div className="w-64 flex-shrink-0 border-r border-[#E5E7EB] p-4">
-                        <div className="flex items-start gap-3">
-                          <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                            device.status === 'online' 
-                              ? 'bg-[#D1FAE5]' 
-                              : device.status === 'syncing'
-                              ? 'bg-[#FEF3C7]'
-                              : 'bg-[#FEE2E2]'
-                          }`}>
-                            <Monitor className={`w-5 h-5 ${
-                              device.status === 'online' 
-                                ? 'text-[#16A34A]' 
-                                : device.status === 'syncing'
-                                ? 'text-[#F59E0B]'
-                                : 'text-[#DC2626]'
-                            }`} />
+        {/* View Content */}
+        {viewMode === 'day' ? (
+          <>
+            {/* Conditional: Show Empty State OR Scheduler Grid */}
+            {!screensLoaded ? (
+              <SchedulerEmptyState onOpenFilters={() => setFilterOpen(true)} />
+            ) : (
+              <>
+                {/* Scheduler Grid */}
+                <div className="flex-1 overflow-auto">
+                  <div className="min-w-max">
+                    {/* Time Header */}
+                    <div className="sticky top-0 z-10 bg-white border-b border-[#E5E7EB]">
+                      <div className="flex">
+                        <div className="w-64 flex-shrink-0 border-r border-[#E5E7EB] p-4">
+                          <p className="text-xs font-semibold text-[#6B7280] uppercase">Device / Time</p>
+                        </div>
+                        {hours.map(hour => (
+                          <div key={hour} className="w-32 flex-shrink-0 border-r border-[#E5E7EB] p-4 text-center">
+                            <p className="text-xs font-semibold text-[#6B7280]">
+                              {hour.toString().padStart(2, '0')}:00
+                            </p>
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-[#111827] truncate">{device.name}</p>
-                            <p className="text-xs text-[#6B7280] truncate">{device.location}</p>
-                            <div className="flex items-center gap-2 mt-1">
-                              <span className={`inline-block px-2 py-0.5 rounded-full text-[9px] font-medium ${
-                                device.status === 'online'
-                                  ? 'bg-[#D1FAE5] text-[#16A34A]'
-                                  : device.status === 'syncing'
-                                  ? 'bg-[#FEF3C7] text-[#F59E0B]'
-                                  : 'bg-[#FEE2E2] text-[#DC2626]'
-                              }`}>
-                                {device.status}
-                              </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Device Rows */}
+                    {filteredDevices.map(device => {
+                      const deviceSlots = timeSlots.filter(s => s.deviceId === device.id);
+                      
+                      return (
+                        <div key={device.id} className="border-b border-[#E5E7EB] hover:bg-[#FAFAFA]">
+                          <div className="flex">
+                            {/* Device Info */}
+                            <div className="w-64 flex-shrink-0 border-r border-[#E5E7EB] p-4">
+                              <div className="flex items-start gap-3">
+                                <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                                  device.status === 'online' 
+                                    ? 'bg-[#D1FAE5]' 
+                                    : device.status === 'syncing'
+                                    ? 'bg-[#FEF3C7]'
+                                    : 'bg-[#FEE2E2]'
+                                }`}>
+                                  <Monitor className={`w-5 h-5 ${
+                                    device.status === 'online' 
+                                      ? 'text-[#16A34A]' 
+                                      : device.status === 'syncing'
+                                      ? 'text-[#F59E0B]'
+                                      : 'text-[#DC2626]'
+                                  }`} />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-medium text-[#111827] truncate">{device.name}</p>
+                                  <p className="text-xs text-[#6B7280] truncate">{device.location}</p>
+                                  <div className="flex items-center gap-2 mt-1">
+                                    <span className={`inline-block px-2 py-0.5 rounded-full text-[9px] font-medium ${
+                                      device.status === 'online'
+                                        ? 'bg-[#D1FAE5] text-[#16A34A]'
+                                        : device.status === 'syncing'
+                                        ? 'bg-[#FEF3C7] text-[#F59E0B]'
+                                        : 'bg-[#FEE2E2] text-[#DC2626]'
+                                    }`}>
+                                      {device.status}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
                             </div>
+
+                            {/* Time Slots */}
+                            {hours.map(hour => {
+                              const slot = deviceSlots.find(s => s.hour === hour);
+                              if (!slot) return <div key={hour} className="w-32 border-r border-[#E5E7EB]" />;
+
+                              return (
+                                <button
+                                  key={slot.id}
+                                  onClick={() => handleSlotClick(slot, device)}
+                                  disabled={device.status === 'offline'}
+                                  className={`w-32 border-r border-[#E5E7EB] p-2 transition-all relative group ${
+                                    device.status === 'offline'
+                                      ? 'cursor-not-allowed opacity-50'
+                                      : 'hover:shadow-lg hover:z-10 cursor-pointer'
+                                  } ${
+                                    slot.status === 'open'
+                                      ? 'bg-[#D1FAE5] hover:bg-[#A7F3D0]'
+                                      : slot.status === 'partially-occupied'
+                                      ? 'bg-[#FEF3C7] hover:bg-[#FDE68A]'
+                                      : 'bg-[#FEE2E2] hover:bg-[#FECACA]'
+                                  }`}
+                                >
+                                  <div className="text-left">
+                                    {/* Pricing Tier Badge */}
+                                    {slot.pricingTier === 'peak' && (
+                                      <span className="inline-block px-1.5 py-0.5 bg-[#D9480F] text-white text-[9px] font-medium rounded mb-1">
+                                        PEAK
+                                      </span>
+                                    )}
+                                    
+                                    {/* Price */}
+                                    <p className="text-xs font-semibold text-[#111827] mb-1">
+                                      ${slot.price}
+                                    </p>
+
+                                    {/* Status */}
+                                    {slot.status === 'open' ? (
+                                      <p className="text-[10px] text-[#16A34A] font-medium">Open</p>
+                                    ) : (
+                                      <>
+                                        <p className="text-[10px] text-[#6B7280] truncate">
+                                          {slot.bookings[0]?.clientName}
+                                        </p>
+                                        <p className="text-[9px] text-[#9CA3AF] truncate">
+                                          {slot.bookings[0]?.mode === 'fixed' ? 'Fixed' : 'Stack'}
+                                        </p>
+                                      </>
+                                    )}
+
+                                    {/* Occupancy Bar */}
+                                    {slot.occupancy > 0 && (
+                                      <div className="mt-1 h-1 bg-[#E5E7EB] rounded-full overflow-hidden">
+                                        <div
+                                          className="h-full bg-[#DC2626]"
+                                          style={{ width: `${slot.occupancy}%` }}
+                                        />
+                                      </div>
+                                    )}
+                                  </div>
+
+                                  {/* Hover Tooltip */}
+                                  <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-3 py-2 bg-[#111827] text-white text-xs rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-20 pointer-events-none shadow-xl">
+                                    <div className="space-y-1">
+                                      <p className="font-semibold">{slot.startTime} - {slot.endTime}</p>
+                                      <p>Price: ${slot.price} {slot.pricingTier === 'peak' ? '(Peak)' : ''}</p>
+                                      {slot.bookings[0] ? (
+                                        <>
+                                          <p>Client: {slot.bookings[0].clientName}</p>
+                                          <p>Mode: {slot.bookings[0].mode === 'fixed' ? 'Fixed Target' : 'Stack/Random'}</p>
+                                          <p>Occupancy: {slot.occupancy}%</p>
+                                        </>
+                                      ) : (
+                                        <p className="text-[#16A34A]">Click to book</p>
+                                      )}
+                                    </div>
+                                    <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-[#111827]" />
+                                  </div>
+                                </button>
+                              );
+                            })}
                           </div>
                         </div>
-                      </div>
+                      );
+                    })}
+                  </div>
+                </div>
 
-                      {/* Time Slots */}
-                      {hours.map(hour => {
-                        const slot = deviceSlots.find(s => s.hour === hour);
-                        if (!slot) return <div key={hour} className="w-32 border-r border-[#E5E7EB]" />;
-
-                        return (
-                          <button
-                            key={slot.id}
-                            onClick={() => handleSlotClick(slot, device)}
-                            disabled={device.status === 'offline'}
-                            className={`w-32 border-r border-[#E5E7EB] p-2 transition-all relative group ${
-                              device.status === 'offline'
-                                ? 'cursor-not-allowed opacity-50'
-                                : 'hover:shadow-lg hover:z-10 cursor-pointer'
-                            } ${
-                              slot.status === 'open'
-                                ? 'bg-[#D1FAE5] hover:bg-[#A7F3D0]'
-                                : slot.status === 'partially-occupied'
-                                ? 'bg-[#FEF3C7] hover:bg-[#FDE68A]'
-                                : 'bg-[#FEE2E2] hover:bg-[#FECACA]'
-                            }`}
-                          >
-                            <div className="text-left">
-                              {/* Pricing Tier Badge */}
-                              {slot.pricingTier === 'peak' && (
-                                <span className="inline-block px-1.5 py-0.5 bg-[#D9480F] text-white text-[9px] font-medium rounded mb-1">
-                                  PEAK
-                                </span>
-                              )}
-                              
-                              {/* Price */}
-                              <p className="text-xs font-semibold text-[#111827] mb-1">
-                                ${slot.price}
-                              </p>
-
-                              {/* Status */}
-                              {slot.status === 'open' ? (
-                                <p className="text-[10px] text-[#16A34A] font-medium">Open</p>
-                              ) : (
-                                <>
-                                  <p className="text-[10px] text-[#6B7280] truncate">
-                                    {slot.bookings[0]?.clientName}
-                                  </p>
-                                  <p className="text-[9px] text-[#9CA3AF] truncate">
-                                    {slot.bookings[0]?.mode === 'fixed' ? 'Fixed' : 'Stack'}
-                                  </p>
-                                </>
-                              )}
-
-                              {/* Occupancy Bar */}
-                              {slot.occupancy > 0 && (
-                                <div className="mt-1 h-1 bg-[#E5E7EB] rounded-full overflow-hidden">
-                                  <div
-                                    className="h-full bg-[#DC2626]"
-                                    style={{ width: `${slot.occupancy}%` }}
-                                  />
-                                </div>
-                              )}
-                            </div>
-
-                            {/* Hover Tooltip */}
-                            <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-3 py-2 bg-[#111827] text-white text-xs rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-20 pointer-events-none shadow-xl">
-                              <div className="space-y-1">
-                                <p className="font-semibold">{slot.startTime} - {slot.endTime}</p>
-                                <p>Price: ${slot.price} {slot.pricingTier === 'peak' ? '(Peak)' : ''}</p>
-                                {slot.bookings[0] ? (
-                                  <>
-                                    <p>Client: {slot.bookings[0].clientName}</p>
-                                    <p>Mode: {slot.bookings[0].mode === 'fixed' ? 'Fixed Target' : 'Stack/Random'}</p>
-                                    <p>Occupancy: {slot.occupancy}%</p>
-                                  </>
-                                ) : (
-                                  <p className="text-[#16A34A]">Click to book</p>
-                                )}
-                              </div>
-                              <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-[#111827]" />
-                            </div>
-                          </button>
-                        );
-                      })}
+                {/* Legend */}
+                <div className="bg-white border-t border-[#E5E7EB] px-8 py-4">
+                  <div className="flex items-center justify-center gap-6">
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 bg-[#D1FAE5] border-2 border-[#16A34A] rounded" />
+                      <span className="text-sm text-[#6B7280]">Open Slot</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 bg-[#FEF3C7] border-2 border-[#F59E0B] rounded" />
+                      <span className="text-sm text-[#6B7280]">Partially Occupied</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 bg-[#FEE2E2] border-2 border-[#DC2626] rounded" />
+                      <span className="text-sm text-[#6B7280]">Fully Occupied</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="px-2 py-1 bg-[#D9480F] text-white text-xs font-medium rounded">PEAK</div>
+                      <span className="text-sm text-[#6B7280]">Peak Hours (Higher Rate)</span>
                     </div>
                   </div>
-                );
-              })}
-            </div>
-          </div>
+                </div>
 
-          {/* Legend */}
-          <div className="bg-white border-t border-[#E5E7EB] px-8 py-4">
-            <div className="flex items-center justify-center gap-6">
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 bg-[#D1FAE5] border-2 border-[#16A34A] rounded" />
-                <span className="text-sm text-[#6B7280]">Open Slot</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 bg-[#FEF3C7] border-2 border-[#F59E0B] rounded" />
-                <span className="text-sm text-[#6B7280]">Partially Occupied</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 bg-[#FEE2E2] border-2 border-[#DC2626] rounded" />
-                <span className="text-sm text-[#6B7280]">Fully Occupied</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="px-2 py-1 bg-[#D9480F] text-white text-xs font-medium rounded">PEAK</div>
-                <span className="text-sm text-[#6B7280]">Peak Hours (Higher Rate)</span>
-              </div>
-            </div>
-          </div>
+                {/* Booking Panel */}
+                {bookingSlot && (
+                  <BookingPanel
+                    slot={bookingSlot}
+                    onClose={() => setBookingSlot(null)}
+                    onBook={(booking) => {
+                      console.log('Booking created:', booking);
+                      setBookingSlot(null);
+                    }}
+                  />
+                )}
 
-          {/* Booking Panel */}
-          {bookingSlot && (
-            <BookingPanel
-              slot={bookingSlot}
-              onClose={() => setBookingSlot(null)}
-              onBook={(booking) => {
-                console.log('Booking created:', booking);
-                setBookingSlot(null);
-              }}
-            />
-          )}
+                {/* Multi-Device Booking Panel */}
+                {multiDeviceMode && selectedTimeSlot && selectedDevices.size > 0 && (
+                  <MultiDeviceBookingPanel
+                    devices={filteredDevices.filter(d => selectedDevices.has(d.id))}
+                    timeSlot={{
+                      hour: selectedTimeSlot.hour,
+                      date: selectedDate.toISOString().split('T')[0],
+                    }}
+                    onClose={() => {
+                      setSelectedTimeSlot(null);
+                      setSelectedDevices(new Set());
+                    }}
+                    onBook={(booking) => {
+                      console.log('Multi-device booking created:', booking);
+                      // In real app, this would create bookings for all selected devices
+                      setSelectedTimeSlot(null);
+                      setSelectedDevices(new Set());
+                      setMultiDeviceMode(false);
+                    }}
+                  />
+                )}
 
-          {/* Multi-Device Booking Panel */}
-          {multiDeviceMode && selectedTimeSlot && selectedDevices.size > 0 && (
-            <MultiDeviceBookingPanel
-              devices={filteredDevices.filter(d => selectedDevices.has(d.id))}
-              timeSlot={{
-                hour: selectedTimeSlot.hour,
-                date: selectedDate.toISOString().split('T')[0],
-              }}
+                {/* Booking Details Panel */}
+                {viewBookingSlot && (
+                  <BookingDetailsPanel
+                    booking={{
+                      id: viewBookingSlot.bookings[0]?.id || 'unknown',
+                      clientName: viewBookingSlot.bookings[0]?.clientName || 'Unknown Client',
+                      clientId: viewBookingSlot.bookings[0]?.clientId || 'unknown',
+                      contentType: viewBookingSlot.bookings[0]?.contentType || 'unknown',
+                      contentName: viewBookingSlot.bookings[0]?.contentName || 'Unknown Content',
+                      mediaCount: viewBookingSlot.bookings[0]?.mediaCount,
+                      deviceName: viewBookingSlot.deviceName || 'Unknown Device',
+                      deviceId: viewBookingSlot.deviceId || 'unknown',
+                      date: viewBookingSlot.date || selectedDate.toISOString().split('T')[0],
+                      timeSlot: `${viewBookingSlot.startTime} - ${viewBookingSlot.endTime}` || 'Unknown Time',
+                      playbackMode: viewBookingSlot.bookings[0]?.mode || 'unknown',
+                      stackDuration: viewBookingSlot.bookings[0]?.stackDuration,
+                      dateRange: viewBookingSlot.bookings[0]?.dateRange || { start: 'unknown', end: 'unknown' },
+                      occupancy: 0,
+                      status: viewBookingSlot.bookings[0]?.status || 'unknown',
+                      pop: viewBookingSlot.bookings[0]?.pop,
+                    }}
+                    onClose={() => setViewBookingSlot(null)}
+                    onEmergencyStop={(bookingId) => {
+                      console.log('Emergency stop booking:', bookingId);
+                      // In real app, this would call API to stop the ad immediately
+                      // and send command to hardware devices
+                    }}
+                  />
+                )}
+
+                {/* Slot Bookings Modal */}
+                {slotBookingsModal && (
+                  <SlotBookingsModal
+                    slot={slotBookingsModal}
+                    onClose={() => setSlotBookingsModal(null)}
+                    onBookingSelect={(booking) => {
+                      // Store the booking and show details panel
+                      setSelectedBooking(booking);
+                      setSlotBookingsModal(null);
+                    }}
+                    onBookRemaining={() => {
+                      // Open booking panel for remaining capacity
+                      setBookingSlot(slotBookingsModal);
+                      setSlotBookingsModal(null);
+                    }}
+                  />
+                )}
+
+                {/* Selected Booking Details Panel (from modal) */}
+                {selectedBooking && slotBookingsModal === null && (
+                  <BookingDetailsPanel
+                    booking={{
+                      id: selectedBooking.id,
+                      clientName: selectedBooking.clientName,
+                      clientId: selectedBooking.clientId,
+                      contentType: selectedBooking.contentType,
+                      contentName: selectedBooking.contentName,
+                      mediaCount: selectedBooking.mediaCount,
+                      deviceName: 'Device Name', // This would come from the slot
+                      deviceId: 'device-id',
+                      date: new Date().toISOString().split('T')[0],
+                      timeSlot: '00:00 - 01:00',
+                      playbackMode: selectedBooking.mode,
+                      stackDuration: selectedBooking.stackDuration,
+                      dateRange: selectedBooking.dateRange,
+                      occupancy: selectedBooking.occupancyPercent,
+                      status: selectedBooking.status,
+                      pop: selectedBooking.pop,
+                    }}
+                    onClose={() => setSelectedBooking(null)}
+                    onEmergencyStop={(bookingId) => {
+                      console.log('Emergency stop booking:', bookingId);
+                      setSelectedBooking(null);
+                    }}
+                  />
+                )}
+              </>
+            )}
+          </>
+        ) : (
+          <CalendarView
+            viewType={viewMode}
+            selectedDate={selectedDate}
+            setSelectedDate={setSelectedDate}
+            onSlotClick={handleCalendarSlotClick}
+          />
+        )}
+      </div>
+
+      {/* SmartFilterPanel - Rendered outside main container for proper fixed positioning */}
+      {filterOpen && (
+        <>
+          {/* Backdrop */}
+          <div 
+            className="fixed inset-0 bg-black/50 z-40"
+            onClick={() => {
+              console.log('Backdrop clicked, closing filter');
+              setFilterOpen(false);
+            }}
+          />
+          
+          {/* Slide-in Panel */}
+          <div className="fixed right-0 top-0 h-full z-50 animate-slide-in-right">
+            <SmartFilterPanel
               onClose={() => {
-                setSelectedTimeSlot(null);
-                setSelectedDevices(new Set());
+                console.log('Close button clicked');
+                setFilterOpen(false);
               }}
-              onBook={(booking) => {
-                console.log('Multi-device booking created:', booking);
-                // In real app, this would create bookings for all selected devices
-                setSelectedTimeSlot(null);
-                setSelectedDevices(new Set());
-                setMultiDeviceMode(false);
-              }}
+              onFiltersChange={handleFiltersChange}
             />
-          )}
-
-          {/* Filter Panel */}
-          {filterOpen && (
-            <>
-              {/* Backdrop */}
-              <div 
-                className="fixed inset-0 bg-black/50 z-40"
-                onClick={() => setFilterOpen(false)}
-              />
-              
-              {/* Slide-in Panel */}
-              <div className="fixed right-0 top-0 h-full w-96 bg-white shadow-2xl z-50 animate-slide-in-right">
-                <FilterPanel
-                  onClose={() => setFilterOpen(false)}
-                  onFiltersChange={handleFiltersChange}
-                />
-              </div>
-            </>
-          )}
-
-          {/* Booking Details Panel */}
-          {viewBookingSlot && (
-            <BookingDetailsPanel
-              booking={{
-                id: viewBookingSlot.bookings[0]?.id || 'unknown',
-                clientName: viewBookingSlot.bookings[0]?.clientName || 'Unknown Client',
-                clientId: viewBookingSlot.bookings[0]?.clientId || 'unknown',
-                contentType: viewBookingSlot.bookings[0]?.contentType || 'unknown',
-                contentName: viewBookingSlot.bookings[0]?.contentName || 'Unknown Content',
-                mediaCount: viewBookingSlot.bookings[0]?.mediaCount,
-                deviceName: viewBookingSlot.deviceName || 'Unknown Device',
-                deviceId: viewBookingSlot.deviceId || 'unknown',
-                date: viewBookingSlot.date || selectedDate.toISOString().split('T')[0],
-                timeSlot: `${viewBookingSlot.startTime} - ${viewBookingSlot.endTime}` || 'Unknown Time',
-                playbackMode: viewBookingSlot.bookings[0]?.mode || 'unknown',
-                stackDuration: viewBookingSlot.bookings[0]?.stackDuration,
-                dateRange: viewBookingSlot.bookings[0]?.dateRange || { start: 'unknown', end: 'unknown' },
-                occupancy: 0,
-                status: viewBookingSlot.bookings[0]?.status || 'unknown',
-                pop: viewBookingSlot.bookings[0]?.pop,
-              }}
-              onClose={() => setViewBookingSlot(null)}
-              onEmergencyStop={(bookingId) => {
-                console.log('Emergency stop booking:', bookingId);
-                // In real app, this would call API to stop the ad immediately
-                // and send command to hardware devices
-              }}
-            />
-          )}
-
-          {/* Slot Bookings Modal */}
-          {slotBookingsModal && (
-            <SlotBookingsModal
-              slot={slotBookingsModal}
-              onClose={() => setSlotBookingsModal(null)}
-              onBookingSelect={(booking) => {
-                // Store the booking and show details panel
-                setSelectedBooking(booking);
-                setSlotBookingsModal(null);
-              }}
-              onBookRemaining={() => {
-                // Open booking panel for remaining capacity
-                setBookingSlot(slotBookingsModal);
-                setSlotBookingsModal(null);
-              }}
-            />
-          )}
-
-          {/* Selected Booking Details Panel (from modal) */}
-          {selectedBooking && slotBookingsModal === null && (
-            <BookingDetailsPanel
-              booking={{
-                id: selectedBooking.id,
-                clientName: selectedBooking.clientName,
-                clientId: selectedBooking.clientId,
-                contentType: selectedBooking.contentType,
-                contentName: selectedBooking.contentName,
-                mediaCount: selectedBooking.mediaCount,
-                deviceName: 'Device Name', // This would come from the slot
-                deviceId: 'device-id',
-                date: new Date().toISOString().split('T')[0],
-                timeSlot: '00:00 - 01:00',
-                playbackMode: selectedBooking.mode,
-                stackDuration: selectedBooking.stackDuration,
-                dateRange: selectedBooking.dateRange,
-                occupancy: selectedBooking.occupancyPercent,
-                status: selectedBooking.status,
-                pop: selectedBooking.pop,
-              }}
-              onClose={() => setSelectedBooking(null)}
-              onEmergencyStop={(bookingId) => {
-                console.log('Emergency stop booking:', bookingId);
-                setSelectedBooking(null);
-              }}
-            />
-          )}
+          </div>
         </>
-      ) : (
-        <CalendarView
-          viewType={viewMode}
-          selectedDate={selectedDate}
-          setSelectedDate={setSelectedDate}
-          onSlotClick={handleCalendarSlotClick}
-        />
       )}
-    </div>
+    </>
   );
 }
 
