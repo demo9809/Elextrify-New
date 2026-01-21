@@ -137,9 +137,9 @@ export default function CreateBookingModal({ machine, onClose }: CreateBookingMo
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-end">
-      {/* Very light overlay */}
+      {/* Dark overlay */}
       <div 
-        className="absolute inset-0 bg-gray-900 bg-opacity-5" 
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm" 
         onClick={onClose}
       />
       
