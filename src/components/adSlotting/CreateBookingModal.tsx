@@ -31,11 +31,19 @@ const CAMPAIGN_DURATION_PRESETS = [
   { value: 365, label: '1 year' },
 ];
 
+const AD_DURATION_OPTIONS = [
+  { value: 5, label: '5 seconds' },
+  { value: 10, label: '10 seconds' },
+  { value: 15, label: '15 seconds' },
+  { value: 30, label: '30 seconds' },
+];
+
 export default function CreateBookingModal({ machine, onClose }: CreateBookingModalProps) {
   const [currentStep, setCurrentStep] = useState<Step>(1);
   const [selectedSlotTypes, setSelectedSlotTypes] = useState<('peak' | 'normal')[]>([]);
   const [selectedClient, setSelectedClient] = useState('');
   const [selectedMedia, setSelectedMedia] = useState('');
+  const [adDuration, setAdDuration] = useState(10); // Ad spot duration
   const [durationType, setDurationType] = useState<'preset' | 'custom'>('preset');
   const [campaignDuration, setCampaignDuration] = useState(30);
   const [startDate, setStartDate] = useState('');
@@ -314,6 +322,30 @@ export default function CreateBookingModal({ machine, onClose }: CreateBookingMo
 
               <div>
                 <label className="block text-gray-700 mb-3">
+                  Ad Spot Duration <span className="text-red-500">*</span>
+                </label>
+                <p className="text-sm text-gray-600 mb-3">
+                  How long should your ad play in each slot?
+                </p>
+                <div className="grid grid-cols-4 gap-3">
+                  {AD_DURATION_OPTIONS.map((duration) => (
+                    <button
+                      key={duration.value}
+                      onClick={() => setAdDuration(duration.value)}
+                      className={`h-11 rounded-lg border-2 transition-all font-medium ${
+                        adDuration === duration.value
+                          ? 'border-[#D9480F] bg-orange-50 text-[#D9480F]'
+                          : 'border-gray-300 text-gray-700 hover:border-gray-400'
+                      }`}
+                    >
+                      {duration.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-gray-700 mb-3">
                   Campaign Duration <span className="text-red-500">*</span>
                 </label>
 
@@ -442,6 +474,13 @@ export default function CreateBookingModal({ machine, onClose }: CreateBookingMo
                   <div className="text-sm text-gray-600 mb-1">Media Asset</div>
                   <div className="font-medium text-gray-900">
                     {MOCK_MEDIA.find((m) => m.id === selectedMedia)?.name}
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t border-gray-200">
+                  <div className="text-sm text-gray-600 mb-1">Ad Spot Duration</div>
+                  <div className="font-medium text-gray-900">
+                    {adDuration} seconds per play
                   </div>
                 </div>
 

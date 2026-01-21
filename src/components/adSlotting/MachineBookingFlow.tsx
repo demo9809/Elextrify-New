@@ -13,6 +13,7 @@ import {
   Plus,
   ChevronDown,
   CheckCircle2,
+  Calendar,
 } from 'lucide-react';
 import { SlotApplicability } from '../../types/adSlotting';
 import { mockMachines, mockSlotConfigurations } from '../../data/mockAdSlotting';
@@ -124,6 +125,12 @@ const mockClients: Client[] = [
   { id: 'cl-004', name: 'Apple Inc.' },
 ];
 
+const CAMPAIGN_DURATION_PRESETS = [
+  { value: 30, label: '30 days' },
+  { value: 90, label: '90 days' },
+  { value: 365, label: '1 year' },
+];
+
 interface SubSlot {
   position: number;
   startTime: string;
@@ -156,9 +163,11 @@ export default function MachineBookingFlow() {
   const [hoveredSlot, setHoveredSlot] = useState<number | null>(null);
   const [selectionError, setSelectionError] = useState<string | null>(null);
 
-  // Step 3: Dates
-  const [startDate, setStartDate] = useState('2025-01-21');
-  const [endDate, setEndDate] = useState('2025-03-31');
+  // Step 3: Duration Selection
+  const [durationType, setDurationType] = useState<'preset' | 'custom'>('preset');
+  const [campaignDuration, setCampaignDuration] = useState(30);
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
 
   const machine = mockMachines.find((m) => m.id === machineId);
 
@@ -319,9 +328,16 @@ export default function MachineBookingFlow() {
     ? selectedSlotGroup.length * (slotType === 'peak' ? activeConfig.pricing.peakPrice || 500 : activeConfig.pricing.normalPrice || 300)
     : 0;
 
-  const campaignDays = Math.ceil(
-    (new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24)
-  );
+  const calculateCampaignDays = () => {
+    if (durationType === 'preset') {
+      return campaignDuration;
+    } else if (startDate && endDate) {
+      return Math.ceil((new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24));
+    }
+    return 0;
+  };
+
+  const campaignDays = calculateCampaignDays();
 
   const filteredMedia = mockMediaLibrary.filter((m) => {
     const matchesSearch = m.name.toLowerCase().includes(mediaSearch.toLowerCase());
@@ -335,7 +351,8 @@ export default function MachineBookingFlow() {
 
   const canProceedFromStep1 = selectedClient !== null && selectedMedia !== null;
   const canProceedFromStep2 = selectedSlotGroup.length === requiredSlotCount;
-  const canSubmit = canProceedFromStep1 && canProceedFromStep2;
+  const canProceedFromStep3 = durationType === 'preset' || (startDate !== '' && endDate !== '' && new Date(endDate) > new Date(startDate));
+  const canSubmit = canProceedFromStep1 && canProceedFromStep2 && canProceedFromStep3;
 
   const handleSubmit = () => {
     if (!canSubmit) {
@@ -353,8 +370,11 @@ export default function MachineBookingFlow() {
       positions: selectedSlotGroup,
       clientId: selectedClient!.id,
       clientName: selectedClient!.name,
-      startDate,
-      endDate,
+      durationType,
+      campaignDuration: durationType === 'preset' ? campaignDuration : undefined,
+      startDate: durationType === 'custom' ? startDate : undefined,
+      endDate: durationType === 'custom' ? endDate : undefined,
+      campaignDays,
       totalCost,
     };
 
@@ -417,10 +437,24 @@ export default function MachineBookingFlow() {
               <div className={`flex items-center gap-3 ${currentStep >= 3 ? 'text-gray-900' : 'text-gray-400'}`}>
                 <div
                   className={`flex items-center justify-center w-6 h-6 rounded-full text-xs font-medium ${
-                    currentStep === 3 ? 'bg-[#D9480F] text-white' : 'bg-gray-200 text-gray-600'
+                    canProceedFromStep3
+                      ? 'bg-green-100 text-green-700'
+                      : currentStep === 3
+                      ? 'bg-[#D9480F] text-white'
+                      : 'bg-gray-200 text-gray-600'
                   }`}
                 >
-                  3
+                  {canProceedFromStep3 ? <Check className="w-3 h-3" /> : '3'}
+                </div>
+                <span className="text-sm font-medium">Select Duration</span>
+              </div>
+              <div className={`flex items-center gap-3 ${currentStep >= 4 ? 'text-gray-900' : 'text-gray-400'}`}>
+                <div
+                  className={`flex items-center justify-center w-6 h-6 rounded-full text-xs font-medium ${
+                    currentStep === 4 ? 'bg-[#D9480F] text-white' : 'bg-gray-200 text-gray-600'
+                  }`}
+                >
+                  4
                 </div>
                 <span className="text-sm font-medium">Review & Confirm</span>
               </div>
@@ -468,12 +502,26 @@ export default function MachineBookingFlow() {
                   </div>
                 )}
 
-                {totalCost > 0 && (
+                {campaignDays > 0 && (
+                  <div>
+                    <div className="text-xs text-gray-600 mb-1">Campaign Duration</div>
+                    <div className="text-sm font-medium text-gray-900">
+                      {durationType === 'preset' ? `${campaignDuration} days` : `${campaignDays} days`}
+                    </div>
+                    {durationType === 'custom' && startDate && endDate && (
+                      <div className="text-xs text-gray-500 mt-1">
+                        {startDate} to {endDate}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {totalCost > 0 && campaignDays > 0 && (
                   <div className="pt-3 border-t border-gray-300">
-                    <div className="text-xs text-gray-600 mb-1">Estimated Cost</div>
-                    <div className="text-xl font-semibold text-[#D9480F]">${totalCost.toLocaleString()}</div>
+                    <div className="text-xs text-gray-600 mb-1">Estimated Total Cost</div>
+                    <div className="text-xl font-semibold text-[#D9480F]">${(totalCost * campaignDays).toLocaleString()}</div>
                     <div className="text-xs text-gray-500 mt-1">
-                      {requiredSlotCount} slots × ${activeConfig?.pricing.peakPrice || activeConfig?.pricing.normalPrice}
+                      ${totalCost} × {campaignDays} days
                     </div>
                   </div>
                 )}
@@ -490,12 +538,14 @@ export default function MachineBookingFlow() {
           <h1 className="text-gray-900 mb-1">
             {currentStep === 1 && 'Step 1: Select Media'}
             {currentStep === 2 && 'Step 2: Choose Slot Positions'}
-            {currentStep === 3 && 'Step 3: Review & Confirm Booking'}
+            {currentStep === 3 && 'Step 3: Select Campaign Duration'}
+            {currentStep === 4 && 'Step 4: Review & Confirm Booking'}
           </h1>
           <p className="text-sm text-gray-600">
             {currentStep === 1 && 'Choose the client and creative you want to display'}
             {currentStep === 2 && 'Click any valid free slot to auto-select the sequence'}
-            {currentStep === 3 && 'Review all details before confirming'}
+            {currentStep === 3 && 'Set how long your campaign will run'}
+            {currentStep === 4 && 'Review all details before confirming'}
           </p>
         </div>
 
@@ -760,7 +810,7 @@ export default function MachineBookingFlow() {
                           </div>
                           <div className="text-right">
                             <div className="text-base font-semibold text-green-900">
-                              ${totalCost.toLocaleString()}
+                              ${totalCost.toLocaleString()}/day
                             </div>
                             <div className="text-xs text-green-700">
                               {requiredSlotCount} × ${activeConfig?.pricing.peakPrice || activeConfig?.pricing.normalPrice}
@@ -966,8 +1016,149 @@ export default function MachineBookingFlow() {
               </div>
             )}
 
-            {/* Step 3: Review & Confirm */}
+            {/* Step 3: Duration Selection */}
             {currentStep === 3 && (
+              <div className="space-y-6">
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3">
+                  <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                  <div className="text-sm text-blue-900">
+                    Select how long you want your campaign to run on this machine.
+                  </div>
+                </div>
+
+                {/* Duration Type Toggle */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                    Campaign Duration <span className="text-red-500">*</span>
+                  </label>
+                  
+                  <div className="flex gap-3 mb-4">
+                    <button
+                      onClick={() => setDurationType('preset')}
+                      className={`flex-1 h-12 rounded-lg border-2 transition-all font-medium flex items-center justify-center gap-2 ${
+                        durationType === 'preset'
+                          ? 'border-[#D9480F] bg-orange-50 text-[#D9480F]'
+                          : 'border-gray-300 text-gray-700 hover:border-gray-400'
+                      }`}
+                    >
+                      Quick Select
+                    </button>
+                    <button
+                      onClick={() => setDurationType('custom')}
+                      className={`flex-1 h-12 rounded-lg border-2 transition-all font-medium flex items-center justify-center gap-2 ${
+                        durationType === 'custom'
+                          ? 'border-[#D9480F] bg-orange-50 text-[#D9480F]'
+                          : 'border-gray-300 text-gray-700 hover:border-gray-400'
+                      }`}
+                    >
+                      <Calendar className="w-4 h-4" />
+                      Custom Dates
+                    </button>
+                  </div>
+
+                  {/* Preset Duration Options */}
+                  {durationType === 'preset' && (
+                    <div className="grid grid-cols-3 gap-4">
+                      {CAMPAIGN_DURATION_PRESETS.map((duration) => (
+                        <button
+                          key={duration.value}
+                          onClick={() => setCampaignDuration(duration.value)}
+                          className={`h-20 rounded-lg border-2 transition-all font-medium flex flex-col items-center justify-center ${
+                            campaignDuration === duration.value
+                              ? 'border-[#D9480F] bg-orange-50 text-[#D9480F]'
+                              : 'border-gray-300 text-gray-700 hover:border-gray-400'
+                          }`}
+                        >
+                          <div className="text-2xl font-semibold mb-1">
+                            {duration.value === 365 ? '1' : duration.value}
+                          </div>
+                          <div className="text-sm">
+                            {duration.value === 365 ? 'year' : 'days'}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Custom Date Range */}
+                  {durationType === 'custom' && (
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm text-gray-700 mb-2">
+                          Start Date <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="date"
+                          value={startDate}
+                          onChange={(e) => setStartDate(e.target.value)}
+                          min={new Date().toISOString().split('T')[0]}
+                          className="w-full h-11 px-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D9480F] focus:border-transparent"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm text-gray-700 mb-2">
+                          End Date <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="date"
+                          value={endDate}
+                          onChange={(e) => setEndDate(e.target.value)}
+                          min={startDate || new Date().toISOString().split('T')[0]}
+                          className="w-full h-11 px-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D9480F] focus:border-transparent"
+                        />
+                      </div>
+                      {startDate && endDate && new Date(endDate) > new Date(startDate) && (
+                        <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                          <div className="flex items-start gap-3">
+                            <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                            <div>
+                              <div className="text-sm font-medium text-green-900 mb-1">Campaign Duration Calculated</div>
+                              <div className="text-sm text-green-800">
+                                Your campaign will run for <span className="font-semibold">
+                                  {Math.ceil((new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24))} days
+                                </span>
+                              </div>
+                              <div className="text-xs text-green-700 mt-1">
+                                From {new Date(startDate).toLocaleDateString()} to {new Date(endDate).toLocaleDateString()}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Cost Preview */}
+                {totalCost > 0 && campaignDays > 0 && (
+                  <div className="bg-white border-2 border-[#D9480F] rounded-lg p-6">
+                    <div className="text-sm font-medium text-gray-700 mb-4">Campaign Cost Estimate</div>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-gray-600">Daily Rate</span>
+                        <span className="font-medium text-gray-900">${totalCost.toLocaleString()}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-gray-600">Campaign Duration</span>
+                        <span className="font-medium text-gray-900">× {campaignDays} days</span>
+                      </div>
+                      <div className="pt-3 border-t border-gray-300 flex items-center justify-between">
+                        <span className="text-base font-medium text-gray-900">Total Campaign Cost</span>
+                        <span className="text-2xl font-semibold text-[#D9480F]">
+                          ${(totalCost * campaignDays).toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="text-xs text-gray-600">
+                        {requiredSlotCount} slots × ${activeConfig?.pricing.peakPrice || activeConfig?.pricing.normalPrice} × {campaignDays} days
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Step 4: Review & Confirm */}
+            {currentStep === 4 && (
               <div className="space-y-6">
                 <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
                   <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
@@ -1027,17 +1218,52 @@ export default function MachineBookingFlow() {
                     </div>
 
                     <div>
-                      <div className="text-xs font-medium text-gray-700 mb-2">Client & Campaign</div>
+                      <div className="text-xs font-medium text-gray-700 mb-2">Campaign Duration</div>
+                      <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-gray-600">Duration Type</span>
+                            <span className="font-medium text-gray-900 capitalize">{durationType === 'preset' ? 'Quick Select' : 'Custom Dates'}</span>
+                          </div>
+                          {durationType === 'preset' ? (
+                            <div className="flex items-center justify-between text-sm">
+                              <span className="text-gray-600">Campaign Length</span>
+                              <span className="font-medium text-gray-900">{campaignDuration} days</span>
+                            </div>
+                          ) : (
+                            <>
+                              <div className="flex items-center justify-between text-sm">
+                                <span className="text-gray-600">Start Date</span>
+                                <span className="font-medium text-gray-900">{startDate}</span>
+                              </div>
+                              <div className="flex items-center justify-between text-sm">
+                                <span className="text-gray-600">End Date</span>
+                                <span className="font-medium text-gray-900">{endDate}</span>
+                              </div>
+                              <div className="flex items-center justify-between text-sm">
+                                <span className="text-gray-600">Total Days</span>
+                                <span className="font-medium text-gray-900">{campaignDays} days</span>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="text-xs font-medium text-gray-700 mb-2">Client & Machine</div>
                       <div className="space-y-2">
                         <div className="flex items-center justify-between text-sm">
                           <span className="text-gray-600">Client</span>
                           <span className="font-medium text-gray-900">{selectedClient?.name}</span>
                         </div>
                         <div className="flex items-center justify-between text-sm">
-                          <span className="text-gray-600">Duration</span>
-                          <span className="font-medium text-gray-900">
-                            {campaignDays} days ({startDate} to {endDate})
-                          </span>
+                          <span className="text-gray-600">Machine</span>
+                          <span className="font-medium text-gray-900">{machine.name}</span>
+                        </div>
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-gray-600">Location</span>
+                          <span className="font-medium text-gray-900">{machine.location.city} • {machine.location.venue}</span>
                         </div>
                       </div>
                     </div>
@@ -1057,17 +1283,21 @@ export default function MachineBookingFlow() {
                             <span className="font-medium text-gray-900">× {requiredSlotCount}</span>
                           </div>
                           <div className="flex items-center justify-between text-sm">
+                            <span className="text-gray-600">Daily Cost</span>
+                            <span className="font-medium text-gray-900">${totalCost.toLocaleString()}</span>
+                          </div>
+                          <div className="flex items-center justify-between text-sm">
                             <span className="text-gray-600">Campaign Duration</span>
                             <span className="font-medium text-gray-900">× {campaignDays} days</span>
                           </div>
                           <div className="pt-3 mt-3 border-t border-gray-300 flex items-center justify-between">
-                            <span className="text-base font-medium text-gray-900">Total Cost</span>
+                            <span className="text-base font-medium text-gray-900">Total Campaign Cost</span>
                             <span className="text-2xl font-semibold text-[#D9480F]">
-                              ${totalCost.toLocaleString()}
+                              ${(totalCost * campaignDays).toLocaleString()}
                             </span>
                           </div>
                           <div className="text-xs text-gray-600 text-right">
-                            ${activeConfig?.pricing.peakPrice || activeConfig?.pricing.normalPrice} × {requiredSlotCount} slots = ${totalCost}
+                            ${activeConfig?.pricing.peakPrice || activeConfig?.pricing.normalPrice} × {requiredSlotCount} slots × {campaignDays} days
                           </div>
                         </div>
                       </div>
@@ -1080,7 +1310,7 @@ export default function MachineBookingFlow() {
                   <div className="text-sm text-blue-900">
                     By confirming this booking, your {selectedMedia?.duration}s ad will play on{' '}
                     <strong>{machine.name}</strong> in positions <strong>{selectedSlotGroup.join(', ')}</strong> during{' '}
-                    <strong>{slotType}</strong> hours from <strong>{startDate}</strong> to <strong>{endDate}</strong>.
+                    <strong>{slotType}</strong> hours for <strong>{campaignDays} days</strong>.
                   </div>
                 </div>
               </div>
@@ -1102,7 +1332,7 @@ export default function MachineBookingFlow() {
           </button>
 
           <div className="flex items-center gap-3">
-            {currentStep < 3 ? (
+            {currentStep < 4 ? (
               <button
                 onClick={() => {
                   if (currentStep === 1 && !canProceedFromStep1) {
@@ -1111,6 +1341,18 @@ export default function MachineBookingFlow() {
                   }
                   if (currentStep === 2 && !canProceedFromStep2) {
                     toast.error('Please select slot positions to continue');
+                    return;
+                  }
+                  if (currentStep === 3 && !canProceedFromStep3) {
+                    if (durationType === 'custom' && (!startDate || !endDate)) {
+                      toast.error('Please select start and end dates');
+                      return;
+                    }
+                    if (durationType === 'custom' && new Date(endDate) <= new Date(startDate)) {
+                      toast.error('End date must be after start date');
+                      return;
+                    }
+                    toast.error('Please complete the duration selection');
                     return;
                   }
                   setCurrentStep(currentStep + 1);
