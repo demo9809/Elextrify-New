@@ -542,18 +542,11 @@ export default function InventoryOverview() {
                   {/* Actions */}
                   <div className="col-span-2 flex items-center gap-2">
                     <button
-                      onClick={() => handleCreateBooking(machine)}
-                      disabled={machine.status === 'offline'}
-                      className="flex items-center gap-2 px-3 h-9 bg-[#D9480F] text-white rounded-lg hover:bg-[#C03F0E] transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium flex-1 justify-center"
-                    >
-                      <Plus className="w-4 h-4" />
-                      <span>Book</span>
-                    </button>
-                    <button
                       onClick={() => handleViewDetails(machine)}
-                      className="flex items-center gap-1 px-3 h-9 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm"
+                      className="flex items-center gap-1 px-3 h-9 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm w-full justify-center"
                     >
-                      <Eye className="w-4 h-4" />
+                      <Eye className="w-4 h-4 mr-2" />
+                      View Details
                     </button>
                   </div>
                 </div>
