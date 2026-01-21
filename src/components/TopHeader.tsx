@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { Search, Bell, LogOut, User, CreditCard } from 'lucide-react';
 import NotificationModal from './notifications/NotificationModal';
 import { mockNotifications, getUnreadCount } from '../data/mockNotifications';

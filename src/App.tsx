@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BrowserRouter, Routes, Route, useLocation, useNavigate, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation, useNavigate, Navigate } from 'react-router';
 import { Toaster } from 'sonner@2.0.3';
 import { Sidebar } from './components/Sidebar';
 import { MobileNav } from './components/MobileNav';
@@ -13,6 +13,16 @@ import { WelcomeScreen } from './components/welcome/WelcomeScreen';
 import DashboardContainer from './components/operational-dashboard/DashboardContainer';
 import { CampaignHub } from './components/campaigns/CampaignHub';
 import { AdSlottingHub } from './components/ad-slotting/AdSlottingHub';
+import { AdSlottingModule } from './components/adSlotting';
+import AdsManager from './components/adSlotting/AdsManager';
+import SingleAdView from './components/adSlotting/SingleAdView';
+import LiveAdControlPlaceholder from './components/adSlotting/LiveAdControlPlaceholder';
+import AdReportsPlaceholder from './components/adSlotting/AdReportsPlaceholder';
+import InventoryOverviewPage from './components/adSlotting/InventoryOverviewPage';
+import SlotConfigurationPage from './components/adSlotting/SlotConfigurationPage';
+import MachineConfigurationPage from './components/adSlotting/MachineConfigurationPage';
+import MachineView from './components/adSlotting/MachineView';
+import MachineBookingFlow from './components/adSlotting/MachineBookingFlow';
 import { TerminalManagement } from './components/terminal/TerminalManagement';
 import { PlaylistManager } from './components/playlists/PlaylistManager';
 import { MediaManager } from './components/media/MediaManager';
@@ -74,7 +84,7 @@ import EnhancedNotificationsPage from './components/notifications/EnhancedNotifi
 import GlobalAlertBanner from './components/GlobalAlertBanner';
 import UILibrary from './components/UILibrary';
 
-type Page = 'welcome' | 'dashboard' | 'campaigns' | 'ad-slotting' | 'terminals' | 'playlists' | 'media' | 'customers' | 'proof-of-play' | 'ui-library' | 'tenants' | 'editions' | 'organization-units' | 'billing' | 'media-billing' | 'admin-billing' | 'admin-billing-overview' | 'admin-billing-subscriptions' | 'admin-billing-invoices' | 'admin-billing-payments' | 'admin-billing-revenue' | 'admin-billing-discounts' | 'admin-billing-audit' | 'settings' | 'settings-account' | 'settings-workspace' | 'settings-system' | 'settings-users' | 'settings-language' | 'settings-general' | 'settings-billing' | 'settings-integrations' | 'settings-notifications' | 'settings-security' | 'settings-email' | 'settings-api' | 'help-support' | 'documentation' | 'notifications';
+type Page = 'welcome' | 'dashboard' | 'campaigns' | 'ad-slotting' | 'ad-slotting-inventory' | 'ad-slotting-slot-config' | 'ad-slotting-machine-config' | 'ad-slotting-ads-manager' | 'ad-slotting-live-control' | 'ad-slotting-reports' | 'terminals' | 'playlists' | 'media' | 'customers' | 'proof-of-play' | 'ui-library' | 'tenants' | 'editions' | 'organization-units' | 'billing' | 'media-billing' | 'admin-billing' | 'admin-billing-overview' | 'admin-billing-subscriptions' | 'admin-billing-invoices' | 'admin-billing-payments' | 'admin-billing-revenue' | 'admin-billing-discounts' | 'admin-billing-audit' | 'settings' | 'settings-account' | 'settings-workspace' | 'settings-system' | 'settings-users' | 'settings-language' | 'settings-general' | 'settings-billing' | 'settings-integrations' | 'settings-notifications' | 'settings-security' | 'settings-email' | 'settings-api' | 'help-support' | 'documentation' | 'notifications';
 
 function AppContent() {
   const location = useLocation();
@@ -93,6 +103,13 @@ function AppContent() {
   const getCurrentPage = (): Page => {
     const path = location.pathname;
     if (path === '/dashboard') return 'dashboard';
+    // Ad Slotting sub-pages
+    if (path.includes('/ad-slotting/inventory')) return 'ad-slotting-inventory';
+    if (path.includes('/ad-slotting/slot-config')) return 'ad-slotting-slot-config';
+    if (path.includes('/ad-slotting/machine-config')) return 'ad-slotting-machine-config';
+    if (path.includes('/ad-slotting/ads-manager')) return 'ad-slotting-ads-manager';
+    if (path.includes('/ad-slotting/live-control')) return 'ad-slotting-live-control';
+    if (path.includes('/ad-slotting/reports')) return 'ad-slotting-reports';
     if (path.includes('/ad-slotting')) return 'ad-slotting';
     if (path.includes('/campaigns')) return 'campaigns';
     if (path.includes('/tenants')) return 'tenants';
@@ -145,7 +162,13 @@ function AppContent() {
       welcome: '/',
       dashboard: '/dashboard',
       campaigns: '/campaigns',
-      'ad-slotting': '/ad-slotting',
+      'ad-slotting': '/ad-slotting/inventory',
+      'ad-slotting-inventory': '/ad-slotting/inventory',
+      'ad-slotting-slot-config': '/ad-slotting/slot-config',
+      'ad-slotting-machine-config': '/ad-slotting/machine-config',
+      'ad-slotting-ads-manager': '/ad-slotting/ads-manager',
+      'ad-slotting-live-control': '/ad-slotting/live-control',
+      'ad-slotting-reports': '/ad-slotting/reports',
       terminals: '/terminals',
       playlists: '/playlists',
       media: '/media',
@@ -231,7 +254,16 @@ function AppContent() {
             <Route path="/" element={<WelcomeScreen onNavigate={(route) => navigate(route)} />} />
             <Route path="/dashboard" element={<DashboardContainer />} />
             <Route path="/campaigns" element={<CampaignHub />} />
-            <Route path="/ad-slotting" element={<AdSlottingHub />} />
+            <Route path="/ad-slotting" element={<InventoryOverviewPage />} />
+            <Route path="/ad-slotting/inventory" element={<InventoryOverviewPage />} />
+            <Route path="/ad-slotting/machines/:machineId" element={<MachineView />} />
+            <Route path="/ad-slotting/machines/:machineId/book" element={<MachineBookingFlow />} />
+            <Route path="/ad-slotting/slot-config" element={<SlotConfigurationPage />} />
+            <Route path="/ad-slotting/machine-config" element={<MachineConfigurationPage />} />
+            <Route path="/ad-slotting/ads-manager" element={<AdsManager />} />
+            <Route path="/ad-slotting/ads/:adId" element={<SingleAdView />} />
+            <Route path="/ad-slotting/live-control" element={<LiveAdControlPlaceholder />} />
+            <Route path="/ad-slotting/reports" element={<AdReportsPlaceholder />} />
             <Route path="/terminals" element={<TerminalManagement />} />
             <Route path="/playlists" element={<PlaylistManager />} />
             <Route path="/media" element={<MediaManager />} />

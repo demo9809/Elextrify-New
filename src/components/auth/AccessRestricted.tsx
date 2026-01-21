@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { ShieldOff, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 

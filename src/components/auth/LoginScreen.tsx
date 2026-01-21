@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAuth, UserRole } from '../../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { Shield, Users, ArrowRight } from 'lucide-react';
 
 export function LoginScreen() {

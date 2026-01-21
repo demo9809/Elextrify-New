@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { X, CreditCard, Target, Monitor, AlertCircle, Shield, ExternalLink, Check } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import {
   mockNotifications,
   getUnreadCount,

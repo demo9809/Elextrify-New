@@ -26,7 +26,11 @@ import {
   BookOpen,
   ShieldCheck,
   CheckCircle,
-  Palette
+  Palette,
+  Grid3x3,
+  Clock,
+  PlaySquare,
+  Sliders
 } from 'lucide-react';
 import React from 'react';
 import { useAuth } from '../contexts/AuthContext';
@@ -45,16 +49,26 @@ export function Sidebar({ activePage = 'welcome', onNavigate, isCollapsed = fals
   const [administrationExpanded, setAdministrationExpanded] = React.useState(false);
   const [billingExpanded, setBillingExpanded] = React.useState(false);
   const [hostAdminExpanded, setHostAdminExpanded] = React.useState(false);
+  const [adSlottingExpanded, setAdSlottingExpanded] = React.useState(false);
 
   // Primary Daily-Use Items (Top Section)
   const primaryMenuItems = [
     { id: 'welcome', label: 'Welcome', icon: Home },
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'customers', label: 'Customers', icon: Users },
-    { id: 'ad-slotting', label: 'Ad Slotting & Scheduling', icon: Target },
     { id: 'media', label: 'Media', icon: Film },
     { id: 'playlists', label: 'Playlists', icon: List },
     { id: 'terminals', label: 'Kiosk Management', icon: Monitor },
+  ];
+
+  // Ad Slotting Sub-Items
+  const adSlottingItems = [
+    { id: 'ad-slotting-inventory', label: 'Inventory Overview' },
+    { id: 'ad-slotting-slot-config', label: 'Slot Configuration' },
+    { id: 'ad-slotting-machine-config', label: 'Machine Configuration' },
+    { id: 'ad-slotting-ads-manager', label: 'Ads Manager' },
+    { id: 'ad-slotting-live-control', label: 'Live Ad Control' },
+    { id: 'ad-slotting-reports', label: 'Ad Reports' },
   ];
 
   // Media Billing (After First Divider)
@@ -103,6 +117,9 @@ export function Sidebar({ activePage = 'welcome', onNavigate, isCollapsed = fals
   // Check if current page is a host admin page
   const isHostAdminActive = activePage === 'tenants' || activePage === 'editions';
 
+  // Check if current page is an ad slotting page
+  const isAdSlottingActive = activePage === 'ad-slotting' || activePage?.startsWith('ad-slotting-');
+
   // Determine if user can see System section
   const canViewSystemSettings = userRole === 'saas-admin' || userRole === 'host-admin';
   
@@ -129,6 +146,13 @@ export function Sidebar({ activePage = 'welcome', onNavigate, isCollapsed = fals
       setHostAdminExpanded(true);
     }
   }, [isHostAdminActive, isCollapsed]);
+
+  // Auto-expand ad slotting if an ad slotting page is active
+  React.useEffect(() => {
+    if (isAdSlottingActive && !isCollapsed) {
+      setAdSlottingExpanded(true);
+    }
+  }, [isAdSlottingActive, isCollapsed]);
 
   // Reusable Menu Item Component
   const MenuItem = ({ item, isActive }: { item: any; isActive: boolean }) => {
@@ -226,6 +250,76 @@ export function Sidebar({ activePage = 'welcome', onNavigate, isCollapsed = fals
               {primaryMenuItems.map((item) => (
                 <MenuItem key={item.id} item={item} isActive={item.id === activePage} />
               ))}
+
+              {/* Ad Slotting & Scheduling (Collapsible Parent) */}
+              <div className="relative group">
+                <button
+                  onClick={() => {
+                    if (isCollapsed) {
+                      onNavigate?.('ad-slotting-inventory');
+                    } else {
+                      setAdSlottingExpanded(!adSlottingExpanded);
+                    }
+                  }}
+                  className={`
+                    w-full flex items-center rounded-lg transition-colors text-left
+                    ${isCollapsed ? 'justify-center px-0 py-3' : 'gap-3 px-4 py-2.5'}
+                    ${isAdSlottingActive 
+                      ? 'bg-[#FEF2F2] text-[#D9480F]' 
+                      : 'text-[#6B7280] hover:bg-[#F9FAFB]'
+                    }
+                    ${isAdSlottingActive && !isCollapsed ? 'border-l-4 border-[#D9480F] -ml-[4px] pl-[20px]' : ''}
+                  `}
+                  title={isCollapsed ? 'Ad Slotting & Scheduling' : undefined}
+                >
+                  <Target className={`w-5 h-5 ${ 
+                    isAdSlottingActive ? 'text-[#D9480F]' : 'text-[#6B7280]'
+                  }`} />
+                  {!isCollapsed && (
+                    <>
+                      <span className={`text-sm flex-1 ${isAdSlottingActive ? 'font-medium' : ''}`}>
+                        Ad Slotting & Scheduling
+                      </span>
+                      <ChevronDown className={`w-4 h-4 transition-transform ${
+                        adSlottingExpanded ? 'rotate-180' : ''
+                      } ${isAdSlottingActive ? 'text-[#D9480F]' : 'text-[#6B7280]'}`} />
+                    </>
+                  )}
+                </button>
+
+                {/* Tooltip for collapsed state */}
+                {isCollapsed && (
+                  <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-[#111827] text-white text-sm rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50 pointer-events-none">
+                    Ad Slotting & Scheduling
+                    <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-[#111827]"></div>
+                  </div>
+                )}
+
+                {/* Ad Slotting Submenu */}
+                {adSlottingExpanded && !isCollapsed && (
+                  <div className="mt-1 ml-4 pl-4 border-l-2 border-[#E5E7EB] space-y-1">
+                    {adSlottingItems.map((subItem) => {
+                      const isSubActive = activePage === subItem.id;
+                      
+                      return (
+                        <button
+                          key={subItem.id}
+                          onClick={() => onNavigate?.(subItem.id)}
+                          className={`
+                            w-full flex items-center gap-3 px-4 py-2 rounded-lg text-left text-sm transition-colors
+                            ${isSubActive 
+                              ? 'bg-[#FEF2F2] text-[#D9480F] font-medium' 
+                              : 'text-[#6B7280] hover:bg-[#F9FAFB]'
+                            }
+                          `}
+                        >
+                          {subItem.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
 
               {/* Divider 1 */}
               <MenuDivider />

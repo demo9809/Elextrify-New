@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { X, CreditCard, Calendar, CheckCircle, AlertCircle, Clock } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import {
   type SubscriptionInfo,
   getStatusMessage,
