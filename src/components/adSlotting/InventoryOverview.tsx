@@ -168,8 +168,8 @@ export default function InventoryOverview() {
 
       {/* Controls Bar */}
       <div className="bg-white rounded-lg border border-gray-200 p-4 mb-6">
-        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-          <div className="relative flex-1 max-w-md">
+        <div className="flex items-center gap-3">
+          <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               type="text"
@@ -179,16 +179,25 @@ export default function InventoryOverview() {
               className="w-full h-11 pl-10 pr-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D9480F] focus:border-transparent"
             />
           </div>
-          <button className="flex items-center gap-2 px-4 h-11 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors whitespace-nowrap">
+          <button className="flex items-center gap-2 px-4 h-11 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
             <Download className="w-4 h-4" />
             <span>Export Inventory</span>
           </button>
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center gap-2 px-4 h-11 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors whitespace-nowrap"
+            className={`flex items-center gap-2 px-4 h-11 rounded-lg transition-colors ${
+              activeFilterCount > 0
+                ? 'bg-[#D9480F] text-white hover:bg-[#C03F0E]'
+                : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+            }`}
           >
             <Filter className="w-4 h-4" />
             <span>Filters</span>
+            {activeFilterCount > 0 && (
+              <span className="ml-1 px-1.5 py-0.5 bg-white text-[#D9480F] text-xs font-semibold rounded">
+                {activeFilterCount}
+              </span>
+            )}
           </button>
         </div>
       </div>
@@ -428,10 +437,10 @@ export default function InventoryOverview() {
         <div className="border-b border-gray-200 bg-gray-50">
           <div className="grid grid-cols-12 gap-4 px-6 py-4">
             <div className="col-span-3 text-sm font-medium text-gray-900">Machine & Location</div>
-            <div className="col-span-1 text-sm font-medium text-gray-900 text-center">Status</div>
+            <div className="col-span-2 text-sm font-medium text-gray-900 text-center">Status</div>
             <div className="col-span-3 text-sm font-medium text-gray-900">Peak Slots</div>
             <div className="col-span-3 text-sm font-medium text-gray-900">Normal Slots</div>
-            <div className="col-span-2 text-sm font-medium text-gray-900">Actions</div>
+            <div className="col-span-1 text-sm font-medium text-gray-900 text-center">Actions</div>
           </div>
         </div>
 
@@ -456,7 +465,7 @@ export default function InventoryOverview() {
                   </div>
 
                   {/* Status */}
-                  <div className="col-span-1 flex justify-center">
+                  <div className="col-span-2 flex justify-center">
                     <span
                       className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getMachineStatusColor(
                         machine.status
@@ -541,7 +550,7 @@ export default function InventoryOverview() {
                   </div>
 
                   {/* Actions */}
-                  <div className="col-span-2 flex items-center justify-end gap-2">
+                  <div className="col-span-1 flex items-center justify-center">
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
