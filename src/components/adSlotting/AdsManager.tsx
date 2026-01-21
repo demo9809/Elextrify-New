@@ -299,11 +299,104 @@ const mockAdInstances: AdInstance[] = [
   },
 ];
 
+// Emergency Stop Modal Component
+function EmergencyStopModal({ 
+  ad, 
+  onClose, 
+  onConfirm 
+}: { 
+  ad: AdInstance; 
+  onClose: () => void; 
+  onConfirm: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={onClose}>
+      <div 
+        className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4" 
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[#E5E7EB]">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+              <AlertTriangle className="w-5 h-5 text-[#DC2626]" />
+            </div>
+            <h2 className="text-lg font-semibold text-[#111827]">Emergency Stop</h2>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-1 hover:bg-[#F9FAFB] rounded transition-colors"
+          >
+            <X className="w-5 h-5 text-[#6B7280]" />
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="px-6 py-4">
+          <p className="text-sm text-[#111827] mb-4">
+            Are you sure you want to immediately stop this ad? This action will:
+          </p>
+          <ul className="space-y-2 mb-4">
+            <li className="flex items-start gap-2 text-sm text-[#6B7280]">
+              <div className="w-1.5 h-1.5 rounded-full bg-[#6B7280] mt-1.5 flex-shrink-0" />
+              <span>Halt playback instantly on the hardware</span>
+            </li>
+            <li className="flex items-start gap-2 text-sm text-[#6B7280]">
+              <div className="w-1.5 h-1.5 rounded-full bg-[#6B7280] mt-1.5 flex-shrink-0" />
+              <span>Remove ad from the current loop rotation</span>
+            </li>
+            <li className="flex items-start gap-2 text-sm text-[#6B7280]">
+              <div className="w-1.5 h-1.5 rounded-full bg-[#6B7280] mt-1.5 flex-shrink-0" />
+              <span>Log the emergency stop event</span>
+            </li>
+          </ul>
+
+          {/* Ad Details */}
+          <div className="bg-[#F9FAFB] rounded-lg p-3 border border-[#E5E7EB]">
+            <div className="text-xs font-medium text-[#6B7280] mb-2">Stopping Ad:</div>
+            <div className="space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-[#6B7280]">Client</span>
+                <span className="text-xs font-medium text-[#111827]">{ad.clientName}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-[#6B7280]">Creative</span>
+                <span className="text-xs font-medium text-[#111827]">{ad.creativeName}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-[#6B7280]">Machine</span>
+                <span className="text-xs font-medium text-[#111827]">{ad.machineName}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="flex items-center justify-end gap-3 px-6 py-4 bg-[#F9FAFB] border-t border-[#E5E7EB] rounded-b-lg">
+          <button
+            onClick={onClose}
+            className="px-4 h-10 bg-white border border-[#E5E7EB] text-[#111827] rounded-lg hover:bg-gray-50 transition-colors font-medium"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            className="px-4 h-10 bg-[#DC2626] text-white rounded-lg hover:bg-[#B91C1C] transition-colors font-medium"
+          >
+            Emergency Stop
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function AdsManager() {
   const navigate = useNavigate();
 
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+  const [emergencyStopAd, setEmergencyStopAd] = useState<AdInstance | null>(null);
 
   // Filters
   const [searchQuery, setSearchQuery] = useState('');
@@ -376,8 +469,13 @@ export default function AdsManager() {
   };
 
   const handleEmergencyStop = (ad: AdInstance) => {
-    if (window.confirm(`Emergency stop for ${ad.creativeName} on ${ad.machineName}?\n\nThis will immediately halt playback.`)) {
+    setEmergencyStopAd(ad);
+  };
+
+  const confirmEmergencyStop = () => {
+    if (emergencyStopAd) {
       toast.success('Ad stopped immediately');
+      setEmergencyStopAd(null);
     }
   };
 
@@ -946,6 +1044,15 @@ export default function AdsManager() {
           )}
         </div>
       </div>
+
+      {/* Emergency Stop Modal */}
+      {emergencyStopAd && (
+        <EmergencyStopModal
+          ad={emergencyStopAd}
+          onClose={() => setEmergencyStopAd(null)}
+          onConfirm={confirmEmergencyStop}
+        />
+      )}
     </div>
   );
 }

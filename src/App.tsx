@@ -17,7 +17,7 @@ import { AdSlottingModule } from './components/adSlotting';
 import AdsManager from './components/adSlotting/AdsManager';
 import SingleAdView from './components/adSlotting/SingleAdView';
 import LiveAdControlPlaceholder from './components/adSlotting/LiveAdControlPlaceholder';
-import AdReportsPlaceholder from './components/adSlotting/AdReportsPlaceholder';
+import AdReports from './components/adSlotting/AdReports';
 import InventoryOverviewPage from './components/adSlotting/InventoryOverviewPage';
 import SlotConfigurationPage from './components/adSlotting/SlotConfigurationPage';
 import MachineConfigurationPage from './components/adSlotting/MachineConfigurationPage';
@@ -263,7 +263,7 @@ function AppContent() {
             <Route path="/ad-slotting/ads-manager" element={<AdsManager />} />
             <Route path="/ad-slotting/ads/:adId" element={<SingleAdView />} />
             <Route path="/ad-slotting/live-control" element={<LiveAdControlPlaceholder />} />
-            <Route path="/ad-slotting/reports" element={<AdReportsPlaceholder />} />
+            <Route path="/ad-slotting/ad-reports" element={<AdReports />} />
             <Route path="/terminals" element={<TerminalManagement />} />
             <Route path="/playlists" element={<PlaylistManager />} />
             <Route path="/media" element={<MediaManager />} />

@@ -67,8 +67,6 @@ export function Sidebar({ activePage = 'welcome', onNavigate, isCollapsed = fals
     { id: 'ad-slotting-slot-config', label: 'Slot Configuration' },
     { id: 'ad-slotting-machine-config', label: 'Machine Configuration' },
     { id: 'ad-slotting-ads-manager', label: 'Ads Manager' },
-    { id: 'ad-slotting-live-control', label: 'Live Ad Control' },
-    { id: 'ad-slotting-reports', label: 'Ad Reports' },
   ];
 
   // Media Billing (After First Divider)
