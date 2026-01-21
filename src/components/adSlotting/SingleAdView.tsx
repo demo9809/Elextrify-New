@@ -288,8 +288,8 @@ export default function SingleAdView() {
                         </div>
                         <div className="bg-[#D9480F] bg-opacity-10 rounded-lg p-3 border-2 border-[#D9480F]">
                           <div className="text-xs text-[#D9480F] mb-1">Your Ad</div>
-                          <div className="text-sm font-medium text-gray-900">{ad.clientName}</div>
-                          <div className="text-xs text-gray-700 truncate">{ad.creativeName}</div>
+                          <div className="text-sm font-medium text-[rgb(255,255,255)]">{ad.clientName}</div>
+                          <div className="text-xs text-[rgb(255,225,219)] truncate">{ad.creativeName}</div>
                         </div>
                         <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
                           <div className="text-xs text-gray-500 mb-1">After</div>

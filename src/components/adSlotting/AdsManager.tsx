@@ -17,6 +17,8 @@ import {
   Clock,
   Calendar,
   Eye,
+  MoreVertical,
+  Activity,
 } from 'lucide-react';
 import { toast } from 'sonner@2.0.3';
 
@@ -381,12 +383,12 @@ export default function AdsManager() {
 
   const getStatusColor = (status: AdStatus) => {
     switch (status) {
-      case 'running': return 'text-green-700 bg-green-50 border-green-200';
-      case 'scheduled': return 'text-blue-700 bg-blue-50 border-blue-200';
-      case 'paused': return 'text-yellow-700 bg-yellow-50 border-yellow-200';
-      case 'completed': return 'text-gray-700 bg-gray-50 border-gray-200';
-      case 'conflict': return 'text-red-700 bg-red-50 border-red-200';
-      default: return 'text-gray-700 bg-gray-50 border-gray-200';
+      case 'running': return 'text-[#16A34A] bg-green-50 border-green-200';
+      case 'scheduled': return 'text-[#3B82F6] bg-blue-50 border-blue-200';
+      case 'paused': return 'text-[#F59E0B] bg-yellow-50 border-yellow-200';
+      case 'completed': return 'text-[#6B7280] bg-gray-50 border-[#E5E7EB]';
+      case 'conflict': return 'text-[#DC2626] bg-red-50 border-red-200';
+      default: return 'text-[#6B7280] bg-gray-50 border-[#E5E7EB]';
     }
   };
 
@@ -422,36 +424,36 @@ export default function AdsManager() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
+    <div className="flex flex-col h-screen bg-[#F9FAFB]">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="flex items-center justify-between mb-4">
+      <div className="bg-white border-b border-[#E5E7EB] px-8 py-6">
+        <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-gray-900 mb-1">Ads Manager</h1>
-            <p className="text-sm text-gray-600">
+            <h1 className="text-[32px] leading-[38px] font-semibold text-[#111827] mb-2">Ads Manager</h1>
+            <p className="text-sm text-[#6B7280]">
               {filteredAds.length} ad instance{filteredAds.length !== 1 ? 's' : ''} • Real-time hardware state
             </p>
           </div>
           {selectedRows.length > 0 && (
-            <div className="flex items-center gap-3">
-              <span className="text-sm text-gray-600">{selectedRows.length} selected</span>
+            <div className="flex items-center gap-4">
+              <span className="text-sm text-[#6B7280]">{selectedRows.length} selected</span>
               <button
                 onClick={handleBulkPause}
-                className="flex items-center gap-2 px-4 h-9 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+                className="flex items-center gap-2 px-4 h-11 bg-white border border-[#E5E7EB] text-[#111827] rounded-lg hover:bg-[#F9FAFB] transition-colors font-medium"
               >
                 <Pause className="w-4 h-4" />
                 <span>Pause</span>
               </button>
               <button
                 onClick={handleBulkResume}
-                className="flex items-center gap-2 px-4 h-9 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+                className="flex items-center gap-2 px-4 h-11 bg-white border border-[#E5E7EB] text-[#111827] rounded-lg hover:bg-[#F9FAFB] transition-colors font-medium"
               >
                 <Play className="w-4 h-4" />
                 <span>Resume</span>
               </button>
               <button
                 onClick={() => setSelectedRows([])}
-                className="flex items-center gap-2 px-4 h-9 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+                className="flex items-center justify-center w-11 h-11 bg-white border border-[#E5E7EB] text-[#111827] rounded-lg hover:bg-[#F9FAFB] transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -460,29 +462,29 @@ export default function AdsManager() {
         </div>
 
         {/* Search and Filters */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B7280]" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search by client, creative, or machine..."
-              className="w-full h-10 pl-10 pr-4 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#D9480F] focus:border-transparent"
+              className="w-full h-11 pl-10 pr-4 border border-[#E5E7EB] rounded-md text-sm focus:ring-2 focus:ring-[#D9480F] focus:border-transparent bg-white"
             />
           </div>
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className={`flex items-center gap-2 px-4 h-10 rounded-lg text-sm font-medium transition-colors ${
+            className={`flex items-center gap-2 px-4 h-11 rounded-lg font-medium transition-colors ${
               showFilters
                 ? 'bg-[#D9480F] text-white'
-                : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+                : 'bg-white border border-[#E5E7EB] text-[#111827] hover:bg-[#F9FAFB]'
             }`}
           >
             <Filter className="w-4 h-4" />
             <span>Filters</span>
             {activeFilterCount > 0 && (
-              <span className="flex items-center justify-center w-5 h-5 rounded-full bg-white text-[#D9480F] text-xs font-semibold">
+              <span className="flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-white text-[#D9480F] text-xs font-semibold">
                 {activeFilterCount}
               </span>
             )}
@@ -491,14 +493,14 @@ export default function AdsManager() {
 
         {/* Filter Panel */}
         {showFilters && (
-          <div className="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-lg">
-            <div className="grid grid-cols-6 gap-3">
+          <div className="mt-6 p-6 bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg">
+            <div className="grid grid-cols-6 gap-4">
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Client</label>
+                <label className="block text-sm font-medium text-[#111827] mb-2">Client</label>
                 <select
                   value={filterClient}
                   onChange={(e) => setFilterClient(e.target.value)}
-                  className="w-full h-9 px-3 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#D9480F] focus:border-transparent"
+                  className="w-full h-11 px-3 border border-[#E5E7EB] rounded-md text-sm focus:ring-2 focus:ring-[#D9480F] focus:border-transparent bg-white"
                 >
                   <option value="">All</option>
                   {uniqueClients.map((client) => (
@@ -507,11 +509,11 @@ export default function AdsManager() {
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Machine</label>
+                <label className="block text-sm font-medium text-[#111827] mb-2">Machine</label>
                 <select
                   value={filterMachine}
                   onChange={(e) => setFilterMachine(e.target.value)}
-                  className="w-full h-9 px-3 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#D9480F] focus:border-transparent"
+                  className="w-full h-11 px-3 border border-[#E5E7EB] rounded-md text-sm focus:ring-2 focus:ring-[#D9480F] focus:border-transparent bg-white"
                 >
                   <option value="">All</option>
                   {uniqueMachines.map((machine) => (
@@ -520,11 +522,11 @@ export default function AdsManager() {
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Location</label>
+                <label className="block text-sm font-medium text-[#111827] mb-2">Location</label>
                 <select
                   value={filterLocation}
                   onChange={(e) => setFilterLocation(e.target.value)}
-                  className="w-full h-9 px-3 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#D9480F] focus:border-transparent"
+                  className="w-full h-11 px-3 border border-[#E5E7EB] rounded-md text-sm focus:ring-2 focus:ring-[#D9480F] focus:border-transparent bg-white"
                 >
                   <option value="">All</option>
                   {uniqueLocations.map((location) => (
@@ -533,11 +535,11 @@ export default function AdsManager() {
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Slot Type</label>
+                <label className="block text-sm font-medium text-[#111827] mb-2">Slot Type</label>
                 <select
                   value={filterSlotType}
                   onChange={(e) => setFilterSlotType(e.target.value as SlotType | '')}
-                  className="w-full h-9 px-3 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#D9480F] focus:border-transparent"
+                  className="w-full h-11 px-3 border border-[#E5E7EB] rounded-md text-sm focus:ring-2 focus:ring-[#D9480F] focus:border-transparent bg-white"
                 >
                   <option value="">All</option>
                   <option value="peak">Peak</option>
@@ -545,11 +547,11 @@ export default function AdsManager() {
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Media</label>
+                <label className="block text-sm font-medium text-[#111827] mb-2">Media</label>
                 <select
                   value={filterMediaType}
                   onChange={(e) => setFilterMediaType(e.target.value as MediaType | '')}
-                  className="w-full h-9 px-3 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#D9480F] focus:border-transparent"
+                  className="w-full h-11 px-3 border border-[#E5E7EB] rounded-md text-sm focus:ring-2 focus:ring-[#D9480F] focus:border-transparent bg-white"
                 >
                   <option value="">All</option>
                   <option value="video">Video</option>
@@ -557,11 +559,11 @@ export default function AdsManager() {
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Status</label>
+                <label className="block text-sm font-medium text-[#111827] mb-2">Status</label>
                 <select
                   value={filterStatus}
                   onChange={(e) => setFilterStatus(e.target.value as AdStatus | '')}
-                  className="w-full h-9 px-3 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#D9480F] focus:border-transparent"
+                  className="w-full h-11 px-3 border border-[#E5E7EB] rounded-md text-sm focus:ring-2 focus:ring-[#D9480F] focus:border-transparent bg-white"
                 >
                   <option value="">All</option>
                   <option value="running">Running</option>
@@ -573,11 +575,11 @@ export default function AdsManager() {
               </div>
             </div>
             {activeFilterCount > 0 && (
-              <div className="mt-3 flex items-center justify-between">
-                <span className="text-xs text-gray-600">{activeFilterCount} filter{activeFilterCount > 1 ? 's' : ''} active</span>
+              <div className="mt-4 flex items-center justify-between">
+                <span className="text-sm text-[#6B7280]">{activeFilterCount} filter{activeFilterCount > 1 ? 's' : ''} active</span>
                 <button
                   onClick={clearFilters}
-                  className="text-xs text-[#D9480F] hover:underline font-medium"
+                  className="text-sm text-[#D9480F] hover:underline font-medium"
                 >
                   Clear all filters
                 </button>
@@ -587,342 +589,362 @@ export default function AdsManager() {
         )}
       </div>
 
-      {/* Table - Reduced Visual Weight */}
-      <div className="flex-1 overflow-auto">
-        <table className="w-full border-collapse">
-          <thead className="bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
-            <tr>
-              <th className="w-10 px-3 py-3 text-left">
-                <input
-                  type="checkbox"
-                  checked={selectedRows.length === filteredAds.length && filteredAds.length > 0}
-                  onChange={handleSelectAll}
-                  className="w-4 h-4 text-[#D9480F] border-gray-300 rounded focus:ring-[#D9480F]"
-                />
-              </th>
-              <th className="w-8 px-3 py-3"></th>
-              <th className="px-3 py-3 text-left text-xs font-medium text-gray-700 uppercase">Client</th>
-              <th className="px-3 py-3 text-left text-xs font-medium text-gray-700 uppercase">Creative</th>
-              <th className="px-3 py-3 text-left text-xs font-medium text-gray-700 uppercase">Duration</th>
-              <th className="px-3 py-3 text-left text-xs font-medium text-gray-700 uppercase">Machine</th>
-              <th className="px-3 py-3 text-left text-xs font-medium text-gray-700 uppercase">Slot</th>
-              <th className="px-3 py-3 text-left text-xs font-medium text-gray-700 uppercase">Status</th>
-              <th className="px-3 py-3 text-left text-xs font-medium text-gray-700 uppercase">Performance</th>
-              <th className="sticky right-0 bg-gray-50 px-3 py-3 text-right text-xs font-medium text-gray-700 uppercase w-32">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white">
-            {filteredAds.map((ad) => {
-              const isExpanded = expandedRows.has(ad.id);
-              const isSelected = selectedRows.includes(ad.id);
+      {/* Table Container with Padding */}
+      <div className="flex-1 overflow-auto px-8 py-6">
+        <div className="bg-white rounded-lg border border-[#E5E7EB] overflow-hidden">
+          <table className="w-full border-collapse">
+            <thead className="bg-[#F9FAFB] border-b border-[#E5E7EB]">
+              <tr>
+                <th className="w-12 px-6 py-3 text-left">
+                  <input
+                    type="checkbox"
+                    checked={selectedRows.length === filteredAds.length && filteredAds.length > 0}
+                    onChange={handleSelectAll}
+                    className="w-4 h-4 text-[#D9480F] border-[#E5E7EB] rounded focus:ring-[#D9480F]"
+                  />
+                </th>
+                <th className="w-8 px-3 py-3"></th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#6B7280] uppercase">Client</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#6B7280] uppercase">Creative</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#6B7280] uppercase">Duration</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#6B7280] uppercase">Machine</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#6B7280] uppercase">Slot</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#6B7280] uppercase">Status</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#6B7280] uppercase">Performance</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-[#6B7280] uppercase">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-[#E5E7EB]">
+              {filteredAds.map((ad) => {
+                const isExpanded = expandedRows.has(ad.id);
+                const isSelected = selectedRows.includes(ad.id);
 
-              return (
-                <Fragment key={ad.id}>
-                  {/* Main Row - Lighter dividers */}
-                  <tr
-                    onClick={() => handleViewAd(ad.id)}
-                    className={`border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer ${
-                      isSelected ? 'bg-blue-50' : ''
-                    } ${ad.status === 'conflict' ? 'border-l-4 border-l-red-500' : ''}`}
-                  >
-                    {/* Checkbox */}
-                    <td className="px-3 py-3" onClick={(e) => e.stopPropagation()}>
-                      <input
-                        type="checkbox"
-                        checked={isSelected}
-                        onChange={() => handleSelectRow(ad.id)}
-                        className="w-4 h-4 text-[#D9480F] border-gray-300 rounded focus:ring-[#D9480F]"
-                      />
-                    </td>
+                return (
+                  <Fragment key={ad.id}>
+                    {/* Main Row */}
+                    <tr
+                      onClick={() => handleViewAd(ad.id)}
+                      className={`hover:bg-[#F9FAFB] transition-colors cursor-pointer ${
+                        isSelected ? 'bg-blue-50' : ''
+                      } ${ad.status === 'conflict' ? 'border-l-4 border-l-[#DC2626]' : ''}`}
+                    >
+                      {/* Checkbox */}
+                      <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => handleSelectRow(ad.id)}
+                          className="w-4 h-4 text-[#D9480F] border-[#E5E7EB] rounded focus:ring-[#D9480F]"
+                        />
+                      </td>
 
-                    {/* Expand Toggle */}
-                    <td className="px-3 py-3" onClick={(e) => e.stopPropagation()}>
-                      <button
-                        onClick={() => toggleRowExpanded(ad.id)}
-                        className="p-0.5 hover:bg-gray-200 rounded transition-colors"
-                      >
-                        {isExpanded ? (
-                          <ChevronDown className="w-4 h-4 text-gray-500" />
-                        ) : (
-                          <ChevronRight className="w-4 h-4 text-gray-500" />
-                        )}
-                      </button>
-                    </td>
-
-                    {/* Client */}
-                    <td className="px-3 py-3">
-                      <div className="flex items-center gap-2">
-                        <div className="text-sm font-medium text-gray-900">{ad.clientName}</div>
-                        {ad.clientBadge && (
-                          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-700">
-                            {ad.clientBadge}
-                          </span>
-                        )}
-                      </div>
-                    </td>
-
-                    {/* Creative */}
-                    <td className="px-3 py-3">
-                      <div className="flex items-center gap-2">
-                        <div className="w-10 h-8 bg-gray-100 rounded flex items-center justify-center flex-shrink-0">
-                          {ad.mediaType === 'video' ? (
-                            <Video className="w-4 h-4 text-gray-400" />
-                          ) : (
-                            <ImageIcon className="w-4 h-4 text-gray-400" />
-                          )}
-                        </div>
-                        <div className="min-w-0">
-                          <div className="text-sm font-medium text-gray-900 truncate max-w-xs">
-                            {ad.creativeName}
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-
-                    {/* Duration */}
-                    <td className="px-3 py-3">
-                      <div className="flex items-center gap-1.5">
-                        <span className={`text-sm font-medium ${ad.durationMismatch ? 'text-red-600' : 'text-gray-900'}`}>
-                          {ad.duration}s
-                        </span>
-                        {ad.durationMismatch && (
-                          <AlertTriangle className="w-4 h-4 text-red-500" />
-                        )}
-                      </div>
-                    </td>
-
-                    {/* Machine */}
-                    <td className="px-3 py-3">
-                      <div className="group relative">
-                        <div className="text-sm font-medium text-gray-900">{ad.machineName}</div>
-                        {ad.machineOffline && (
-                          <div className="text-xs text-red-600 mt-0.5">Offline</div>
-                        )}
-                        {/* Hover tooltip */}
-                        <div className="absolute left-0 top-full mt-1 hidden group-hover:block z-20 bg-gray-900 text-white text-xs rounded px-2 py-1 whitespace-nowrap">
-                          {ad.locationCity} • {ad.locationVenue}
-                        </div>
-                      </div>
-                    </td>
-
-                    {/* Slot Type */}
-                    <td className="px-3 py-3">
-                      <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${
-                        ad.slotType === 'peak'
-                          ? 'bg-orange-100 text-orange-700'
-                          : 'bg-gray-100 text-gray-700'
-                      }`}>
-                        {ad.slotType === 'peak' ? 'Peak' : 'Normal'}
-                      </span>
-                    </td>
-
-                    {/* Status */}
-                    <td className="px-3 py-3">
-                      <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium border ${getStatusColor(ad.status)}`}>
-                        {ad.status.charAt(0).toUpperCase() + ad.status.slice(1)}
-                      </span>
-                    </td>
-
-                    {/* Performance */}
-                    <td className="px-3 py-3">
-                      <div className="flex items-center gap-2">
-                        <div className={`w-2 h-2 rounded-full ${
-                          ad.deliveryHealth === 'healthy' ? 'bg-green-500' :
-                          ad.deliveryHealth === 'warning' ? 'bg-yellow-500' : 'bg-red-500'
-                        }`} />
-                        <span className="text-sm font-medium text-gray-900">{ad.playCount.toLocaleString()}</span>
-                      </div>
-                    </td>
-
-                    {/* Actions - Minimal, Essential Only */}
-                    <td className="sticky right-0 bg-white px-3 py-3" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex items-center justify-end gap-1">
+                      {/* Expand Toggle */}
+                      <td className="px-3 py-4" onClick={(e) => e.stopPropagation()}>
                         <button
-                          onClick={() => handleViewAd(ad.id)}
-                          className="p-1 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded transition-colors"
-                          title="View Ad"
+                          onClick={() => toggleRowExpanded(ad.id)}
+                          className="p-0.5 hover:bg-gray-200 rounded transition-colors"
                         >
-                          <Eye className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => handlePauseResume(ad)}
-                          className="p-1 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded transition-colors"
-                          title={ad.status === 'paused' ? 'Resume' : 'Pause'}
-                          disabled={ad.status === 'conflict' || ad.status === 'completed'}
-                        >
-                          {ad.status === 'paused' ? (
-                            <Play className="w-4 h-4" />
+                          {isExpanded ? (
+                            <ChevronDown className="w-4 h-4 text-[#6B7280]" />
                           ) : (
-                            <Pause className="w-4 h-4" />
+                            <ChevronRight className="w-4 h-4 text-[#6B7280]" />
                           )}
                         </button>
-                        {ad.status === 'running' && (
-                          <button
-                            onClick={() => handleEmergencyStop(ad)}
-                            className="p-1 text-red-600 hover:text-red-900 hover:bg-red-50 rounded transition-colors"
-                            title="Emergency Stop"
-                          >
-                            <StopCircle className="w-4 h-4" />
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
+                      </td>
 
-                  {/* Expanded Details Row - Context Only */}
-                  {isExpanded && (
-                    <tr className={`bg-gray-50 border-b border-gray-100 ${ad.status === 'conflict' ? 'border-l-4 border-l-red-500' : ''}`}>
-                      <td colSpan={10} className="px-3 py-4">
-                        <div className="grid grid-cols-3 gap-6 px-6">
-                          {/* Left Column - Context */}
-                          <div className="space-y-3">
-                            <div>
-                              <div className="text-xs font-medium text-gray-500 uppercase mb-1">Location</div>
-                              <div className="flex items-start gap-2">
-                                <MapPin className="w-3.5 h-3.5 text-gray-400 flex-shrink-0 mt-0.5" />
-                                <div>
-                                  <div className="text-sm text-gray-900">{ad.locationCity}</div>
-                                  <div className="text-xs text-gray-600">{ad.locationVenue}</div>
-                                </div>
-                              </div>
-                            </div>
+                      {/* Client */}
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          <div className="text-sm font-medium text-[#111827]">{ad.clientName}</div>
+                          {ad.clientBadge && (
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-700">
+                              {ad.clientBadge}
+                            </span>
+                          )}
+                        </div>
+                      </td>
 
-                            <div>
-                              <div className="text-xs font-medium text-gray-500 uppercase mb-1">Slot Positions</div>
-                              <div className="text-sm font-mono text-gray-900">
-                                {ad.slotPositions.length === 1
-                                  ? `Position ${ad.slotPositions[0]}`
-                                  : `Positions ${ad.slotPositions[0]}–${ad.slotPositions[ad.slotPositions.length - 1]}`}
-                              </div>
-                              <div className="text-xs text-gray-600 mt-0.5">
-                                {ad.slotPositions.length} × 10s in 120s loop
-                              </div>
-                            </div>
-
-                            <div>
-                              <div className="text-xs font-medium text-gray-500 uppercase mb-1">Time Window</div>
-                              <div className="flex items-center gap-2">
-                                <Clock className="w-3.5 h-3.5 text-gray-400" />
-                                <span className="text-sm font-mono text-gray-900">
-                                  {ad.timeWindowStart}–{ad.timeWindowEnd}
-                                </span>
-                              </div>
-                            </div>
-
-                            <div>
-                              <div className="text-xs font-medium text-gray-500 uppercase mb-1">Campaign Period</div>
-                              <div className="flex items-center gap-2">
-                                <Calendar className="w-3.5 h-3.5 text-gray-400" />
-                                <div className="text-sm text-gray-900">
-                                  {ad.startDate} to {ad.endDate}
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Middle Column - Loop Context */}
-                          <div>
-                            <div className="text-xs font-medium text-gray-500 uppercase mb-1">Loop Context</div>
-                            {ad.beforeAd && ad.afterAd ? (
-                              <div className="space-y-2">
-                                <div className="bg-white rounded p-2 border border-gray-200">
-                                  <div className="text-xs text-gray-500 mb-0.5">Before</div>
-                                  <div className="text-sm font-medium text-gray-900">{ad.beforeAd.clientName}</div>
-                                  <div className="text-xs text-gray-600 truncate">{ad.beforeAd.creativeName}</div>
-                                </div>
-                                <div className="bg-[#D9480F] bg-opacity-10 rounded p-2 border-2 border-[#D9480F]">
-                                  <div className="text-xs text-[#D9480F] mb-0.5">Your Ad</div>
-                                  <div className="text-sm font-medium text-gray-900">{ad.clientName}</div>
-                                  <div className="text-xs text-gray-700 truncate">{ad.creativeName}</div>
-                                </div>
-                                <div className="bg-white rounded p-2 border border-gray-200">
-                                  <div className="text-xs text-gray-500 mb-0.5">After</div>
-                                  <div className="text-sm font-medium text-gray-900">{ad.afterAd.clientName}</div>
-                                  <div className="text-xs text-gray-600 truncate">{ad.afterAd.creativeName}</div>
-                                </div>
-                              </div>
+                      {/* Creative */}
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          <div className="w-10 h-8 bg-[#F9FAFB] rounded flex items-center justify-center flex-shrink-0">
+                            {ad.mediaType === 'video' ? (
+                              <Video className="w-4 h-4 text-[#6B7280]" />
                             ) : (
-                              <div className="text-sm text-gray-500">Loop context not available</div>
+                              <ImageIcon className="w-4 h-4 text-[#6B7280]" />
                             )}
                           </div>
-
-                          {/* Right Column - Performance Summary */}
-                          <div className="space-y-3">
-                            <div>
-                              <div className="text-xs font-medium text-gray-500 uppercase mb-1">Performance Summary</div>
-                              <div className="space-y-2 text-sm">
-                                <div className="flex items-center justify-between">
-                                  <span className="text-gray-600">Total Plays</span>
-                                  <span className="font-medium text-gray-900">{ad.playCount.toLocaleString()}</span>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                  <span className="text-gray-600">Last Played</span>
-                                  <span className="font-medium text-gray-900">{formatLastPlayed(ad.lastPlayed)}</span>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                  <span className="text-gray-600">Health</span>
-                                  <span className={`font-medium capitalize ${
-                                    ad.deliveryHealth === 'healthy' ? 'text-green-600' :
-                                    ad.deliveryHealth === 'warning' ? 'text-yellow-600' : 'text-red-600'
-                                  }`}>
-                                    {ad.deliveryHealth}
-                                  </span>
-                                </div>
-                              </div>
+                          <div className="min-w-0">
+                            <div className="text-sm font-medium text-[#111827] truncate max-w-xs">
+                              {ad.creativeName}
                             </div>
-
-                            {ad.conflictReason && (
-                              <div className="bg-red-50 border border-red-200 rounded p-2">
-                                <div className="flex items-start gap-1.5">
-                                  <AlertTriangle className="w-3.5 h-3.5 text-red-600 flex-shrink-0 mt-0.5" />
-                                  <div className="text-xs text-red-800">{ad.conflictReason}</div>
-                                </div>
-                              </div>
-                            )}
-
-                            {/* Single CTA */}
-                            <button
-                              onClick={() => handleViewAd(ad.id)}
-                              className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-[#D9480F] text-white rounded-lg hover:bg-[#C13F0D] transition-colors text-sm font-medium"
-                            >
-                              <ExternalLink className="w-4 h-4" />
-                              <span>Open Ad Details</span>
-                            </button>
                           </div>
                         </div>
                       </td>
-                    </tr>
-                  )}
-                </Fragment>
-              );
-            })}
-          </tbody>
-        </table>
 
-        {filteredAds.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-16 px-4">
-            <Search className="w-12 h-12 text-gray-400 mb-4" />
-            <h3 className="text-gray-900 font-medium mb-2">No ad instances found</h3>
-            <p className="text-sm text-gray-600 text-center max-w-md">
-              {searchQuery || activeFilterCount > 0
-                ? 'Try adjusting your search or filters to find what you\'re looking for.'
-                : 'No ads are currently scheduled or running.'}
-            </p>
-            {(searchQuery || activeFilterCount > 0) && (
-              <button
-                onClick={() => {
-                  setSearchQuery('');
-                  clearFilters();
-                }}
-                className="mt-4 text-sm text-[#D9480F] hover:underline font-medium"
-              >
-                Clear all filters
-              </button>
-            )}
-          </div>
-        )}
+                      {/* Duration */}
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-1.5">
+                          <span className={`text-sm font-medium ${ad.durationMismatch ? 'text-[#DC2626]' : 'text-[#111827]'}`}>
+                            {ad.duration}s
+                          </span>
+                          {ad.durationMismatch && (
+                            <AlertTriangle className="w-4 h-4 text-[#DC2626]" />
+                          )}
+                        </div>
+                      </td>
+
+                      {/* Machine */}
+                      <td className="px-6 py-4">
+                        <div className="group relative">
+                          <div className="text-sm font-medium text-[#111827]">{ad.machineName}</div>
+                          {ad.machineOffline && (
+                            <div className="text-xs text-[#DC2626] mt-0.5">Offline</div>
+                          )}
+                          {/* Hover tooltip */}
+                          <div className="absolute left-0 top-full mt-1 hidden group-hover:block z-20 bg-[#111827] text-white text-xs rounded px-2 py-1 whitespace-nowrap">
+                            {ad.locationCity} • {ad.locationVenue}
+                          </div>
+                        </div>
+                      </td>
+
+                      {/* Slot Type */}
+                      <td className="px-6 py-4">
+                        <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${
+                          ad.slotType === 'peak'
+                            ? 'bg-orange-100 text-orange-700'
+                            : 'bg-gray-100 text-[#6B7280]'
+                        }`}>
+                          {ad.slotType === 'peak' ? 'Peak' : 'Normal'}
+                        </span>
+                      </td>
+
+                      {/* Status */}
+                      <td className="px-6 py-4">
+                        <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium border ${getStatusColor(ad.status)}`}>
+                          {ad.status.charAt(0).toUpperCase() + ad.status.slice(1)}
+                        </span>
+                      </td>
+
+                      {/* Performance */}
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          <div className={`w-2 h-2 rounded-full ${
+                            ad.deliveryHealth === 'healthy' ? 'bg-[#16A34A]' :
+                            ad.deliveryHealth === 'warning' ? 'bg-[#F59E0B]' : 'bg-[#DC2626]'
+                          }`} />
+                          <span className="text-sm font-medium text-[#111827]">{ad.playCount.toLocaleString()}</span>
+                        </div>
+                      </td>
+
+                      {/* Actions */}
+                      <td className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center justify-end gap-1">
+                          <button
+                            onClick={() => handleViewAd(ad.id)}
+                            className="p-1.5 text-[#6B7280] hover:text-[#111827] hover:bg-[#F9FAFB] rounded transition-colors"
+                            title="View Ad"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handlePauseResume(ad)}
+                            className="p-1.5 text-[#6B7280] hover:text-[#111827] hover:bg-[#F9FAFB] rounded transition-colors"
+                            title={ad.status === 'paused' ? 'Resume' : 'Pause'}
+                            disabled={ad.status === 'conflict' || ad.status === 'completed'}
+                          >
+                            {ad.status === 'paused' ? (
+                              <Play className="w-4 h-4" />
+                            ) : (
+                              <Pause className="w-4 h-4" />
+                            )}
+                          </button>
+                          {ad.status === 'running' && (
+                            <button
+                              onClick={() => handleEmergencyStop(ad)}
+                              className="p-1.5 text-[#DC2626] hover:text-[#DC2626] hover:bg-red-50 rounded transition-colors"
+                              title="Emergency Stop"
+                            >
+                              <StopCircle className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+
+                    {/* Expanded Details Row */}
+                    {isExpanded && (
+                      <tr className="bg-[#F9FAFB]">
+                        <td colSpan={10} className="px-6 py-3">
+                          <div className="pl-14">
+                            {/* Compact Grid */}
+                            <div className="grid grid-cols-4 gap-3">
+                              {/* Location */}
+                              <div className="bg-white rounded-md border border-[#E5E7EB] p-3">
+                                <div className="flex items-center gap-1.5 mb-2">
+                                  <MapPin className="w-3.5 h-3.5 text-blue-600" />
+                                  <span className="text-xs font-semibold text-[#111827]">Location</span>
+                                </div>
+                                <div className="text-xs font-medium text-[#111827]">{ad.locationCity}</div>
+                                <div className="text-xs text-[#6B7280]">{ad.locationVenue}</div>
+                              </div>
+
+                              {/* Schedule */}
+                              <div className="bg-white rounded-md border border-[#E5E7EB] p-3">
+                                <div className="flex items-center gap-1.5 mb-2">
+                                  <Calendar className="w-3.5 h-3.5 text-purple-600" />
+                                  <span className="text-xs font-semibold text-[#111827]">Schedule</span>
+                                </div>
+                                <div className="flex items-center gap-1 mb-1">
+                                  <Clock className="w-3 h-3 text-[#6B7280]" />
+                                  <span className="text-xs font-mono text-[#111827]">{ad.timeWindowStart} – {ad.timeWindowEnd}</span>
+                                </div>
+                                <div className="text-xs text-[#6B7280]">{ad.startDate} to {ad.endDate}</div>
+                              </div>
+
+                              {/* Slot Config */}
+                              <div className="bg-white rounded-md border border-[#E5E7EB] p-3">
+                                <div className="flex items-center gap-1.5 mb-2">
+                                  <span className="text-xs font-bold text-orange-600">#</span>
+                                  <span className="text-xs font-semibold text-[#111827]">Slot Config</span>
+                                </div>
+                                <div className="text-xs font-mono font-medium text-[#111827] mb-1">
+                                  {ad.slotPositions.length === 1
+                                    ? `Position ${ad.slotPositions[0]}`
+                                    : `Pos ${ad.slotPositions[0]}–${ad.slotPositions[ad.slotPositions.length - 1]}`}
+                                </div>
+                                <div className="text-xs text-[#6B7280]">
+                                  {ad.slotPositions.length * 10}s in 120s loop
+                                </div>
+                              </div>
+
+                              {/* Performance */}
+                              <div className="bg-white rounded-md border border-[#E5E7EB] p-3">
+                                <div className="flex items-center gap-1.5 mb-2">
+                                  <Activity className="w-3.5 h-3.5 text-green-600" />
+                                  <span className="text-xs font-semibold text-[#111827]">Performance</span>
+                                </div>
+                                <div className="flex items-center justify-between mb-1">
+                                  <span className="text-xs text-[#6B7280]">Plays</span>
+                                  <span className="text-xs font-bold text-[#111827]">{ad.playCount.toLocaleString()}</span>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                  <span className="text-xs text-[#6B7280]">Last</span>
+                                  <span className="text-xs text-[#111827]">{formatLastPlayed(ad.lastPlayed)}</span>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Playback Sequence - Only if available */}
+                            {ad.beforeAd && ad.afterAd && (
+                              <div className="mt-3 bg-white rounded-md border border-[#E5E7EB] p-3">
+                                <div className="flex items-center gap-1.5 mb-2">
+                                  <Play className="w-3.5 h-3.5 text-green-600" />
+                                  <span className="text-xs font-semibold text-[#111827]">Playback Sequence</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  {/* Before */}
+                                  <div className="flex-1 bg-[#F9FAFB] rounded px-2 py-1.5 border border-[#E5E7EB]">
+                                    <div className="text-xs text-[#6B7280] mb-0.5">1. Before</div>
+                                    <div className="text-xs font-medium text-[#111827] truncate">{ad.beforeAd.clientName}</div>
+                                  </div>
+                                  {/* Current */}
+                                  <div className="flex-1 bg-orange-50 rounded px-2 py-1.5 border-2 border-[#D9480F]">
+                                    <div className="text-xs text-[#D9480F] font-semibold mb-0.5">2. Your Ad</div>
+                                    <div className="text-xs font-medium text-[#111827] truncate">{ad.clientName}</div>
+                                  </div>
+                                  {/* After */}
+                                  <div className="flex-1 bg-[#F9FAFB] rounded px-2 py-1.5 border border-[#E5E7EB]">
+                                    <div className="text-xs text-[#6B7280] mb-0.5">3. After</div>
+                                    <div className="text-xs font-medium text-[#111827] truncate">{ad.afterAd.clientName}</div>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Error/Conflict - Only if exists */}
+                            {ad.conflictReason && (
+                              <div className="mt-3 bg-red-50 rounded-md border border-red-200 p-3">
+                                <div className="flex items-start gap-2">
+                                  <AlertTriangle className="w-3.5 h-3.5 text-[#DC2626] flex-shrink-0 mt-0.5" />
+                                  <div>
+                                    <div className="text-xs font-semibold text-[#DC2626] mb-1">Issue Detected</div>
+                                    <p className="text-xs text-[#DC2626] leading-relaxed">{ad.conflictReason}</p>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Quick Actions */}
+                            <div className="mt-3 flex items-center gap-2">
+                              <button
+                                onClick={() => handleViewAd(ad.id)}
+                                className="flex items-center gap-1.5 px-3 h-8 bg-[#D9480F] text-white rounded-md hover:bg-[#C13F0D] transition-colors text-xs font-medium"
+                              >
+                                <ExternalLink className="w-3.5 h-3.5" />
+                                <span>Full Details</span>
+                              </button>
+                              <button
+                                onClick={() => handlePauseResume(ad)}
+                                disabled={ad.status === 'conflict' || ad.status === 'completed'}
+                                className="flex items-center gap-1.5 px-3 h-8 bg-white border border-[#E5E7EB] text-[#111827] rounded-md hover:bg-[#F9FAFB] transition-colors text-xs font-medium disabled:opacity-50"
+                              >
+                                {ad.status === 'paused' ? (
+                                  <>
+                                    <Play className="w-3.5 h-3.5" />
+                                    <span>Resume</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Pause className="w-3.5 h-3.5" />
+                                    <span>Pause</span>
+                                  </>
+                                )}
+                              </button>
+                              {ad.status === 'running' && (
+                                <button
+                                  onClick={() => handleEmergencyStop(ad)}
+                                  className="flex items-center gap-1.5 px-3 h-8 bg-red-50 border border-red-200 text-[#DC2626] rounded-md hover:bg-red-100 transition-colors text-xs font-medium"
+                                >
+                                  <StopCircle className="w-3.5 h-3.5" />
+                                  <span>Emergency Stop</span>
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
+                );
+              })}
+            </tbody>
+          </table>
+
+          {/* Empty State */}
+          {filteredAds.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-16 px-4">
+              <Search className="w-12 h-12 text-[#6B7280] mb-4" />
+              <h3 className="text-[#111827] font-medium mb-2">No ad instances found</h3>
+              <p className="text-sm text-[#6B7280] text-center max-w-md">
+                {searchQuery || activeFilterCount > 0
+                  ? 'Try adjusting your search or filters to find what you\'re looking for.'
+                  : 'No ads are currently scheduled or running.'}
+              </p>
+              {(searchQuery || activeFilterCount > 0) && (
+                <button
+                  onClick={() => {
+                    setSearchQuery('');
+                    clearFilters();
+                  }}
+                  className="mt-4 text-sm text-[#D9480F] hover:underline font-medium"
+                >
+                  Clear all filters
+                </button>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

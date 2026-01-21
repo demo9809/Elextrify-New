@@ -104,7 +104,6 @@
     --color-yellow-200: oklch(.945 .129 101.54);
     --color-yellow-300: oklch(.905 .182 98.111);
     --color-yellow-400: oklch(.852 .199 91.936);
-    --color-yellow-500: oklch(.795 .184 86.047);
     --color-yellow-600: oklch(.681 .162 75.834);
     --color-yellow-700: oklch(.554 .135 66.442);
     --color-yellow-800: oklch(.476 .114 61.907);
@@ -2098,10 +2097,6 @@
     border-color: var(--color-blue-300);
   }
 
-  .border-gray-100 {
-    border-color: var(--color-gray-100);
-  }
-
   .border-gray-200 {
     border-color: var(--color-gray-200);
   }
@@ -2206,10 +2201,6 @@
 
   .border-l-\[\#F59E0B\] {
     border-left-color: #f59e0b;
-  }
-
-  .border-l-red-500 {
-    border-left-color: var(--color-red-500);
   }
 
   .border-l-transparent {
@@ -2532,10 +2523,6 @@
     background-color: var(--color-red-100);
   }
 
-  .bg-red-500 {
-    background-color: var(--color-red-500);
-  }
-
   .bg-red-600 {
     background-color: var(--color-red-600);
   }
@@ -2592,10 +2579,6 @@
 
   .bg-yellow-300 {
     background-color: var(--color-yellow-300);
-  }
-
-  .bg-yellow-500 {
-    background-color: var(--color-yellow-500);
   }
 
   .bg-gradient-to-b {
@@ -3027,6 +3010,10 @@
     padding-left: calc(var(--spacing) * 11);
   }
 
+  .pl-14 {
+    padding-left: calc(var(--spacing) * 14);
+  }
+
   .pl-\[20px\] {
     padding-left: 20px;
   }
@@ -3100,6 +3087,10 @@
     font-size: 10px;
   }
 
+  .text-\[32px\] {
+    font-size: 32px;
+  }
+
   .leading-5 {
     --tw-leading: calc(var(--spacing) * 5);
     line-height: calc(var(--spacing) * 5);
@@ -3108,6 +3099,11 @@
   .leading-7 {
     --tw-leading: calc(var(--spacing) * 7);
     line-height: calc(var(--spacing) * 7);
+  }
+
+  .leading-\[38px\] {
+    --tw-leading: 38px;
+    line-height: 38px;
   }
 
   .leading-relaxed {
@@ -3267,6 +3263,14 @@
 
   .text-\[\#F59E0B\] {
     color: #f59e0b;
+  }
+
+  .text-\[rgb\(255\,225\,219\)\] {
+    color: #ffe1db;
+  }
+
+  .text-\[rgb\(255\,255\,255\)\] {
+    color: #fff;
   }
 
   .text-amber-600 {
@@ -4138,6 +4142,12 @@
   }
 
   @media (hover: hover) {
+    .hover\:bg-red-100:hover {
+      background-color: var(--color-red-100);
+    }
+  }
+
+  @media (hover: hover) {
     .hover\:bg-red-700:hover {
       background-color: var(--color-red-700);
     }
@@ -4254,12 +4264,6 @@
   @media (hover: hover) {
     .hover\:text-red-600:hover {
       color: var(--color-red-600);
-    }
-  }
-
-  @media (hover: hover) {
-    .hover\:text-red-900:hover {
-      color: var(--color-red-900);
     }
   }
 
