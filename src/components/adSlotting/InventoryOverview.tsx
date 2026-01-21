@@ -444,11 +444,12 @@ export default function InventoryOverview() {
               return (
                 <div
                   key={machine.id}
-                  className="grid grid-cols-12 gap-4 px-6 py-5 hover:bg-gray-50 transition-colors items-center"
+                  onClick={() => handleViewDetails(machine)}
+                  className="grid grid-cols-12 gap-4 px-6 py-5 hover:bg-gray-50 transition-colors items-center cursor-pointer group"
                 >
                   {/* Machine & Location */}
                   <div className="col-span-3">
-                    <div className="font-medium text-gray-900 mb-1">{machine.name}</div>
+                    <div className="font-medium text-gray-900 mb-1 group-hover:text-[#D9480F] transition-colors">{machine.name}</div>
                     <div className="text-sm text-gray-600">
                       {machine.location.city} • {machine.location.venue}
                     </div>
@@ -540,13 +541,16 @@ export default function InventoryOverview() {
                   </div>
 
                   {/* Actions */}
-                  <div className="col-span-2 flex items-center gap-2">
+                  <div className="col-span-2 flex items-center justify-end gap-2">
                     <button
-                      onClick={() => handleViewDetails(machine)}
-                      className="flex items-center gap-1 px-3 h-9 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm w-full justify-center"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleViewDetails(machine);
+                      }}
+                      className="p-2 text-gray-400 hover:text-[#D9480F] hover:bg-orange-50 rounded-full transition-colors"
+                      title="View Details"
                     >
-                      <Eye className="w-4 h-4 mr-2" />
-                      View Details
+                      <Eye className="w-5 h-5" />
                     </button>
                   </div>
                 </div>
