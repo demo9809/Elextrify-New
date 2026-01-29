@@ -7,6 +7,8 @@ import { toast } from 'sonner@2.0.3';
 interface SlotConfigurationModalProps {
   config: SlotConfiguration | null;
   machineId?: string;
+  groupId?: string;
+  groupName?: string;
   onClose: () => void;
 }
 
@@ -16,6 +18,8 @@ const SUGGESTED_LOOP_DURATIONS = [120, 180, 240];
 export default function SlotConfigurationModal({
   config,
   machineId: propMachineId,
+  groupId,
+  groupName,
   onClose,
 }: SlotConfigurationModalProps) {
   const [name, setName] = useState(config?.name || '');
@@ -36,8 +40,8 @@ export default function SlotConfigurationModal({
       return;
     }
 
-    if (!machineId) {
-      toast.error('Please select a machine');
+    if (!machineId && !groupId) {
+      toast.error('No group selected');
       return;
     }
 
@@ -74,7 +78,7 @@ export default function SlotConfigurationModal({
               {config ? 'Edit Slot Configuration' : 'Create Slot Configuration'}
             </h3>
             <p className="text-sm text-gray-600 mt-1">
-              Define how ad inventory is structured and priced
+              {groupName ? `For ${groupName}` : 'Define how ad inventory is structured and priced'}
             </p>
           </div>
           <button
@@ -84,6 +88,18 @@ export default function SlotConfigurationModal({
             <X className="w-5 h-5" />
           </button>
         </div>
+
+        {/* Group Scope Notice */}
+        {groupId && groupName && (
+          <div className="px-6 pt-4 pb-0">
+            <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-amber-800">
+                This configuration will apply to all devices in <strong>{groupName}</strong>.
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6">
@@ -175,7 +191,7 @@ export default function SlotConfigurationModal({
                   />
                 </div>
 
-                <div>
+                {/* <div>
                   <label className="block text-gray-700 mb-2">
                     Select Machine <span className="text-red-500">*</span>
                   </label>
@@ -195,7 +211,7 @@ export default function SlotConfigurationModal({
                     <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
                     <span>Changing slot structure requires no active bookings on this machine</span>
                   </div>
-                </div>
+                </div> */}
               </div>
             </div>
 

@@ -1,5 +1,6 @@
 import {
   Machine,
+  MachineGroup,
   SlotConfiguration,
   Booking,
   InventoryAvailability,
@@ -7,10 +8,56 @@ import {
   AvailabilityStatus,
 } from '../types/adSlotting';
 
+export const mockMachineGroups: MachineGroup[] = [
+  {
+    id: 'grp-001',
+    name: 'Mall Group - Times Square',
+    description: 'Premium mall locations in Times Square area',
+    machineIds: ['mch-001', 'mch-009', 'mch-010', 'mch-011', 'mch-012', 'mch-013', 'mch-014', 'mch-015', 'mch-016', 'mch-017', 'mch-018'],
+  },
+  {
+    id: 'grp-002',
+    name: 'Airport Group - LAX',
+    description: 'Los Angeles International Airport terminals',
+    machineIds: ['mch-002'],
+  },
+  {
+    id: 'grp-003',
+    name: 'Transit Hub Group - Chicago',
+    description: 'Major transit stations in Chicago',
+    machineIds: ['mch-003', 'mch-007'],
+  },
+  {
+    id: 'grp-004',
+    name: 'Mall Group - San Francisco',
+    description: 'Shopping centers in downtown SF',
+    machineIds: ['mch-004'],
+  },
+  {
+    id: 'grp-005',
+    name: 'Public Spaces - New York',
+    description: 'Parks and public areas in NYC',
+    machineIds: ['mch-005'],
+  },
+  {
+    id: 'grp-006',
+    name: 'Beach & Tourism - Miami',
+    description: 'Tourist hotspots in Miami Beach',
+    machineIds: ['mch-006'],
+  },
+  {
+    id: 'grp-007',
+    name: 'Entertainment District - Las Vegas',
+    description: 'Las Vegas Strip premium locations',
+    machineIds: ['mch-008'],
+  },
+];
+
 export const mockMachines: Machine[] = [
   {
     id: 'mch-001',
     name: 'Times Square Billboard A',
+    groupId: 'grp-001',
     location: {
       city: 'New York',
       venue: 'Times Square Mall',
@@ -28,6 +75,7 @@ export const mockMachines: Machine[] = [
   {
     id: 'mch-002',
     name: 'LAX Terminal 3 Screen',
+    groupId: 'grp-002',
     location: {
       city: 'Los Angeles',
       venue: 'LAX Airport - Terminal 3',
@@ -45,6 +93,7 @@ export const mockMachines: Machine[] = [
   {
     id: 'mch-003',
     name: 'Union Station Display',
+    groupId: 'grp-003',
     location: {
       city: 'Chicago',
       venue: 'Union Station',
@@ -62,6 +111,7 @@ export const mockMachines: Machine[] = [
   {
     id: 'mch-004',
     name: 'Downtown Mall Kiosk 1',
+    groupId: 'grp-004',
     location: {
       city: 'San Francisco',
       venue: 'Downtown Shopping Center',
@@ -79,6 +129,7 @@ export const mockMachines: Machine[] = [
   {
     id: 'mch-005',
     name: 'Central Park Screen',
+    groupId: 'grp-005',
     location: {
       city: 'New York',
       venue: 'Central Park Entrance',
@@ -88,14 +139,12 @@ export const mockMachines: Machine[] = [
       start: '07:00',
       end: '21:00',
     },
-    peakWindows: [
-      { id: 'pw-009', startTime: '10:00', endTime: '12:00' },
-      { id: 'pw-010', startTime: '15:00', endTime: '18:00' },
-    ],
+    peakWindows: [],  // No peak windows configured
   },
   {
     id: 'mch-006',
     name: 'Miami Beach Boardwalk',
+    groupId: 'grp-006',
     location: {
       city: 'Miami',
       venue: 'South Beach Boardwalk',
@@ -113,6 +162,7 @@ export const mockMachines: Machine[] = [
   {
     id: 'mch-007',
     name: 'Seattle Transit Hub',
+    groupId: 'grp-003',
     location: {
       city: 'Seattle',
       venue: 'Downtown Transit Center',
@@ -130,6 +180,7 @@ export const mockMachines: Machine[] = [
   {
     id: 'mch-008',
     name: 'Vegas Strip Display A',
+    groupId: 'grp-007',
     location: {
       city: 'Las Vegas',
       venue: 'Las Vegas Strip',
@@ -141,6 +192,186 @@ export const mockMachines: Machine[] = [
     },
     peakWindows: [
       { id: 'pw-015', startTime: '20:00', endTime: '24:00' },
+    ],
+  },
+  {
+    id: 'mch-009',
+    name: 'Times Square Billboard B',
+    groupId: 'grp-001',
+    location: {
+      city: 'New York',
+      venue: 'Times Square Mall',
+    },
+    status: 'online',
+    operatingHours: {
+      start: '06:00',
+      end: '23:00',
+    },
+    peakWindows: [
+      { id: 'pw-016', startTime: '09:00', endTime: '10:00' },
+      { id: 'pw-017', startTime: '17:00', endTime: '19:00' },
+    ],
+  },
+  {
+    id: 'mch-010',
+    name: 'Times Square Billboard C',
+    groupId: 'grp-001',
+    location: {
+      city: 'New York',
+      venue: 'Times Square Mall',
+    },
+    status: 'online',
+    operatingHours: {
+      start: '06:00',
+      end: '23:00',
+    },
+    peakWindows: [
+      { id: 'pw-018', startTime: '09:00', endTime: '10:00' },
+      { id: 'pw-019', startTime: '17:00', endTime: '19:00' },
+    ],
+  },
+  {
+    id: 'mch-011',
+    name: 'Times Square Billboard D',
+    groupId: 'grp-001',
+    location: {
+      city: 'New York',
+      venue: 'Times Square Mall',
+    },
+    status: 'syncing',
+    operatingHours: {
+      start: '06:00',
+      end: '23:00',
+    },
+    peakWindows: [
+      { id: 'pw-020', startTime: '09:00', endTime: '10:00' },
+      { id: 'pw-021', startTime: '17:00', endTime: '19:00' },
+    ],
+  },
+  {
+    id: 'mch-012',
+    name: 'Times Square Billboard E',
+    groupId: 'grp-001',
+    location: {
+      city: 'New York',
+      venue: 'Times Square Mall',
+    },
+    status: 'online',
+    operatingHours: {
+      start: '06:00',
+      end: '23:00',
+    },
+    peakWindows: [
+      { id: 'pw-022', startTime: '09:00', endTime: '10:00' },
+      { id: 'pw-023', startTime: '17:00', endTime: '19:00' },
+    ],
+  },
+  {
+    id: 'mch-013',
+    name: 'Times Square Billboard F',
+    groupId: 'grp-001',
+    location: {
+      city: 'New York',
+      venue: 'Times Square Mall',
+    },
+    status: 'online',
+    operatingHours: {
+      start: '06:00',
+      end: '23:00',
+    },
+    peakWindows: [
+      { id: 'pw-024', startTime: '09:00', endTime: '10:00' },
+      { id: 'pw-025', startTime: '17:00', endTime: '19:00' },
+    ],
+  },
+  {
+    id: 'mch-014',
+    name: 'Times Square Billboard G',
+    groupId: 'grp-001',
+    location: {
+      city: 'New York',
+      venue: 'Times Square Mall',
+    },
+    status: 'online',
+    operatingHours: {
+      start: '06:00',
+      end: '23:00',
+    },
+    peakWindows: [
+      { id: 'pw-026', startTime: '09:00', endTime: '10:00' },
+      { id: 'pw-027', startTime: '17:00', endTime: '19:00' },
+    ],
+  },
+  {
+    id: 'mch-015',
+    name: 'Times Square Billboard H',
+    groupId: 'grp-001',
+    location: {
+      city: 'New York',
+      venue: 'Times Square Mall',
+    },
+    status: 'online',
+    operatingHours: {
+      start: '06:00',
+      end: '23:00',
+    },
+    peakWindows: [
+      { id: 'pw-028', startTime: '09:00', endTime: '10:00' },
+      { id: 'pw-029', startTime: '17:00', endTime: '19:00' },
+    ],
+  },
+  {
+    id: 'mch-016',
+    name: 'Times Square Billboard I',
+    groupId: 'grp-001',
+    location: {
+      city: 'New York',
+      venue: 'Times Square Mall',
+    },
+    status: 'offline',
+    operatingHours: {
+      start: '06:00',
+      end: '23:00',
+    },
+    peakWindows: [
+      { id: 'pw-030', startTime: '09:00', endTime: '10:00' },
+      { id: 'pw-031', startTime: '17:00', endTime: '19:00' },
+    ],
+  },
+  {
+    id: 'mch-017',
+    name: 'Times Square Billboard J',
+    groupId: 'grp-001',
+    location: {
+      city: 'New York',
+      venue: 'Times Square Mall',
+    },
+    status: 'online',
+    operatingHours: {
+      start: '06:00',
+      end: '23:00',
+    },
+    peakWindows: [
+      { id: 'pw-032', startTime: '09:00', endTime: '10:00' },
+      { id: 'pw-033', startTime: '17:00', endTime: '19:00' },
+    ],
+  },
+  {
+    id: 'mch-018',
+    name: 'Times Square Billboard K',
+    groupId: 'grp-001',
+    location: {
+      city: 'New York',
+      venue: 'Times Square Mall',
+    },
+    status: 'online',
+    operatingHours: {
+      start: '06:00',
+      end: '23:00',
+    },
+    peakWindows: [
+      { id: 'pw-034', startTime: '09:00', endTime: '10:00' },
+      { id: 'pw-035', startTime: '17:00', endTime: '19:00' },
     ],
   },
 ];

@@ -23,6 +23,7 @@ import SlotConfigurationPage from './components/adSlotting/SlotConfigurationPage
 import MachineConfigurationPage from './components/adSlotting/MachineConfigurationPage';
 import MachineView from './components/adSlotting/MachineView';
 import MachineBookingFlow from './components/adSlotting/MachineBookingFlow';
+import GroupDetailPage from './components/adSlotting/GroupDetailPage';
 import { TerminalManagement } from './components/terminal/TerminalManagement';
 import { PlaylistManager } from './components/playlists/PlaylistManager';
 import { MediaManager } from './components/media/MediaManager';
@@ -264,6 +265,7 @@ function AppContent() {
             <Route path="/ad-slotting/ads/:adId" element={<SingleAdView />} />
             <Route path="/ad-slotting/live-control" element={<LiveAdControlPlaceholder />} />
             <Route path="/ad-slotting/ad-reports" element={<AdReports />} />
+            <Route path="/ad-slotting/groups/:groupId" element={<GroupDetailPage />} />
             <Route path="/terminals" element={<TerminalManagement />} />
             <Route path="/playlists" element={<PlaylistManager />} />
             <Route path="/media" element={<MediaManager />} />

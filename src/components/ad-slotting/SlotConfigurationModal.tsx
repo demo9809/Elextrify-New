@@ -1,30 +1,24 @@
 import { useState } from 'react';
-import { X, AlertCircle, Check, Monitor } from 'lucide-react';
+import { X, AlertCircle, Check, Info } from 'lucide-react';
 import { toast } from 'sonner@2.0.3';
 
 interface SlotConfigurationModalProps {
   onClose: () => void;
   onSave: (config: any) => void;
   editingConfig?: any;
+  groupId: string;
+  groupName: string;
 }
 
 const ALLOWED_SUBSLOT_DURATIONS = [5, 10, 15, 30, 60];
 
-export function SlotConfigurationModal({ onClose, onSave, editingConfig }: SlotConfigurationModalProps) {
+export function SlotConfigurationModal({ onClose, onSave, editingConfig, groupId, groupName }: SlotConfigurationModalProps) {
   const [name, setName] = useState(editingConfig?.name || '');
   const [masterSlotDuration, setMasterSlotDuration] = useState(editingConfig?.masterSlotDuration || 120);
   const [subSlotDuration, setSubSlotDuration] = useState(editingConfig?.subSlotDuration || 10);
   const [peakPrice, setPeakPrice] = useState(editingConfig?.peakPrice || 15);
   const [nonPeakPrice, setNonPeakPrice] = useState(editingConfig?.nonPeakPrice || 8);
-  const [selectedDevices, setSelectedDevices] = useState<string[]>(editingConfig?.deviceIds || []);
-
-  const MOCK_DEVICES = [
-    { id: 'd1', name: 'Mall Central - Screen A', location: 'NYC, NY' },
-    { id: 'd2', name: 'Airport Terminal 1', location: 'LAX, CA' },
-    { id: 'd3', name: 'Transit Hub Main', location: 'Chicago, IL' },
-    { id: 'd4', name: 'Gym Entrance Screen', location: 'Miami, FL' },
-    { id: 'd5', name: 'Retail Store Display', location: 'NYC, NY' },
-  ];
+  const [configType, setConfigType] = useState<'peak' | 'normal'>(editingConfig?.type || 'normal');
 
   // Validation
   const isValidDivision = masterSlotDuration % subSlotDuration === 0;
@@ -34,16 +28,7 @@ export function SlotConfigurationModal({ onClose, onSave, editingConfig }: SlotC
     name.trim() !== '' &&
     masterSlotDuration >= subSlotDuration &&
     isValidDivision &&
-    isValidPricing &&
-    selectedDevices.length > 0;
-
-  const toggleDevice = (deviceId: string) => {
-    setSelectedDevices(prev =>
-      prev.includes(deviceId)
-        ? prev.filter(id => id !== deviceId)
-        : [...prev, deviceId]
-    );
-  };
+    isValidPricing;
 
   const handleSave = () => {
     if (!isValidForm) return;
@@ -56,9 +41,9 @@ export function SlotConfigurationModal({ onClose, onSave, editingConfig }: SlotC
       subSlotCount,
       peakPrice,
       nonPeakPrice,
-      deviceIds: selectedDevices,
-      deviceCount: selectedDevices.length,
+      groupId,
       status: 'active' as const,
+      type: configType,
     };
 
     onSave(config);
@@ -81,7 +66,7 @@ export function SlotConfigurationModal({ onClose, onSave, editingConfig }: SlotC
                 {editingConfig ? 'Edit Slot Configuration' : 'New Slot Configuration'}
               </h2>
               <p className="text-sm text-[#6B7280] mt-1">
-                Define master slot duration, sub-slot divisions, and pricing tiers
+                Configure slot architecture for <span className="font-medium text-[#111827]">{groupName}</span>
               </p>
             </div>
             <button
@@ -95,6 +80,17 @@ export function SlotConfigurationModal({ onClose, onSave, editingConfig }: SlotC
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
+          {/* Group Scope Notice */}
+          <div className="flex items-start gap-3 p-4 bg-orange-50 border border-[#D9480F] rounded-lg">
+            <Info className="w-5 h-5 text-[#D9480F] flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-semibold text-[#111827] mb-1">Group-Level Configuration</p>
+              <p className="text-sm text-[#6B7280]">
+                This configuration will apply to all devices in the selected group. All devices will share the same slot structure, loop logic, and pricing.
+              </p>
+            </div>
+          </div>
+
           {/* Configuration Name */}
           <div>
             <label className="block text-sm font-semibold text-[#111827] mb-2">
@@ -104,15 +100,46 @@ export function SlotConfigurationModal({ onClose, onSave, editingConfig }: SlotC
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g., Mall Standard Loop"
+              placeholder="e.g., Peak Hours Loop"
               className="w-full h-11 px-4 bg-white border border-[#E5E7EB] rounded-lg text-sm"
             />
           </div>
 
-          {/* Master Slot Duration */}
+          {/* Configuration Type */}
           <div>
             <label className="block text-sm font-semibold text-[#111827] mb-2">
-              Master Slot Duration (seconds) <span className="text-[#DC2626]">*</span>
+              Configuration Type <span className="text-[#DC2626]">*</span>
+            </label>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => setConfigType('peak')}
+                className={`h-16 rounded-lg border-2 transition-all ${
+                  configType === 'peak'
+                    ? 'bg-orange-50 border-[#D9480F]'
+                    : 'bg-white border-[#E5E7EB] hover:border-[#D9480F]'
+                }`}
+              >
+                <div className="text-sm font-medium text-[#111827]">Group Peak Hours</div>
+                <div className="text-xs text-[#6B7280] mt-1">High traffic periods</div>
+              </button>
+              <button
+                onClick={() => setConfigType('normal')}
+                className={`h-16 rounded-lg border-2 transition-all ${
+                  configType === 'normal'
+                    ? 'bg-blue-50 border-[#3B82F6]'
+                    : 'bg-white border-[#E5E7EB] hover:border-[#3B82F6]'
+                }`}
+              >
+                <div className="text-sm font-medium text-[#111827]">Group Normal Hours</div>
+                <div className="text-xs text-[#6B7280] mt-1">Standard operating hours</div>
+              </button>
+            </div>
+          </div>
+
+          {/* Loop Duration (Master Slot) */}
+          <div>
+            <label className="block text-sm font-semibold text-[#111827] mb-2">
+              Loop Duration (seconds) <span className="text-[#DC2626]">*</span>
             </label>
             <input
               type="number"
@@ -123,7 +150,7 @@ export function SlotConfigurationModal({ onClose, onSave, editingConfig }: SlotC
               className="w-full h-11 px-4 bg-white border border-[#E5E7EB] rounded-lg text-sm"
             />
             <p className="text-xs text-[#6B7280] mt-1">
-              {Math.floor(masterSlotDuration / 60)}m {masterSlotDuration % 60}s total duration per cycle
+              {Math.floor(masterSlotDuration / 60)}m {masterSlotDuration % 60}s - How long before the loop repeats
             </p>
           </div>
 
@@ -147,6 +174,9 @@ export function SlotConfigurationModal({ onClose, onSave, editingConfig }: SlotC
                 </button>
               ))}
             </div>
+            <p className="text-xs text-[#6B7280] mt-1">
+              Duration of each bookable position in the loop
+            </p>
           </div>
 
           {/* Division Validation */}
@@ -156,7 +186,7 @@ export function SlotConfigurationModal({ onClose, onSave, editingConfig }: SlotC
               <div>
                 <p className="text-sm font-medium text-[#DC2626]">Invalid Division</p>
                 <p className="text-xs text-[#DC2626] mt-1">
-                  Master slot duration ({masterSlotDuration}s) must be evenly divisible by sub-slot duration ({subSlotDuration}s)
+                  Loop duration ({masterSlotDuration}s) must be evenly divisible by sub-slot duration ({subSlotDuration}s)
                 </p>
               </div>
             </div>
@@ -168,7 +198,7 @@ export function SlotConfigurationModal({ onClose, onSave, editingConfig }: SlotC
               <div>
                 <p className="text-sm font-medium text-[#16A34A]">Valid Configuration</p>
                 <p className="text-xs text-[#16A34A] mt-1">
-                  This creates {subSlotCount} sub-slots of {subSlotDuration}s each
+                  This creates {subSlotCount} bookable positions of {subSlotDuration}s each
                 </p>
               </div>
             </div>
@@ -178,7 +208,7 @@ export function SlotConfigurationModal({ onClose, onSave, editingConfig }: SlotC
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-semibold text-[#111827] mb-2">
-                Peak Price (per sub-slot) <span className="text-[#DC2626]">*</span>
+                Peak Price (per position) <span className="text-[#DC2626]">*</span>
               </label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6B7280]">$</span>
@@ -194,7 +224,7 @@ export function SlotConfigurationModal({ onClose, onSave, editingConfig }: SlotC
             </div>
             <div>
               <label className="block text-sm font-semibold text-[#111827] mb-2">
-                Non-Peak Price (per sub-slot) <span className="text-[#DC2626]">*</span>
+                Normal Price (per position) <span className="text-[#DC2626]">*</span>
               </label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6B7280]">$</span>
@@ -216,62 +246,20 @@ export function SlotConfigurationModal({ onClose, onSave, editingConfig }: SlotC
               <div>
                 <p className="text-sm font-medium text-[#F59E0B]">Pricing Warning</p>
                 <p className="text-xs text-[#F59E0B] mt-1">
-                  Peak price should be higher than non-peak price
+                  Peak price should be higher than normal price
                 </p>
               </div>
             </div>
           )}
-
-          {/* Device Selection */}
-          <div>
-            <label className="block text-sm font-semibold text-[#111827] mb-2">
-              Apply to Devices <span className="text-[#DC2626]">*</span>
-            </label>
-            <p className="text-xs text-[#6B7280] mb-3">
-              Select which devices will use this slot configuration
-            </p>
-            <div className="space-y-2">
-              {MOCK_DEVICES.map(device => {
-                const isSelected = selectedDevices.includes(device.id);
-                return (
-                  <button
-                    key={device.id}
-                    onClick={() => toggleDevice(device.id)}
-                    className={`w-full flex items-center gap-3 p-3 rounded-lg border-2 transition-all ${
-                      isSelected
-                        ? 'bg-[#FFF7ED] border-[#D9480F]'
-                        : 'bg-white border-[#E5E7EB] hover:border-[#D9480F]'
-                    }`}
-                  >
-                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                      isSelected ? 'bg-[#D9480F]' : 'bg-[#F9FAFB]'
-                    }`}>
-                      <Monitor className={`w-5 h-5 ${isSelected ? 'text-white' : 'text-[#6B7280]'}`} />
-                    </div>
-                    <div className="flex-1 text-left">
-                      <p className="text-sm font-medium text-[#111827]">{device.name}</p>
-                      <p className="text-xs text-[#6B7280]">{device.location}</p>
-                    </div>
-                    {isSelected && (
-                      <div className="w-5 h-5 rounded-full bg-[#D9480F] flex items-center justify-center">
-                        <Check className="w-3 h-3 text-white" />
-                      </div>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-            <p className="text-xs text-[#6B7280] mt-2">
-              {selectedDevices.length} device{selectedDevices.length !== 1 ? 's' : ''} selected
-            </p>
-          </div>
         </div>
 
         {/* Footer */}
         <div className="border-t border-[#E5E7EB] p-6">
           <div className="flex items-center justify-between">
             <p className="text-sm text-[#6B7280]">
-              {isValidForm ? 'Ready to save' : 'Please complete all required fields'}
+              {isValidForm 
+                ? `Configuration will apply to all devices in ${groupName}` 
+                : 'Please complete all required fields'}
             </p>
             <div className="flex items-center gap-3">
               <button

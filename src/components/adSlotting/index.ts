@@ -5,3 +5,4 @@ export { default as SlotConfigurationModal } from './SlotConfigurationModal';
 export { default as MachineConfigurationTab } from './MachineConfigurationTab';
 export { default as CreateBookingModal } from './CreateBookingModal';
 export { default as MachineView } from './MachineView';
+export { default as GroupDetailPage } from './GroupDetailPage';

@@ -4,7 +4,7 @@ import {
   CreditCard, Target, Monitor, AlertCircle, Shield, ChevronDown,
   CheckSquare, Square, AlertTriangle, Info, X
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import {
   mockNotifications,
   getCategoryColor,

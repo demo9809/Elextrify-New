@@ -10,9 +10,17 @@ export interface PeakWindow {
   endTime: string; // "10:00"
 }
 
+export interface MachineGroup {
+  id: string;
+  name: string;
+  description?: string;
+  machineIds: string[];
+}
+
 export interface Machine {
   id: string;
   name: string;
+  groupId?: string; // Link to group
   location: {
     city: string;
     venue: string;
