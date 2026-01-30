@@ -16,7 +16,7 @@ import {
   Calendar,
 } from 'lucide-react';
 import { SlotApplicability } from '../../types/adSlotting';
-import { mockMachines, mockSlotConfigurations } from '../../data/mockAdSlotting';
+import { mockMachines, mockSlotConfigurations, mockMachineGroups } from '../../data/mockAdSlotting';
 import { toast } from 'sonner@2.0.3';
 
 interface MediaAsset {
@@ -170,6 +170,9 @@ export default function MachineBookingFlow() {
   const [endDate, setEndDate] = useState('');
 
   const machine = mockMachines.find((m) => m.id === machineId);
+  
+  // Find the group this machine belongs to
+  const machineGroup = machine ? mockMachineGroups.find((g) => g.machineIds.includes(machine.id)) : null;
 
   if (!machine) {
     return (
@@ -389,13 +392,19 @@ export default function MachineBookingFlow() {
       <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
         <div className="p-6 border-b border-gray-200">
           <button
-            onClick={() => navigate(`/ad-slotting/machines/${machineId}`)}
+            onClick={() => {
+              if (machineGroup) {
+                navigate(`/ad-slotting/groups/${machineGroup.id}`);
+              } else {
+                navigate('/ad-slotting/inventory');
+              }
+            }}
             className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span className="text-sm">Back to Machine</span>
+            <span className="text-sm">Back to Group</span>
           </button>
-          <h2 className="text-gray-900 mb-2">{machine.name}</h2>
+          <h2 className="text-gray-900 mb-2">{machineGroup?.name || machine.name}</h2>
           <p className="text-sm text-gray-600">
             {machine.location.city} • {machine.location.venue}
           </p>
@@ -460,6 +469,23 @@ export default function MachineBookingFlow() {
               </div>
             </div>
           </div>
+
+          {/* Group Booking Info */}
+          {machineGroup && (
+            <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+              <div className="flex gap-2">
+                <Info className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <div className="text-xs font-medium text-blue-900 mb-1">
+                    Group-Based Booking
+                  </div>
+                  <div className="text-xs text-blue-700">
+                    This ad will play on all {machineGroup.machineIds.length} devices in "{machineGroup.name}".
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Live Preview */}
           {selectedMedia && (
@@ -982,8 +1008,8 @@ export default function MachineBookingFlow() {
 
                                 <div className="bg-[#D9480F] bg-opacity-10 rounded-lg p-3 border-2 border-[#D9480F]">
                                   <div className="text-xs text-[#D9480F] mb-2">Your Ad</div>
-                                  <div className="text-sm font-medium text-gray-900 truncate">{selectedMedia.name}</div>
-                                  <div className="text-xs text-gray-700 mt-1">
+                                  <div className="text-sm font-medium text-[rgb(255,255,255)] truncate">{selectedMedia.name}</div>
+                                  <div className="text-xs text-[rgb(219,232,255)] mt-1">
                                     {selectedMedia.duration}s • Positions {selectedSlotGroup.join(', ')}
                                   </div>
                                 </div>
@@ -1251,21 +1277,39 @@ export default function MachineBookingFlow() {
                     </div>
 
                     <div>
-                      <div className="text-xs font-medium text-gray-700 mb-2">Client & Machine</div>
+                      <div className="text-xs font-medium text-gray-700 mb-2">Client & Target Group</div>
                       <div className="space-y-2">
                         <div className="flex items-center justify-between text-sm">
                           <span className="text-gray-600">Client</span>
                           <span className="font-medium text-gray-900">{selectedClient?.name}</span>
                         </div>
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-gray-600">Machine</span>
-                          <span className="font-medium text-gray-900">{machine.name}</span>
-                        </div>
+                        {machineGroup && (
+                          <>
+                            <div className="flex items-center justify-between text-sm">
+                              <span className="text-gray-600">Machine Group</span>
+                              <span className="font-medium text-gray-900">{machineGroup.name}</span>
+                            </div>
+                            <div className="flex items-center justify-between text-sm">
+                              <span className="text-gray-600">Devices in Group</span>
+                              <span className="font-medium text-gray-900">{machineGroup.machineIds.length} devices</span>
+                            </div>
+                          </>
+                        )}
                         <div className="flex items-center justify-between text-sm">
                           <span className="text-gray-600">Location</span>
                           <span className="font-medium text-gray-900">{machine.location.city} • {machine.location.venue}</span>
                         </div>
                       </div>
+                      {machineGroup && (
+                        <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                          <div className="flex gap-2">
+                            <Info className="w-3.5 h-3.5 text-blue-600 flex-shrink-0 mt-0.5" />
+                            <div className="text-xs text-blue-700">
+                              This ad will play on all {machineGroup.machineIds.length} devices in this group at the same time.
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     <div>
@@ -1319,7 +1363,7 @@ export default function MachineBookingFlow() {
         </div>
 
         {/* Footer Navigation - Sticky */}
-        <div className="sticky bottom-0 bg-white border-t border-gray-200 px-8 py-4 flex items-center justify-between shadow-lg">
+        <div className="sticky bottom-0 z-20 bg-white border-t border-gray-200 px-8 py-4 flex items-center justify-between shadow-lg">
           <button
             onClick={() => {
               if (currentStep > 1) setCurrentStep(currentStep - 1);

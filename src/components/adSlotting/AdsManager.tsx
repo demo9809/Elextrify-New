@@ -38,6 +38,8 @@ interface AdInstance {
   duration: number;
   machineId: string;
   machineName: string;
+  groupId: string;
+  groupName: string;
   locationCity: string;
   locationVenue: string;
   slotType: SlotType;
@@ -70,6 +72,8 @@ const mockAdInstances: AdInstance[] = [
     duration: 30,
     machineId: 'mach-001',
     machineName: 'Mall_Kiosk_01',
+    groupId: 'grp-001',
+    groupName: 'Central Mall Kiosks',
     locationCity: 'New York',
     locationVenue: 'Central Mall',
     slotType: 'peak',
@@ -96,6 +100,8 @@ const mockAdInstances: AdInstance[] = [
     duration: 30,
     machineId: 'mach-002',
     machineName: 'Airport_Screen_A1',
+    groupId: 'grp-002',
+    groupName: 'LAX Terminal 3 Screens',
     locationCity: 'Los Angeles',
     locationVenue: 'LAX Terminal 3',
     slotType: 'peak',
@@ -119,6 +125,8 @@ const mockAdInstances: AdInstance[] = [
     duration: 20,
     machineId: 'mach-001',
     machineName: 'Mall_Kiosk_01',
+    groupId: 'grp-001',
+    groupName: 'Central Mall Kiosks',
     locationCity: 'New York',
     locationVenue: 'Central Mall',
     slotType: 'normal',
@@ -142,6 +150,8 @@ const mockAdInstances: AdInstance[] = [
     duration: 30,
     machineId: 'mach-003',
     machineName: 'Gym_Display_01',
+    groupId: 'grp-003',
+    groupName: 'FitLife Downtown Displays',
     locationCity: 'Chicago',
     locationVenue: 'FitLife Downtown',
     slotType: 'peak',
@@ -165,6 +175,8 @@ const mockAdInstances: AdInstance[] = [
     duration: 15,
     machineId: 'mach-001',
     machineName: 'Mall_Kiosk_01',
+    groupId: 'grp-001',
+    groupName: 'Central Mall Kiosks',
     locationCity: 'New York',
     locationVenue: 'Central Mall',
     slotType: 'peak',
@@ -189,6 +201,8 @@ const mockAdInstances: AdInstance[] = [
     duration: 10,
     machineId: 'mach-004',
     machineName: 'Transit_Hub_Screen_B2',
+    groupId: 'grp-004',
+    groupName: 'South Station Screens',
     locationCity: 'Boston',
     locationVenue: 'South Station',
     slotType: 'normal',
@@ -212,6 +226,8 @@ const mockAdInstances: AdInstance[] = [
     duration: 10,
     machineId: 'mach-005',
     machineName: 'Retail_Display_Main',
+    groupId: 'grp-005',
+    groupName: 'Union Square Store Displays',
     locationCity: 'San Francisco',
     locationVenue: 'Union Square Store',
     slotType: 'peak',
@@ -235,6 +251,8 @@ const mockAdInstances: AdInstance[] = [
     duration: 35,
     machineId: 'mach-002',
     machineName: 'Airport_Screen_A1',
+    groupId: 'grp-002',
+    groupName: 'LAX Terminal 3 Screens',
     locationCity: 'Los Angeles',
     locationVenue: 'LAX Terminal 3',
     slotType: 'normal',
@@ -260,6 +278,8 @@ const mockAdInstances: AdInstance[] = [
     duration: 20,
     machineId: 'mach-006',
     machineName: 'Shopping_Center_Pillar',
+    groupId: 'grp-006',
+    groupName: 'Westlake Center Pillars',
     locationCity: 'Seattle',
     locationVenue: 'Westlake Center',
     slotType: 'peak',
@@ -283,6 +303,8 @@ const mockAdInstances: AdInstance[] = [
     duration: 20,
     machineId: 'mach-007',
     machineName: 'Metro_Station_Display',
+    groupId: 'grp-007',
+    groupName: 'Metro Center Displays',
     locationCity: 'Washington DC',
     locationVenue: 'Metro Center',
     slotType: 'normal',
@@ -403,7 +425,7 @@ export default function AdsManager() {
   const [showFilters, setShowFilters] = useState(false);
   const [filterClient, setFilterClient] = useState<string>('');
   const [filterMachine, setFilterMachine] = useState<string>('');
-  const [filterLocation, setFilterLocation] = useState<string>('');
+  const [filterGroup, setFilterGroup] = useState<string>('');
   const [filterSlotType, setFilterSlotType] = useState<SlotType | ''>('');
   const [filterMediaType, setFilterMediaType] = useState<MediaType | ''>('');
   const [filterStatus, setFilterStatus] = useState<AdStatus | ''>('');
@@ -417,20 +439,20 @@ export default function AdsManager() {
     
     const matchesClient = !filterClient || ad.clientName === filterClient;
     const matchesMachine = !filterMachine || ad.machineName === filterMachine;
-    const matchesLocation = !filterLocation || ad.locationCity === filterLocation;
+    const matchesGroup = !filterGroup || ad.groupName === filterGroup;
     const matchesSlotType = !filterSlotType || ad.slotType === filterSlotType;
     const matchesMediaType = !filterMediaType || ad.mediaType === filterMediaType;
     const matchesStatus = !filterStatus || ad.status === filterStatus;
 
-    return matchesSearch && matchesClient && matchesMachine && matchesLocation && 
+    return matchesSearch && matchesClient && matchesMachine && matchesGroup && 
            matchesSlotType && matchesMediaType && matchesStatus;
   });
 
   const uniqueClients = Array.from(new Set(mockAdInstances.map((ad) => ad.clientName)));
   const uniqueMachines = Array.from(new Set(mockAdInstances.map((ad) => ad.machineName)));
-  const uniqueLocations = Array.from(new Set(mockAdInstances.map((ad) => ad.locationCity)));
+  const uniqueGroups = Array.from(new Set(mockAdInstances.map((ad) => ad.groupName)));
 
-  const activeFilterCount = [filterClient, filterMachine, filterLocation, filterSlotType, filterMediaType, filterStatus]
+  const activeFilterCount = [filterClient, filterMachine, filterGroup, filterSlotType, filterMediaType, filterStatus]
     .filter(Boolean).length;
 
   const handleSelectAll = () => {
@@ -515,7 +537,7 @@ export default function AdsManager() {
   const clearFilters = () => {
     setFilterClient('');
     setFilterMachine('');
-    setFilterLocation('');
+    setFilterGroup('');
     setFilterSlotType('');
     setFilterMediaType('');
     setFilterStatus('');
@@ -620,15 +642,15 @@ export default function AdsManager() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-[#111827] mb-2">Location</label>
+                <label className="block text-sm font-medium text-[#111827] mb-2">Group</label>
                 <select
-                  value={filterLocation}
-                  onChange={(e) => setFilterLocation(e.target.value)}
+                  value={filterGroup}
+                  onChange={(e) => setFilterGroup(e.target.value)}
                   className="w-full h-11 px-3 border border-[#E5E7EB] rounded-md text-sm focus:ring-2 focus:ring-[#D9480F] focus:border-transparent bg-white"
                 >
                   <option value="">All</option>
-                  {uniqueLocations.map((location) => (
-                    <option key={location} value={location}>{location}</option>
+                  {uniqueGroups.map((group) => (
+                    <option key={group} value={group}>{group}</option>
                   ))}
                 </select>
               </div>

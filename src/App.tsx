@@ -85,7 +85,7 @@ import EnhancedNotificationsPage from './components/notifications/EnhancedNotifi
 import GlobalAlertBanner from './components/GlobalAlertBanner';
 import UILibrary from './components/UILibrary';
 
-type Page = 'welcome' | 'dashboard' | 'campaigns' | 'ad-slotting' | 'ad-slotting-inventory' | 'ad-slotting-slot-config' | 'ad-slotting-machine-config' | 'ad-slotting-ads-manager' | 'ad-slotting-live-control' | 'ad-slotting-reports' | 'terminals' | 'playlists' | 'media' | 'customers' | 'proof-of-play' | 'ui-library' | 'tenants' | 'editions' | 'organization-units' | 'billing' | 'media-billing' | 'admin-billing' | 'admin-billing-overview' | 'admin-billing-subscriptions' | 'admin-billing-invoices' | 'admin-billing-payments' | 'admin-billing-revenue' | 'admin-billing-discounts' | 'admin-billing-audit' | 'settings' | 'settings-account' | 'settings-workspace' | 'settings-system' | 'settings-users' | 'settings-language' | 'settings-general' | 'settings-billing' | 'settings-integrations' | 'settings-notifications' | 'settings-security' | 'settings-email' | 'settings-api' | 'help-support' | 'documentation' | 'notifications';
+type Page = 'welcome' | 'dashboard' | 'campaigns' | 'ad-slotting' | 'ad-slotting-inventory' | 'ad-slotting-slot-config' | 'ad-slotting-ads-manager' | 'ad-slotting-live-control' | 'ad-slotting-reports' | 'terminals' | 'playlists' | 'media' | 'customers' | 'proof-of-play' | 'ui-library' | 'tenants' | 'editions' | 'organization-units' | 'billing' | 'media-billing' | 'admin-billing' | 'admin-billing-overview' | 'admin-billing-subscriptions' | 'admin-billing-invoices' | 'admin-billing-payments' | 'admin-billing-revenue' | 'admin-billing-discounts' | 'admin-billing-audit' | 'settings' | 'settings-account' | 'settings-workspace' | 'settings-system' | 'settings-users' | 'settings-language' | 'settings-general' | 'settings-billing' | 'settings-integrations' | 'settings-notifications' | 'settings-security' | 'settings-email' | 'settings-api' | 'help-support' | 'documentation' | 'notifications';
 
 function AppContent() {
   const location = useLocation();
@@ -107,7 +107,6 @@ function AppContent() {
     // Ad Slotting sub-pages
     if (path.includes('/ad-slotting/inventory')) return 'ad-slotting-inventory';
     if (path.includes('/ad-slotting/slot-config')) return 'ad-slotting-slot-config';
-    if (path.includes('/ad-slotting/machine-config')) return 'ad-slotting-machine-config';
     if (path.includes('/ad-slotting/ads-manager')) return 'ad-slotting-ads-manager';
     if (path.includes('/ad-slotting/live-control')) return 'ad-slotting-live-control';
     if (path.includes('/ad-slotting/reports')) return 'ad-slotting-reports';
@@ -166,7 +165,6 @@ function AppContent() {
       'ad-slotting': '/ad-slotting/inventory',
       'ad-slotting-inventory': '/ad-slotting/inventory',
       'ad-slotting-slot-config': '/ad-slotting/slot-config',
-      'ad-slotting-machine-config': '/ad-slotting/machine-config',
       'ad-slotting-ads-manager': '/ad-slotting/ads-manager',
       'ad-slotting-live-control': '/ad-slotting/live-control',
       'ad-slotting-reports': '/ad-slotting/reports',
@@ -260,7 +258,6 @@ function AppContent() {
             <Route path="/ad-slotting/machines/:machineId" element={<MachineView />} />
             <Route path="/ad-slotting/machines/:machineId/book" element={<MachineBookingFlow />} />
             <Route path="/ad-slotting/slot-config" element={<SlotConfigurationPage />} />
-            <Route path="/ad-slotting/machine-config" element={<MachineConfigurationPage />} />
             <Route path="/ad-slotting/ads-manager" element={<AdsManager />} />
             <Route path="/ad-slotting/ads/:adId" element={<SingleAdView />} />
             <Route path="/ad-slotting/live-control" element={<LiveAdControlPlaceholder />} />

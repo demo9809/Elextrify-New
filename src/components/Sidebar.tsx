@@ -62,10 +62,9 @@ export function Sidebar({ activePage = 'welcome', onNavigate, isCollapsed = fals
   ];
 
   // Ad Slotting Sub-Items
-  const adSlottingItems = [
+  const adSlottingSubItems = [
     { id: 'ad-slotting-inventory', label: 'Inventory Overview' },
-    { id: 'ad-slotting-slot-config', label: 'Slot Configuration' },
-    { id: 'ad-slotting-machine-config', label: 'Machine Configuration' },
+    { id: 'ad-slotting-slot-config', label: 'Group Slot Configuration' },
     { id: 'ad-slotting-ads-manager', label: 'Ads Manager' },
   ];
 
@@ -296,7 +295,7 @@ export function Sidebar({ activePage = 'welcome', onNavigate, isCollapsed = fals
                 {/* Ad Slotting Submenu */}
                 {adSlottingExpanded && !isCollapsed && (
                   <div className="mt-1 ml-4 pl-4 border-l-2 border-[#E5E7EB] space-y-1">
-                    {adSlottingItems.map((subItem) => {
+                    {adSlottingSubItems.map((subItem) => {
                       const isSubActive = activePage === subItem.id;
                       
                       return (

@@ -1,39 +1,49 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
-import { 
-  ArrowLeft, 
-  MapPin, 
-  Monitor, 
-  Clock, 
-  CheckCircle2,
-  AlertCircle,
-  Loader2,
-  Image as ImageIcon,
-  Video,
-  TrendingUp,
+import {
+  ArrowLeft,
   Settings,
   Plus,
+  AlertCircle,
+  MapPin,
+  Monitor,
+  Clock,
+  TrendingUp,
+  Video,
+  Image as ImageIcon,
+  CheckCircle2,
+  Loader2,
 } from 'lucide-react';
 import {
-  mockMachines,
   mockMachineGroups,
+  mockMachines,
   getAvailabilityForMachine,
-  getMachineStatusColor,
 } from '../../data/mockAdSlotting';
 import { Machine } from '../../types/adSlotting';
 import { format } from 'date-fns';
-import CreateBookingModal from './CreateBookingModal';
 import SlotPreviewModal from './SlotPreviewModal';
 import AnalyticsModal from './AnalyticsModal';
+
+// Helper function to get machine status color
+const getMachineStatusColor = (status: string) => {
+  switch (status) {
+    case 'online':
+      return 'bg-green-100 text-green-800';
+    case 'offline':
+      return 'bg-gray-100 text-gray-800';
+    case 'syncing':
+      return 'bg-blue-100 text-blue-800';
+    default:
+      return 'bg-gray-100 text-gray-800';
+  }
+};
 
 export default function GroupDetailPage() {
   const navigate = useNavigate();
   const { groupId } = useParams<{ groupId: string }>();
   const [activeTab, setActiveTab] = useState<'peak' | 'normal'>('peak');
-  const [showBookingModal, setShowBookingModal] = useState(false);
   const [showSlotPreviewModal, setShowSlotPreviewModal] = useState(false);
   const [showAnalyticsModal, setShowAnalyticsModal] = useState(false);
-  const [selectedSlotPosition, setSelectedSlotPosition] = useState<number | null>(null);
   const [selectedSlot, setSelectedSlot] = useState<any>(null);
 
   // Find the group
@@ -188,9 +198,9 @@ export default function GroupDetailPage() {
   const currentSlots = activeTab === 'peak' ? mockPeakSlots : mockNormalSlots;
 
   const handleSlotClick = (slot: typeof mockPeakSlots[0]) => {
-    if (!slot.booked) {
-      setSelectedSlotPosition(slot.position);
-      setShowBookingModal(true);
+    if (!slot.booked && representativeMachine) {
+      // Navigate to full-page booking flow
+      navigate(`/ad-slotting/machines/${representativeMachine.id}/book`);
     } else {
       setSelectedSlot(slot);
       setShowSlotPreviewModal(true);
@@ -208,16 +218,20 @@ export default function GroupDetailPage() {
   };
 
   return (
-    <div className="p-8">
-      {/* Back Button */}
-      <button
-        onClick={() => navigate('/ad-slotting/inventory')}
-        className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 transition-colors"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        <span className="text-base">Back to Inventory</span>
-      </button>
+    <div className="flex flex-col h-screen bg-[#F9FAFB]">
+      {/* Sticky Header with Back Button */}
+      <div className="sticky top-0 z-10 bg-white border-b border-[#E5E7EB] px-8 py-4">
+        <button
+          onClick={() => navigate('/ad-slotting/inventory')}
+          className="flex items-center gap-2 text-[#6B7280] hover:text-[#111827] transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span className="text-base font-medium">Back to Inventory</span>
+        </button>
+      </div>
 
+      {/* Scrollable Content */}
+      <div className="flex-1 overflow-auto p-8">
       {/* Group Header */}
       <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
         <div className="flex flex-col gap-6">
@@ -244,17 +258,18 @@ export default function GroupDetailPage() {
                 <TrendingUp className="w-4 h-4" />
                 <span>View Analytics</span>
               </button>
-              <button
+              {/* <button
                 onClick={handleEditConfiguration}
                 className="flex items-center gap-2 px-4 h-11 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-base font-normal"
               >
                 <Settings className="w-4 h-4" />
                 <span>Edit Configuration</span>
-              </button>
+              </button> */}
               <button
                 onClick={() => {
-                  setSelectedSlotPosition(null);
-                  setShowBookingModal(true);
+                  if (representativeMachine) {
+                    navigate(`/ad-slotting/machines/${representativeMachine.id}/book`);
+                  }
                 }}
                 className="flex items-center gap-2 px-4 h-11 bg-[#D9480F] text-white rounded-lg hover:bg-[#C03F0E] transition-colors text-base font-normal"
               >
@@ -598,17 +613,6 @@ export default function GroupDetailPage() {
         </div>
       </div>
 
-      {/* Create Booking Modal */}
-      {showBookingModal && representativeMachine && (
-        <CreateBookingModal
-          machine={representativeMachine}
-          onClose={() => {
-            setShowBookingModal(false);
-            setSelectedSlotPosition(null);
-          }}
-        />
-      )}
-
       {/* Slot Preview Modal */}
       {showSlotPreviewModal && selectedSlot && (
         <SlotPreviewModal
@@ -630,6 +634,7 @@ export default function GroupDetailPage() {
           }}
         />
       )}
+      </div>
     </div>
   );
 }

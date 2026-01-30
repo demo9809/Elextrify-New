@@ -1,8 +1,10 @@
 import { useState } from 'react';
-import { Plus, Edit, Trash2, AlertCircle, Monitor, Search, MapPin, Users, ChevronDown, ChevronUp } from 'lucide-react';
+import { Plus, Edit, Trash2, AlertCircle, Monitor, Search, MapPin, Users, ChevronDown, ChevronUp, Settings, Clock } from 'lucide-react';
 import { mockSlotConfigurations, mockMachines, mockMachineGroups } from '../../data/mockAdSlotting';
 import { SlotConfiguration, MachineGroup } from '../../types/adSlotting';
 import SlotConfigurationModal from './SlotConfigurationModal';
+import OperatingHoursModal from './OperatingHoursModal';
+import { toast } from 'sonner@2.0.3';
 
 export default function SlotConfigurationTab() {
   const [showModal, setShowModal] = useState(false);
@@ -10,6 +12,16 @@ export default function SlotConfigurationTab() {
   const [selectedGroup, setSelectedGroup] = useState<MachineGroup | null>(mockMachineGroups[0] || null);
   const [searchQuery, setSearchQuery] = useState('');
   const [showDevices, setShowDevices] = useState(false);
+  const [showOperatingHoursModal, setShowOperatingHoursModal] = useState(false);
+  
+  // Track which groups have configured operating hours
+  // Pre-populate some groups for client demo
+  const [groupsWithOperatingHours, setGroupsWithOperatingHours] = useState<Set<string>>(
+    new Set([
+      'grp-001', // Mall Group - Times Square
+      'grp-003', // Transit Hub Group - Chicago
+    ])
+  );
 
   const handleEdit = (config: SlotConfiguration) => {
     setEditingConfig(config);
@@ -18,6 +30,13 @@ export default function SlotConfigurationTab() {
 
   const handleCreate = () => {
     if (!selectedGroup) return;
+    
+    // Check if operating hours are configured
+    if (!groupsWithOperatingHours.has(selectedGroup.id)) {
+      toast.error('Please configure operating hours first before adding slot configurations');
+      return;
+    }
+    
     setEditingConfig(null);
     setShowModal(true);
   };
@@ -25,6 +44,27 @@ export default function SlotConfigurationTab() {
   const handleCloseModal = () => {
     setShowModal(false);
     setEditingConfig(null);
+  };
+
+  const handleConfigureOperatingHours = () => {
+    if (!selectedGroup) return;
+    setShowOperatingHoursModal(true);
+  };
+
+  const handleSaveOperatingHours = (
+    operatingStart: string,
+    operatingEnd: string,
+    peakWindows: Array<{ id: string; start: string; end: string }>
+  ) => {
+    // In a real app, this would save to backend
+    console.log('Saving operating hours:', { operatingStart, operatingEnd, peakWindows });
+    
+    // Mark this group as having configured operating hours
+    if (selectedGroup) {
+      setGroupsWithOperatingHours(new Set([...groupsWithOperatingHours, selectedGroup.id]));
+    }
+    
+    setShowOperatingHoursModal(false);
   };
 
   const getApplicabilityLabel = (applicability: string): string => {
@@ -77,6 +117,7 @@ export default function SlotConfigurationTab() {
 
   // Get group status based on machines
   const getGroupStatus = (group: MachineGroup): string => {
+    if (!group.machineIds || group.machineIds.length === 0) return 'offline';
     const groupMachines = mockMachines.filter(m => group.machineIds.includes(m.id));
     const onlineCount = groupMachines.filter(m => m.status === 'online').length;
     const totalCount = groupMachines.length;
@@ -88,13 +129,15 @@ export default function SlotConfigurationTab() {
 
   // Get location summary for a group
   const getLocationSummary = (group: MachineGroup): string => {
+    if (!group.machineIds || group.machineIds.length === 0) return 'N/A';
     const groupMachines = mockMachines.filter(m => group.machineIds.includes(m.id));
     const cities = [...new Set(groupMachines.map(m => m.location.city))];
-    return cities.join(', ');
+    return cities.length > 0 ? cities.join(', ') : 'N/A';
   };
 
   // Get operating hours for a group (from first machine)
   const getGroupOperatingHours = (group: MachineGroup): string => {
+    if (!group.machineIds || group.machineIds.length === 0) return 'N/A';
     const firstMachine = mockMachines.find(m => group.machineIds.includes(m.id));
     return firstMachine 
       ? `${firstMachine.operatingHours.start} – ${firstMachine.operatingHours.end}`
@@ -102,19 +145,20 @@ export default function SlotConfigurationTab() {
   };
 
   // Get configurations for selected group (using first machine ID as proxy)
-  const groupConfigurations = selectedGroup
+  const groupConfigurations = selectedGroup && selectedGroup.machineIds && selectedGroup.machineIds.length > 0
     ? mockSlotConfigurations.filter((config) => 
         selectedGroup.machineIds.includes(config.machineId)
       )
     : [];
 
   // Get machines in selected group
-  const groupMachines = selectedGroup
+  const groupMachines = selectedGroup && selectedGroup.machineIds && selectedGroup.machineIds.length > 0
     ? mockMachines.filter(m => selectedGroup.machineIds.includes(m.id))
     : [];
 
   // Filter groups based on search
   const filteredGroups = mockMachineGroups.filter((group) => {
+    if (!group.machineIds) return false;
     const groupMachines = mockMachines.filter(m => group.machineIds.includes(m.id));
     const searchLower = searchQuery.toLowerCase();
     
@@ -129,159 +173,184 @@ export default function SlotConfigurationTab() {
     );
   });
 
+  // Helper function to get slot configuration count for a group
+  const getGroupConfigCount = (group: MachineGroup): number => {
+    if (!group.machineIds || group.machineIds.length === 0) return 0;
+    return mockSlotConfigurations.filter(config => 
+      group.machineIds.includes(config.machineId)
+    ).length;
+  };
+
+  // Check if selected group has operating hours configured
+  const hasOperatingHours = selectedGroup ? groupsWithOperatingHours.has(selectedGroup.id) : false;
+
   return (
-    <div className="flex h-[calc(100vh-180px)]">
-      {/* Left Panel - Group List */}
-      <div className="w-96 bg-white border-r border-gray-200 flex flex-col">
-        {/* Header */}
-        <div className="px-6 py-4 border-b border-gray-200 flex-shrink-0">
-          <h3 className="text-gray-900 mb-1">Groups</h3>
-          <p className="text-sm text-gray-600">
-            Select a group to configure shared slot architecture
-          </p>
+    <div className="flex gap-6 h-full">
+      {/* Left Panel: Group List */}
+      <div className="w-[400px] flex-shrink-0 bg-white border border-gray-200 rounded-lg p-6">
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-1">Groups</h3>
+          <p className="text-sm text-gray-600">Select a group to configure shared slot architecture</p>
         </div>
 
         {/* Search */}
-        <div className="px-6 py-4 border-b border-gray-200 flex-shrink-0">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search groups..."
-              className="w-full h-11 pl-10 pr-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D9480F] focus:border-transparent"
-            />
-          </div>
+        <div className="mb-4 relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Search groups..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-4 h-11 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#D9480F] focus:border-transparent"
+          />
         </div>
 
         {/* Group List */}
-        <div className="flex-1 overflow-y-auto">
-          {filteredGroups.length > 0 ? (
-            <div className="divide-y divide-gray-200">
-              {filteredGroups.map((group) => {
-                const configCount = mockSlotConfigurations.filter(
-                  (c) => group.machineIds.includes(c.machineId)
-                ).length;
-                const isSelected = selectedGroup?.id === group.id;
-                const groupStatus = getGroupStatus(group);
-                const locationSummary = getLocationSummary(group);
-
-                return (
-                  <button
-                    key={group.id}
-                    onClick={() => setSelectedGroup(group)}
-                    className={`w-full px-6 py-4 text-left transition-colors ${
-                      isSelected
-                        ? 'bg-orange-50 border-l-4 border-[#D9480F]'
-                        : 'hover:bg-gray-50 border-l-4 border-transparent'
-                    }`}
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex-1 min-w-0">
-                        <div className="font-medium text-gray-900 mb-1 truncate">
-                          {group.name}
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
-                          <MapPin className="w-3 h-3 flex-shrink-0" />
-                          <span className="truncate">{locationSummary}</span>
-                        </div>
-                        <div className="flex items-center gap-2 mb-2">
-                          <Users className="w-3 h-3 text-gray-400 flex-shrink-0" />
-                          <span className="text-xs text-gray-500">
-                            {group.machineIds.length} kiosk{group.machineIds.length !== 1 ? 's' : ''}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span
-                            className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getGroupStatusColor(
-                              groupStatus
-                            )}`}
-                          >
-                            {groupStatus === 'online' && 'Online'}
-                            {groupStatus === 'partially-offline' && 'Partially Offline'}
-                            {groupStatus === 'offline' && 'Offline'}
-                          </span>
-                          <span className="text-xs text-gray-500">
-                            {configCount} config{configCount !== 1 ? 's' : ''}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="p-6 text-center text-gray-500">
-              No groups found
-            </div>
-          )}
+        <div className="space-y-2 max-h-[calc(100vh-340px)] overflow-y-auto">
+          {filteredGroups.map((group) => {
+            const configCount = getGroupConfigCount(group);
+            const groupMachinesForCard = mockMachines.filter(m => group.machineIds?.includes(m.id));
+            const groupStatus = getGroupStatus(group);
+            const locationSummary = getLocationSummary(group);
+            const machineCount = group.machineIds?.length || 0;
+            
+            return (
+              <button
+                key={group.id}
+                onClick={() => setSelectedGroup(group)}
+                className={`w-full text-left p-4 rounded-lg border transition-all ${
+                  selectedGroup?.id === group.id
+                    ? 'border-[#D9480F] bg-orange-50 shadow-sm'
+                    : 'border-gray-200 hover:border-gray-300 bg-white'
+                }`}
+              >
+                <div className="flex items-start justify-between mb-2">
+                  <h4 className="font-semibold text-gray-900 text-sm">{group.name}</h4>
+                  {groupStatus === 'online' && (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                      <div className="w-1.5 h-1.5 rounded-full bg-green-600" />
+                      Online
+                    </span>
+                  )}
+                  {groupStatus === 'partially-offline' && (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                      <div className="w-1.5 h-1.5 rounded-full bg-yellow-600" />
+                      Partially Offline
+                    </span>
+                  )}
+                  {groupStatus === 'offline' && (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                      <div className="w-1.5 h-1.5 rounded-full bg-gray-600" />
+                      Offline
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-3 text-xs text-gray-600 mb-2">
+                  <div className="flex items-center gap-1">
+                    <MapPin className="w-3.5 h-3.5" />
+                    <span>{locationSummary}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Users className="w-3.5 h-3.5" />
+                    <span>{machineCount} kiosk{machineCount !== 1 ? 's' : ''}</span>
+                  </div>
+                </div>
+                {configCount > 0 && (
+                  <div className="text-xs text-gray-500">
+                    {configCount} config{configCount !== 1 ? 's' : ''}
+                  </div>
+                )}
+              </button>
+            );
+          })}
         </div>
 
-        {/* Group Count */}
-        <div className="px-6 py-3 border-t border-gray-200 bg-gray-50 flex-shrink-0">
-          <div className="text-sm text-gray-600">
-            Showing {filteredGroups.length} of {mockMachineGroups.length} groups
-          </div>
+        <div className="mt-4 text-sm text-gray-500">
+          Showing {filteredGroups.length} of {mockMachineGroups.length} groups
         </div>
       </div>
 
-      {/* Right Panel - Slot Configurations */}
-      <div className="flex-1 bg-gray-50 flex flex-col overflow-hidden">
+      {/* Right Panel: Group Details & Slot Configurations */}
+      <div className="flex-1 bg-white border border-gray-200 rounded-lg overflow-hidden flex flex-col">
         {selectedGroup ? (
           <>
-            {/* Header */}
-            <div className="px-8 py-6 bg-white border-b border-gray-200 flex-shrink-0">
-              <div className="flex items-start justify-between gap-4 mb-4">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <h2 className="text-gray-900">{selectedGroup.name}</h2>
-                    <span
-                      className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getGroupStatusColor(
-                        getGroupStatus(selectedGroup)
-                      )}`}
-                    >
-                      {getGroupStatus(selectedGroup) === 'online' && 'Online'}
-                      {getGroupStatus(selectedGroup) === 'partially-offline' && 'Partially Offline'}
-                      {getGroupStatus(selectedGroup) === 'offline' && 'Offline'}
-                    </span>
-                  </div>
+            {/* Group Header */}
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex items-start justify-between mb-3">
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-900 mb-2">{selectedGroup.name}</h2>
                   <div className="flex items-center gap-4 text-sm text-gray-600">
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1.5">
                       <MapPin className="w-4 h-4" />
                       <span>{getLocationSummary(selectedGroup)}</span>
                     </div>
-                    <span>•</span>
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1.5">
                       <Users className="w-4 h-4" />
-                      <span>{selectedGroup.machineIds.length} kiosks</span>
+                      <span>{selectedGroup.machineIds?.length || 0} kiosks</span>
                     </div>
-                    <span>•</span>
-                    <span>Operating: {getGroupOperatingHours(selectedGroup)}</span>
+                    {hasOperatingHours && (
+                      <div className="flex items-center gap-1.5">
+                        <Clock className="w-4 h-4" />
+                        <span>Operating: 06:00 – 23:00</span>
+                      </div>
+                    )}
                   </div>
                 </div>
-                <button
-                  onClick={handleCreate}
-                  className="flex items-center gap-2 px-4 h-11 bg-[#D9480F] text-white rounded-lg hover:bg-[#C03F0E] transition-colors flex-shrink-0"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>Add Configuration</span>
-                </button>
+                <div className="flex items-center gap-2">
+                  {/* Operating Hours Settings Button */}
+                  <button
+                    onClick={() => setShowOperatingHoursModal(true)}
+                    className="inline-flex items-center gap-2 px-4 h-11 border border-gray-300 rounded-lg text-sm font-semibold text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                  >
+                    <Settings className="w-4 h-4" />
+                  </button>
+                  {/* Add Slots Button - Disabled if no operating hours */}
+                  <button
+                    onClick={() => {
+                      setEditingConfig(null);
+                      setShowModal(true);
+                    }}
+                    disabled={!hasOperatingHours}
+                    className={`inline-flex items-center gap-2 px-4 h-11 rounded-lg text-sm font-semibold transition-all ${
+                      hasOperatingHours
+                        ? 'bg-[#D9480F] text-white hover:bg-[#B8380C] shadow-sm'
+                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    }`}
+                    title={!hasOperatingHours ? 'Configure operating hours first' : 'Add new slot configuration'}
+                  >
+                    <Plus className="w-4 h-4" />
+                    Add Slots
+                  </button>
+                </div>
               </div>
-              
-              {/* Warning Box */}
-              <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-amber-800 font-medium">
-                  Slot configuration applies to all devices in this group.
-                </p>
-              </div>
+
+              {getGroupStatus(selectedGroup) === 'partially-offline' && (
+                <div className="mt-3 inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-yellow-100 text-yellow-800">
+                  <div className="w-1.5 h-1.5 rounded-full bg-yellow-600" />
+                  Partially Offline
+                </div>
+              )}
             </div>
 
             {/* Configurations */}
             <div className="flex-1 overflow-y-auto p-8">
-              {groupConfigurations.length > 0 ? (
+              {/* Only show configurations if operating hours are configured */}
+              {!groupsWithOperatingHours.has(selectedGroup.id) ? (
+                <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
+                  <Settings className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-gray-900 mb-2">Configure Operating Hours First</h3>
+                  <p className="text-gray-600 mb-6">
+                    Set up operating hours and peak windows before creating slot configurations.
+                  </p>
+                  <button
+                    onClick={handleConfigureOperatingHours}
+                    className="inline-flex items-center gap-2 px-4 h-11 bg-[#D9480F] text-white rounded-lg hover:bg-[#C03F0E] transition-colors"
+                  >
+                    <Settings className="w-4 h-4" />
+                    <span>Configure Operating Hours</span>
+                  </button>
+                </div>
+              ) : groupConfigurations.length > 0 ? (
                 <>
                   <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-8">
                     {groupConfigurations.map((config) => (
@@ -514,6 +583,15 @@ export default function SlotConfigurationTab() {
           groupId={selectedGroup.id}
           groupName={selectedGroup.name}
           onClose={handleCloseModal}
+        />
+      )}
+
+      {/* Operating Hours Modal */}
+      {showOperatingHoursModal && selectedGroup && (
+        <OperatingHoursModal
+          group={selectedGroup}
+          onClose={() => setShowOperatingHoursModal(false)}
+          onSave={handleSaveOperatingHours}
         />
       )}
     </div>
