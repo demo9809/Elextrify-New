@@ -50,10 +50,8 @@ export default function GroupDetailPage() {
   const [activeTab, setActiveTab] = useState<'peak' | 'normal'>('peak');
   const [showSlotPreviewModal, setShowSlotPreviewModal] = useState(false);
   const [showAnalyticsModal, setShowAnalyticsModal] = useState(false);
+  const [showTimelineModal, setShowTimelineModal] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<any>(null);
-  
-  // New state for view mode tab (Slots Today vs Availability Timeline)
-  const [viewMode, setViewMode] = useState<'slots' | 'timeline'>('timeline');
   
   // New state for timeline tab
   const [timelineRange, setTimelineRange] = useState<'7days' | '30days' | 'custom'>('7days');
@@ -270,9 +268,13 @@ export default function GroupDetailPage() {
 
             {/* Action Buttons */}
             <div className="flex flex-wrap items-center gap-3">
-              {/* <div className="px-3 py-1 bg-blue-50 border border-blue-200 rounded-lg">
-                <span className="text-sm font-medium text-blue-700">Shared Slot Configuration</span>
-              </div> */}
+              <button
+                onClick={() => setShowTimelineModal(true)}
+                className="flex items-center gap-2 px-4 h-11 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-base font-normal"
+              >
+                <Calendar className="w-4 h-4" />
+                <span>Availability Timeline</span>
+              </button>
               <button
                 onClick={handleViewAnalytics}
                 className="flex items-center gap-2 px-4 h-11 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-base font-normal"
@@ -280,13 +282,6 @@ export default function GroupDetailPage() {
                 <TrendingUp className="w-4 h-4" />
                 <span>View Analytics</span>
               </button>
-              {/* <button
-                onClick={handleEditConfiguration}
-                className="flex items-center gap-2 px-4 h-11 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-base font-normal"
-              >
-                <Settings className="w-4 h-4" />
-                <span>Edit Configuration</span>
-              </button> */}
               <button
                 onClick={() => {
                   if (representativeMachine) {
@@ -384,7 +379,7 @@ export default function GroupDetailPage() {
 
         {/* Availability Stats */}
         {availability && (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="bg-gray-50 rounded-lg border border-gray-200 p-4">
               <div className="text-sm text-gray-600 mb-1">Slot Utilization</div>
               <div className="text-2xl font-semibold text-gray-900">
@@ -426,174 +421,138 @@ export default function GroupDetailPage() {
             </div>
           </div>
         )}
+      </div>
 
-        {/* VIEW MODE TAB SWITCHER: Operational vs Availability Timeline */}
-        <div className="flex gap-1 p-1 bg-gray-100 rounded-lg mb-6">
-          <button
-            onClick={() => setViewMode('slots')}
-            className={`flex-1 px-5 py-2.5 text-base font-semibold rounded-md transition-all ${
-              viewMode === 'slots'
-                ? 'bg-white text-gray-900 shadow-sm'
-                : 'text-gray-600 hover:text-gray-900'
-            }`}
-          >
-            Operational
-          </button>
-          <button
-            onClick={() => setViewMode('timeline')}
-            className={`flex-1 flex items-center justify-center gap-2 px-5 py-2.5 text-base font-semibold rounded-md transition-all ${
-              viewMode === 'timeline'
-                ? 'bg-white text-gray-900 shadow-sm'
-                : 'text-gray-600 hover:text-gray-900'
-            }`}
-          >
-            <Calendar className="w-4 h-4" />
-            <span>Availability Timeline</span>
-          </button>
+      {/* Today's Slot Allocation Section */}
+      <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+        {/* Today's Slot Allocation Header */}
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-gray-900">Today's Slot Allocation</h3>
         </div>
 
-        {/* OPERATIONAL VIEW (SLOTS TODAY) */}
-        {viewMode === 'slots' && (
-          <>
-            {/* Today's Slot Allocation - Always Visible */}
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Today's Slot Allocation</h3>
+        {/* Tabs */}
+        {hasPeakWindows && (
+          <div className="flex gap-2 border-b border-gray-200 mb-6">
+            <button
+              onClick={() => setActiveTab('peak')}
+              className={`px-4 py-2 text-base font-medium border-b-2 transition-colors ${
+                activeTab === 'peak'
+                  ? 'border-[#D9480F] text-[#D9480F]'
+                  : 'border-transparent text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Peak Slots ({availability?.peakAvailability.total || 0} positions)
+            </button>
+            <button
+              onClick={() => setActiveTab('normal')}
+              className={`px-4 py-2 text-base font-medium border-b-2 transition-colors ${
+                activeTab === 'normal'
+                  ? 'border-[#D9480F] text-[#D9480F]'
+                  : 'border-transparent text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Normal Slots ({availability?.normalAvailability.total || 0} positions)
+            </button>
+          </div>
+        )}
+
+        {/* Slot Configuration Details */}
+        {activeTab === 'peak' && hasPeakWindows && (
+          <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+            <div className="flex flex-wrap gap-6 text-sm">
+              <div>
+                <span className="text-gray-600">Loop Duration: </span>
+                <span className="font-semibold text-gray-900">60s</span>
+              </div>
+              <div>
+                <span className="text-gray-600">Subslot Duration: </span>
+                <span className="font-semibold text-gray-900">10s</span>
+              </div>
+              <div>
+                <span className="text-gray-600">Total Positions: </span>
+                <span className="font-semibold text-gray-900">{availability?.peakAvailability.total || 0}</span>
+              </div>
+              <div>
+                <span className="text-gray-600">Price: </span>
+                <span className="font-semibold text-gray-900">$500</span>
+              </div>
             </div>
+          </div>
+        )}
 
-            {/* Tabs */}
-            {hasPeakWindows && (
-              <div className="flex gap-2 border-b border-gray-200 mb-6">
-                <button
-                  onClick={() => setActiveTab('peak')}
-                  className={`px-4 py-2 text-base font-medium border-b-2 transition-colors ${
-                    activeTab === 'peak'
-                      ? 'border-[#D9480F] text-[#D9480F]'
-                      : 'border-transparent text-gray-600 hover:text-gray-900'
-                  }`}
-                >
-                  Peak Slots ({availability?.peakAvailability.total || 0} positions)
-                </button>
-                <button
-                  onClick={() => setActiveTab('normal')}
-                  className={`px-4 py-2 text-base font-medium border-b-2 transition-colors ${
-                    activeTab === 'normal'
-                      ? 'border-[#D9480F] text-[#D9480F]'
-                      : 'border-transparent text-gray-600 hover:text-gray-900'
-                  }`}
-                >
-                  Normal Slots ({availability?.normalAvailability.total || 0} positions)
-                </button>
+        {activeTab === 'normal' && (
+          <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+            <div className="flex flex-wrap gap-6 text-sm">
+              <div>
+                <span className="text-gray-600">Loop Duration: </span>
+                <span className="font-semibold text-gray-900">60s</span>
               </div>
-            )}
+              <div>
+                <span className="text-gray-600">Subslot Duration: </span>
+                <span className="font-semibold text-gray-900">10s</span>
+              </div>
+              <div>
+                <span className="text-gray-600">Total Positions: </span>
+                <span className="font-semibold text-gray-900">{availability?.normalAvailability.total || 0}</span>
+              </div>
+              <div>
+                <span className="text-gray-600">Price: </span>
+                <span className="font-semibold text-gray-900">$300</span>
+              </div>
+            </div>
+          </div>
+        )}
 
-            {/* Slot Configuration Details */}
-            {activeTab === 'peak' && hasPeakWindows && (
-              <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                <div className="flex flex-wrap gap-6 text-sm">
-                  <div>
-                    <span className="text-gray-600">Loop Duration: </span>
-                    <span className="font-semibold text-gray-900">60s</span>
-                  </div>
-                  <div>
-                    <span className="text-gray-600">Subslot Duration: </span>
-                    <span className="font-semibold text-gray-900">10s</span>
-                  </div>
-                  <div>
-                    <span className="text-gray-600">Total Positions: </span>
-                    <span className="font-semibold text-gray-900">{availability?.peakAvailability.total || 0}</span>
-                  </div>
-                  <div>
-                    <span className="text-gray-600">Price: </span>
-                    <span className="font-semibold text-gray-900">$500</span>
+        {/* Slot Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+          {currentSlots.map((slot) => (
+            <div
+              key={slot.position}
+              onClick={() => handleSlotClick(slot)}
+              className={`p-3 rounded-lg border-2 transition-all cursor-pointer ${
+                slot.booked
+                  ? 'border-gray-300 bg-gray-50 hover:border-gray-400 hover:shadow-md'
+                  : 'border-green-300 bg-green-50 hover:border-green-400 hover:shadow-md'
+              }`}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center justify-center w-6 h-6 rounded-full bg-white border-2 border-gray-300">
+                  <span className="text-xs font-semibold text-gray-900">{slot.position}</span>
+                </div>
+                <span className="text-xs font-medium text-gray-600">{slot.timeRange}</span>
+              </div>
+
+              <div className="space-y-1.5">
+                <div>
+                  <div className="text-xs text-gray-600">Client</div>
+                  <div className={`text-xs font-medium ${slot.booked ? 'text-gray-900' : 'text-green-700'}`}>
+                    {slot.client}
                   </div>
                 </div>
-              </div>
-            )}
 
-            {activeTab === 'normal' && (
-              <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                <div className="flex flex-wrap gap-6 text-sm">
-                  <div>
-                    <span className="text-gray-600">Loop Duration: </span>
-                    <span className="font-semibold text-gray-900">60s</span>
-                  </div>
-                  <div>
-                    <span className="text-gray-600">Subslot Duration: </span>
-                    <span className="font-semibold text-gray-900">10s</span>
-                  </div>
-                  <div>
-                    <span className="text-gray-600">Total Positions: </span>
-                    <span className="font-semibold text-gray-900">{availability?.normalAvailability.total || 0}</span>
-                  </div>
-                  <div>
-                    <span className="text-gray-600">Price: </span>
-                    <span className="font-semibold text-gray-900">$300</span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Slot Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-              {currentSlots.map((slot) => (
-                <div
-                  key={slot.position}
-                  onClick={() => handleSlotClick(slot)}
-                  className={`p-3 rounded-lg border-2 transition-all cursor-pointer ${
-                    slot.booked
-                      ? 'border-gray-300 bg-gray-50 hover:border-gray-400 hover:shadow-md'
-                      : 'border-green-300 bg-green-50 hover:border-green-400 hover:shadow-md'
-                  }`}
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center justify-center w-6 h-6 rounded-full bg-white border-2 border-gray-300">
-                      <span className="text-xs font-semibold text-gray-900">{slot.position}</span>
-                    </div>
-                    <span className="text-xs font-medium text-gray-600">{slot.timeRange}</span>
-                  </div>
-
-                  <div className="space-y-1.5">
+                {slot.booked && (
+                  <>
                     <div>
-                      <div className="text-xs text-gray-600">Client</div>
-                      <div className={`text-xs font-medium ${slot.booked ? 'text-gray-900' : 'text-green-700'}`}>
-                        {slot.client}
+                      <div className="text-xs text-gray-600">Campaign</div>
+                      <div className="text-xs font-medium text-gray-900 truncate" title={slot.campaign}>
+                        {slot.campaign}
                       </div>
                     </div>
 
-                    {slot.booked && (
-                      <>
-                        <div>
-                          <div className="text-xs text-gray-600">Campaign</div>
-                          <div className="text-xs font-medium text-gray-900 truncate" title={slot.campaign}>
-                            {slot.campaign}
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-1.5">
-                          {slot.mediaType === 'Video' ? (
-                            <Video className="w-3 h-3 text-gray-600" />
-                          ) : (
-                            <ImageIcon className="w-3 h-3 text-gray-600" />
-                          )}
-                          <span className="text-xs text-gray-600">{slot.mediaType}</span>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                </div>
-              ))}
+                    <div className="flex items-center gap-1.5">
+                      {slot.mediaType === 'Video' ? (
+                        <Video className="w-3 h-3 text-gray-600" />
+                      ) : (
+                        <ImageIcon className="w-3 h-3 text-gray-600" />
+                      )}
+                      <span className="text-xs text-gray-600">{slot.mediaType}</span>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
-          </>
-        )}
-
-        {/* AVAILABILITY TIMELINE VIEW */}
-        {viewMode === 'timeline' && (
-          <AvailabilityTimelineTab
-            totalPeakSlots={availability?.peakAvailability.total || 6}
-            totalNormalSlots={availability?.normalAvailability.total || 6}
-            hasPeakWindows={hasPeakWindows}
-          />
-        )}
+          ))}
+        </div>
       </div>
 
       {/* Devices in this Group (Informational Only) - Collapsible */}
@@ -756,6 +715,46 @@ export default function GroupDetailPage() {
             setShowAnalyticsModal(false);
           }}
         />
+      )}
+
+      {/* Availability Timeline Modal */}
+      {showTimelineModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-7xl max-h-[90vh] flex flex-col">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <div>
+                <h2 className="text-2xl font-semibold text-gray-900">Availability Timeline</h2>
+                <p className="text-sm text-gray-600 mt-1">{group.name}</p>
+              </div>
+              <button
+                onClick={() => setShowTimelineModal(false)}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <svg
+                  className="w-6 h-6 text-gray-600"
+                  fill="none"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="flex-1 overflow-y-auto p-6">
+              <AvailabilityTimelineTab
+                totalPeakSlots={availability?.peakAvailability.total || 6}
+                totalNormalSlots={availability?.normalAvailability.total || 6}
+                hasPeakWindows={hasPeakWindows}
+              />
+            </div>
+          </div>
+        </div>
       )}
       </div>
     </div>

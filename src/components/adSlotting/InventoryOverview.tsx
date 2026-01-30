@@ -259,15 +259,12 @@ export default function InventoryOverview() {
 
       {/* Filters Sidebar */}
       {showFilters && (
-        <>
-          {/* Overlay */}
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-end" onClick={() => setShowFilters(false)}>
+          {/* Sidebar Panel */}
           <div 
-            className="fixed inset-0 bg-black bg-opacity-50 z-40"
-            onClick={() => setShowFilters(false)}
-          />
-          
-          {/* Sidebar */}
-          <div className="fixed right-0 top-0 h-full w-full sm:w-[480px] bg-white shadow-2xl z-50 flex flex-col">
+            className="h-full w-full sm:w-[480px] bg-white shadow-xl flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
             {/* Header */}
             <div className="px-6 py-5 border-b border-gray-200 flex items-start justify-between flex-shrink-0">
               <div>
@@ -454,7 +451,7 @@ export default function InventoryOverview() {
               </button>
             </div>
           </div>
-        </>
+        </div>
       )}
 
       {/* Inventory Table */}
