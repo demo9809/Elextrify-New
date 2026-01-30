@@ -352,19 +352,36 @@ export default function GroupDetailPage() {
               </div>
             )}
 
-            {/* Peak Windows */}
-            {hasPeakWindows && representativeMachine && (
-              <div>
-                <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
-                  <Clock className="w-4 h-4" />
-                  <span>Peak Windows</span>
-                </div>
-                <div className="text-base font-semibold text-gray-900">
-                  {representativeMachine.peakWindows.length} {representativeMachine.peakWindows.length === 1 ? 'window' : 'windows'}
-                </div>
+            {/* Status Badge */}
+            <div>
+              <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
+                <CheckCircle2 className="w-4 h-4" />
+                <span>Status</span>
               </div>
-            )}
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                  Online
+                </span>
+              </div>
+            </div>
           </div>
+
+          {/* Peak Windows - Full Width Row */}
+          {hasPeakWindows && representativeMachine && (
+            <div className="pt-2 border-t border-gray-200">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-sm text-gray-900 font-medium">Peak Windows:</span>
+                {representativeMachine.peakWindows.map((window, index) => (
+                  <span
+                    key={index}
+                    className="inline-flex items-center px-3 py-1 rounded-md text-sm font-medium bg-amber-100 text-amber-800"
+                  >
+                    {window.start} – {window.end}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
