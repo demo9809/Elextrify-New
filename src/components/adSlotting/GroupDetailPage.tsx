@@ -312,7 +312,7 @@ export default function GroupDetailPage() {
           </div> */}
 
           {/* Group Stats Grid */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             {/* Coverage - Enhanced with Location Names */}
             <div>
               <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
@@ -352,6 +352,26 @@ export default function GroupDetailPage() {
               </div>
             )}
 
+            {/* Peak Windows - Inline Grid Item */}
+            {hasPeakWindows && representativeMachine && (
+              <div>
+                <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
+                  <Clock className="w-4 h-4" />
+                  <span>Peak Windows</span>
+                </div>
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {representativeMachine.peakWindows.map((window, index) => (
+                    <span
+                      key={index}
+                      className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-amber-100 text-amber-800"
+                    >
+                      {window.start} – {window.end}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Status Badge */}
             <div>
               <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
@@ -365,23 +385,6 @@ export default function GroupDetailPage() {
               </div>
             </div>
           </div>
-
-          {/* Peak Windows - Full Width Row */}
-          {hasPeakWindows && representativeMachine && (
-            <div className="pt-2 border-t border-gray-200">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="text-sm text-gray-900 font-medium">Peak Windows:</span>
-                {representativeMachine.peakWindows.map((window, index) => (
-                  <span
-                    key={index}
-                    className="inline-flex items-center px-3 py-1 rounded-md text-sm font-medium bg-amber-100 text-amber-800"
-                  >
-                    {window.start} – {window.end}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       </div>
 
