@@ -382,9 +382,9 @@ export const mockSlotConfigurations: SlotConfiguration[] = [
     name: 'Standard Peak Loop',
     machineId: 'mch-001',
     applicability: 'peak',
-    loopDuration: 60,
+    loopDuration: 120,
     subSlotDuration: 10,
-    totalPositions: 6,
+    totalPositions: 12,
     pricing: {
       peakPrice: 500,
     },
@@ -396,9 +396,9 @@ export const mockSlotConfigurations: SlotConfiguration[] = [
     name: 'Standard Normal Loop',
     machineId: 'mch-001',
     applicability: 'normal',
-    loopDuration: 60,
+    loopDuration: 200,
     subSlotDuration: 10,
-    totalPositions: 6,
+    totalPositions: 20,
     pricing: {
       normalPrice: 300,
     },
@@ -410,8 +410,8 @@ export const mockSlotConfigurations: SlotConfiguration[] = [
     name: 'Airport Peak Hours',
     machineId: 'mch-002',
     applicability: 'peak',
-    loopDuration: 180,
-    subSlotDuration: 15,
+    loopDuration: 120,
+    subSlotDuration: 10,
     totalPositions: 12,
     pricing: {
       peakPrice: 200,
@@ -424,9 +424,9 @@ export const mockSlotConfigurations: SlotConfiguration[] = [
     name: 'Budget Normal Hours',
     machineId: 'mch-003',
     applicability: 'normal',
-    loopDuration: 240,
+    loopDuration: 200,
     subSlotDuration: 10,
-    totalPositions: 24,
+    totalPositions: 20,
     pricing: {
       normalPrice: 50,
     },
@@ -439,8 +439,8 @@ export const mockSlotConfigurations: SlotConfiguration[] = [
     machineId: 'mch-004',
     applicability: 'peak',
     loopDuration: 120,
-    subSlotDuration: 15,
-    totalPositions: 8,
+    subSlotDuration: 10,
+    totalPositions: 12,
     pricing: {
       peakPrice: 180,
     },
@@ -511,7 +511,7 @@ export const mockInventoryAvailability: InventoryAvailability[] = [
     normalAvailability: {
       status: 'available',
       occupied: 2,
-      total: 12,
+      total: 20,
     },
   },
   {
@@ -524,7 +524,7 @@ export const mockInventoryAvailability: InventoryAvailability[] = [
     normalAvailability: {
       status: 'limited',
       occupied: 6,
-      total: 12,
+      total: 20,
     },
   },
   {
@@ -532,12 +532,12 @@ export const mockInventoryAvailability: InventoryAvailability[] = [
     peakAvailability: {
       status: 'available',
       occupied: 0,
-      total: 24,
+      total: 12,
     },
     normalAvailability: {
       status: 'available',
       occupied: 5,
-      total: 24,
+      total: 20,
     },
   },
   {
@@ -545,12 +545,12 @@ export const mockInventoryAvailability: InventoryAvailability[] = [
     peakAvailability: {
       status: 'available',
       occupied: 2,
-      total: 8,
+      total: 12,
     },
     normalAvailability: {
       status: 'available',
       occupied: 1,
-      total: 8,
+      total: 20,
     },
   },
   {
@@ -558,12 +558,12 @@ export const mockInventoryAvailability: InventoryAvailability[] = [
     peakAvailability: {
       status: 'available',
       occupied: 0,
-      total: 10,
+      total: 12,
     },
     normalAvailability: {
       status: 'available',
       occupied: 0,
-      total: 10,
+      total: 20,
     },
   },
   {
@@ -576,7 +576,7 @@ export const mockInventoryAvailability: InventoryAvailability[] = [
     normalAvailability: {
       status: 'available',
       occupied: 3,
-      total: 12,
+      total: 20,
     },
   },
   {
@@ -584,25 +584,25 @@ export const mockInventoryAvailability: InventoryAvailability[] = [
     peakAvailability: {
       status: 'available',
       occupied: 4,
-      total: 15,
+      total: 12,
     },
     normalAvailability: {
       status: 'limited',
       occupied: 10,
-      total: 15,
+      total: 20,
     },
   },
   {
     machineId: 'mch-008',
     peakAvailability: {
       status: 'full',
-      occupied: 20,
-      total: 20,
+      occupied: 12,
+      total: 12,
     },
     normalAvailability: {
       status: 'available',
       occupied: 0,
-      total: 0,
+      total: 20,
     },
   },
 ];

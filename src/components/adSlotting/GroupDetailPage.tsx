@@ -768,8 +768,8 @@ export default function GroupDetailPage() {
             {/* Modal Content */}
             <div className="flex-1 overflow-y-auto p-6">
               <AvailabilityTimelineTab
-                totalPeakSlots={availability?.peakAvailability.total || 6}
-                totalNormalSlots={availability?.normalAvailability.total || 6}
+                totalPeakSlots={availability?.peakAvailability.total || 12}
+                totalNormalSlots={availability?.normalAvailability.total || 20}
                 hasPeakWindows={hasPeakWindows}
               />
             </div>

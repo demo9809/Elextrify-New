@@ -14,10 +14,13 @@ import {
   ChevronDown,
   CheckCircle2,
   Calendar,
+  Clock,
+  Image as ImageIcon,
 } from 'lucide-react';
 import { SlotApplicability } from '../../types/adSlotting';
 import { mockMachines, mockSlotConfigurations, mockMachineGroups } from '../../data/mockAdSlotting';
 import { toast } from 'sonner@2.0.3';
+import { SlotGrid } from './Step2SlotSelection';
 
 interface MediaAsset {
   id: string;
@@ -126,6 +129,9 @@ const mockClients: Client[] = [
 ];
 
 const CAMPAIGN_DURATION_PRESETS = [
+  { value: 1, label: '1 day' },
+  { value: 7, label: '7 days' },
+  { value: 14, label: '14 days' },
   { value: 30, label: '30 days' },
   { value: 90, label: '90 days' },
   { value: 365, label: '1 year' },
@@ -157,11 +163,13 @@ export default function MachineBookingFlow() {
   const [showClientDropdown, setShowClientDropdown] = useState(false);
   const [mediaSearch, setMediaSearch] = useState('');
 
-  // Step 2: Slot Selection
-  const [slotType, setSlotType] = useState<SlotApplicability>('peak');
-  const [selectedSlotGroup, setSelectedSlotGroup] = useState<number[]>([]);
-  const [hoveredSlot, setHoveredSlot] = useState<number | null>(null);
-  const [selectionError, setSelectionError] = useState<string | null>(null);
+  // Step 2: Slot Selection - Support both Peak and Normal
+  const [selectedPeakSlots, setSelectedPeakSlots] = useState<number[]>([]);
+  const [selectedNormalSlots, setSelectedNormalSlots] = useState<number[]>([]);
+  const [hoveredPeakSlot, setHoveredPeakSlot] = useState<number | null>(null);
+  const [hoveredNormalSlot, setHoveredNormalSlot] = useState<number | null>(null);
+  const [peakSelectionError, setPeakSelectionError] = useState<string | null>(null);
+  const [normalSelectionError, setNormalSelectionError] = useState<string | null>(null);
 
   // Step 3: Duration Selection
   const [durationType, setDurationType] = useState<'preset' | 'custom'>('preset');
@@ -190,23 +198,27 @@ export default function MachineBookingFlow() {
     );
   }
 
-  const activeConfig = mockSlotConfigurations.find(
-    (c) => c.machineId === machine.id && c.applicability === slotType
+  const peakConfig = mockSlotConfigurations.find(
+    (c) => c.machineId === machine.id && c.applicability === 'peak'
   );
 
-  const generateSubSlots = (): SubSlot[] => {
-    if (!activeConfig) return [];
+  const normalConfig = mockSlotConfigurations.find(
+    (c) => c.machineId === machine.id && c.applicability === 'normal'
+  );
+
+  const generateSubSlots = (config: typeof peakConfig, slotType: SlotApplicability): SubSlot[] => {
+    if (!config) return [];
 
     const subSlots: SubSlot[] = [];
-    const totalSlots = activeConfig.totalPositions;
-    const price = slotType === 'peak' ? activeConfig.pricing.peakPrice || 500 : activeConfig.pricing.normalPrice || 300;
+    const totalSlots = config.totalPositions;
+    const price = slotType === 'peak' ? config.pricing.peakPrice || 500 : config.pricing.normalPrice || 300;
 
     const bookedPositions = new Set([1, 2, 7, 8, 9]);
 
     for (let i = 0; i < totalSlots; i++) {
       const position = i + 1;
-      const startSeconds = i * activeConfig.subSlotDuration;
-      const endSeconds = (i + 1) * activeConfig.subSlotDuration;
+      const startSeconds = i * config.subSlotDuration;
+      const endSeconds = (i + 1) * config.subSlotDuration;
       const startTime = formatTime(startSeconds);
       const endTime = formatTime(endSeconds);
 
@@ -216,7 +228,7 @@ export default function MachineBookingFlow() {
         position,
         startTime,
         endTime,
-        duration: activeConfig.subSlotDuration,
+        duration: config.subSlotDuration,
         status: isBooked ? 'booked' : position === totalSlots ? 'filler' : 'free',
         price,
         booking: isBooked
@@ -237,13 +249,14 @@ export default function MachineBookingFlow() {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const subSlots = generateSubSlots();
+  const peakSubSlots = generateSubSlots(peakConfig, 'peak');
+  const normalSubSlots = generateSubSlots(normalConfig, 'normal');
 
-  const requiredSlotCount = selectedMedia && activeConfig
-    ? Math.ceil(selectedMedia.duration / activeConfig.subSlotDuration)
+  const requiredSlotCount = selectedMedia && peakConfig
+    ? Math.ceil(selectedMedia.duration / peakConfig.subSlotDuration)
     : 0;
 
-  const canStartSelection = (position: number): boolean => {
+  const canStartSelection = (position: number, subSlots: SubSlot[]): boolean => {
     if (!selectedMedia || requiredSlotCount === 0) return false;
     
     const slot = subSlots.find((s) => s.position === position);
@@ -258,8 +271,8 @@ export default function MachineBookingFlow() {
     return true;
   };
 
-  const getPreviewSelection = (startPosition: number): number[] => {
-    if (!canStartSelection(startPosition)) return [];
+  const getPreviewSelection = (startPosition: number, subSlots: SubSlot[]): number[] => {
+    if (!canStartSelection(startPosition, subSlots)) return [];
     
     const preview: number[] = [];
     for (let i = 0; i < requiredSlotCount; i++) {
@@ -268,22 +281,22 @@ export default function MachineBookingFlow() {
     return preview;
   };
 
-  const handleSlotClick = (position: number) => {
-    setSelectionError(null);
+  const handlePeakSlotClick = (position: number) => {
+    setPeakSelectionError(null);
     
-    if (!canStartSelection(position)) {
-      const slot = subSlots.find((s) => s.position === position);
+    if (!canStartSelection(position, peakSubSlots)) {
+      const slot = peakSubSlots.find((s) => s.position === position);
       if (!slot || slot.status !== 'free') {
-        setSelectionError(`Slot #${position} is ${slot?.status === 'booked' ? `booked by ${slot.booking?.clientName}` : 'not available'}.`);
+        setPeakSelectionError(`Slot #${position} is ${slot?.status === 'booked' ? `booked by ${slot.booking?.clientName}` : 'not available'}.`);
         return;
       }
 
       for (let i = 0; i < requiredSlotCount; i++) {
         const checkPosition = position + i;
-        const checkSlot = subSlots.find((s) => s.position === checkPosition);
+        const checkSlot = peakSubSlots.find((s) => s.position === checkPosition);
         if (!checkSlot || checkSlot.status !== 'free') {
           const blockingClient = checkSlot?.booking?.clientName;
-          setSelectionError(
+          setPeakSelectionError(
             checkSlot?.status === 'booked'
               ? `Slot #${checkPosition} is booked by ${blockingClient}. This breaks the ${selectedMedia?.duration}s sequence.`
               : `Slots #${checkPosition} and beyond are unavailable. Select another nearby free slot.`
@@ -293,12 +306,42 @@ export default function MachineBookingFlow() {
       }
     }
 
-    const newSelection = getPreviewSelection(position);
-    setSelectedSlotGroup(newSelection);
-    setSelectionError(null);
+    const newSelection = getPreviewSelection(position, peakSubSlots);
+    setSelectedPeakSlots(newSelection);
+    setPeakSelectionError(null);
   };
 
-  const findValidSlotGroups = (): number[][] => {
+  const handleNormalSlotClick = (position: number) => {
+    setNormalSelectionError(null);
+    
+    if (!canStartSelection(position, normalSubSlots)) {
+      const slot = normalSubSlots.find((s) => s.position === position);
+      if (!slot || slot.status !== 'free') {
+        setNormalSelectionError(`Slot #${position} is ${slot?.status === 'booked' ? `booked by ${slot.booking?.clientName}` : 'not available'}.`);
+        return;
+      }
+
+      for (let i = 0; i < requiredSlotCount; i++) {
+        const checkPosition = position + i;
+        const checkSlot = normalSubSlots.find((s) => s.position === checkPosition);
+        if (!checkSlot || checkSlot.status !== 'free') {
+          const blockingClient = checkSlot?.booking?.clientName;
+          setNormalSelectionError(
+            checkSlot?.status === 'booked'
+              ? `Slot #${checkPosition} is booked by ${blockingClient}. This breaks the ${selectedMedia?.duration}s sequence.`
+              : `Slots #${checkPosition} and beyond are unavailable. Select another nearby free slot.`
+          );
+          return;
+        }
+      }
+    }
+
+    const newSelection = getPreviewSelection(position, normalSubSlots);
+    setSelectedNormalSlots(newSelection);
+    setNormalSelectionError(null);
+  };
+
+  const findValidSlotGroups = (subSlots: SubSlot[]): number[][] => {
     if (!selectedMedia || requiredSlotCount === 0) return [];
 
     const validGroups: number[][] = [];
@@ -325,11 +368,18 @@ export default function MachineBookingFlow() {
     return validGroups;
   };
 
-  const validSlotGroups = findValidSlotGroups();
+  const validPeakSlotGroups = findValidSlotGroups(peakSubSlots);
+  const validNormalSlotGroups = findValidSlotGroups(normalSubSlots);
 
-  const totalCost = selectedSlotGroup.length > 0 && activeConfig
-    ? selectedSlotGroup.length * (slotType === 'peak' ? activeConfig.pricing.peakPrice || 500 : activeConfig.pricing.normalPrice || 300)
+  const peakCost = selectedPeakSlots.length > 0 && peakConfig
+    ? selectedPeakSlots.length * (peakConfig.pricing.peakPrice || 500)
     : 0;
+  
+  const normalCost = selectedNormalSlots.length > 0 && normalConfig
+    ? selectedNormalSlots.length * (normalConfig.pricing.normalPrice || 300)
+    : 0;
+
+  const totalCost = peakCost + normalCost;
 
   const calculateCampaignDays = () => {
     if (durationType === 'preset') {
@@ -353,7 +403,7 @@ export default function MachineBookingFlow() {
   );
 
   const canProceedFromStep1 = selectedClient !== null && selectedMedia !== null;
-  const canProceedFromStep2 = selectedSlotGroup.length === requiredSlotCount;
+  const canProceedFromStep2 = selectedPeakSlots.length > 0 || selectedNormalSlots.length > 0;
   const canProceedFromStep3 = durationType === 'preset' || (startDate !== '' && endDate !== '' && new Date(endDate) > new Date(startDate));
   const canSubmit = canProceedFromStep1 && canProceedFromStep2 && canProceedFromStep3;
 
@@ -369,8 +419,8 @@ export default function MachineBookingFlow() {
       mediaId: selectedMedia!.id,
       mediaName: selectedMedia!.name,
       mediaDuration: selectedMedia!.duration,
-      slotType,
-      positions: selectedSlotGroup,
+      peakSlots: selectedPeakSlots,
+      normalSlots: selectedNormalSlots,
       clientId: selectedClient!.id,
       clientName: selectedClient!.name,
       durationType,
@@ -379,11 +429,13 @@ export default function MachineBookingFlow() {
       endDate: durationType === 'custom' ? endDate : undefined,
       campaignDays,
       totalCost,
+      peakCost,
+      normalCost,
     };
 
     console.log('Booking created:', booking);
     toast.success('Booking created successfully');
-    navigate(`/ad-slotting/machines/${machineId}`);
+    navigate(`/ad-slotting/groups/${machineGroup?.id}`);
   };
 
   return (
@@ -509,22 +561,35 @@ export default function MachineBookingFlow() {
                   <div>
                     <div className="text-xs text-gray-600 mb-1">Required Slots</div>
                     <div className="text-sm font-medium text-gray-900">
-                      {requiredSlotCount} × {activeConfig?.subSlotDuration}s subslots
+                      {requiredSlotCount} × {peakConfig?.subSlotDuration}s subslots
                     </div>
                     <div className="text-xs text-gray-500 mt-1">
-                      {selectedMedia.duration}s ÷ {activeConfig?.subSlotDuration}s = {requiredSlotCount} slots
+                      {selectedMedia.duration}s ÷ {peakConfig?.subSlotDuration}s = {requiredSlotCount} slots
                     </div>
                   </div>
                 )}
 
-                {selectedSlotGroup.length > 0 && (
+                {selectedPeakSlots.length > 0 && (
                   <div>
-                    <div className="text-xs text-gray-600 mb-1">Selected Positions</div>
+                    <div className="text-xs text-gray-600 mb-1">Peak Slots Selected</div>
                     <div className="text-sm font-medium text-gray-900">
-                      {subSlots.find((s) => s.position === selectedSlotGroup[0])?.startTime} –{' '}
-                      {subSlots.find((s) => s.position === selectedSlotGroup[selectedSlotGroup.length - 1])?.endTime}
+                      #{selectedPeakSlots[0]} - #{selectedPeakSlots[selectedPeakSlots.length - 1]}
                     </div>
-                    <div className="text-xs text-gray-500 mt-1">Positions: {selectedSlotGroup.join(', ')}</div>
+                    <div className="text-xs text-gray-500 mt-1">
+                      {selectedPeakSlots.length} slots × ${peakConfig?.pricing.peakPrice} = ${peakCost}/day
+                    </div>
+                  </div>
+                )}
+
+                {selectedNormalSlots.length > 0 && (
+                  <div>
+                    <div className="text-xs text-gray-600 mb-1">Normal Slots Selected</div>
+                    <div className="text-sm font-medium text-gray-900">
+                      #{selectedNormalSlots[0]} - #{selectedNormalSlots[selectedNormalSlots.length - 1]}
+                    </div>
+                    <div className="text-xs text-gray-500 mt-1">
+                      {selectedNormalSlots.length} slots × ${normalConfig?.pricing.normalPrice} = ${normalCost}/day
+                    </div>
                   </div>
                 )}
 
@@ -578,169 +643,221 @@ export default function MachineBookingFlow() {
         {/* Content */}
         <div className="flex-1 overflow-auto p-8">
           <div className="max-w-5xl mx-auto pb-24">
-            {/* Step 1: Media Selection */}
+            {/* Step 1: Media Selection - REDESIGNED */}
             {currentStep === 1 && (
               <div className="space-y-6">
-                {/* Client Selection */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Select Client <span className="text-red-500">*</span>
-                  </label>
-                  <div className="relative">
+                {/* Client Selection Card */}
+                <div className="bg-white border border-gray-200 rounded-lg p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h3 className="text-gray-900 font-medium mb-1">Select Client</h3>
+                      <p className="text-sm text-gray-600">Choose which client this campaign is for</p>
+                    </div>
+                    {selectedClient && (
+                      <div className="flex items-center gap-2 px-4 py-2 bg-green-50 border border-green-200 rounded-lg">
+                        <CheckCircle2 className="w-4 h-4 text-green-600" />
+                        <span className="text-sm font-medium text-green-900">Client Selected</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="relative max-w-2xl">
                     <button
                       onClick={() => setShowClientDropdown(!showClientDropdown)}
-                      className="w-full flex items-center justify-between px-4 h-12 border border-gray-300 rounded-lg text-sm hover:border-gray-400 transition-colors text-left"
+                      className="w-full flex items-center justify-between px-5 h-14 border-2 border-gray-300 rounded-lg text-base hover:border-[#D9480F] transition-colors text-left bg-white shadow-sm"
                     >
-                      <span className={selectedClient ? 'text-gray-900' : 'text-gray-500'}>
-                        {selectedClient ? selectedClient.name : 'Choose a client...'}
+                      <span className={selectedClient ? 'text-gray-900 font-medium' : 'text-gray-500'}>
+                        {selectedClient ? selectedClient.name : 'Select a client...'}
                       </span>
-                      <ChevronDown className="w-4 h-4 text-gray-400" />
+                      <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform ${showClientDropdown ? 'rotate-180' : ''}`} />
                     </button>
 
                     {showClientDropdown && (
-                      <div className="absolute z-10 top-full mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto">
-                        <div className="p-2 border-b border-gray-200">
-                          <input
-                            type="text"
-                            value={clientSearch}
-                            onChange={(e) => setClientSearch(e.target.value)}
-                            placeholder="Search clients..."
-                            className="w-full px-3 h-8 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-[#D9480F] focus:border-transparent"
-                            autoFocus
-                          />
+                      <div className="absolute z-10 top-full mt-2 w-full bg-white border border-gray-300 rounded-lg shadow-xl max-h-80 overflow-hidden">
+                        <div className="p-3 border-b border-gray-200 bg-gray-50">
+                          <div className="relative">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                            <input
+                              type="text"
+                              value={clientSearch}
+                              onChange={(e) => setClientSearch(e.target.value)}
+                              placeholder="Search clients..."
+                              className="w-full h-10 pl-9 pr-4 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#D9480F] focus:border-transparent"
+                              autoFocus
+                            />
+                          </div>
                         </div>
-                        <div className="p-1">
+                        <div className="p-2 max-h-64 overflow-auto">
                           <button
                             onClick={() => {
                               toast.info('Create new client functionality');
                               setShowClientDropdown(false);
                             }}
-                            className="w-full flex items-center gap-2 px-3 py-2 text-left text-sm text-[#D9480F] hover:bg-gray-50 rounded"
+                            className="w-full flex items-center gap-3 px-4 py-3 text-left text-sm font-medium text-[#D9480F] hover:bg-orange-50 rounded-lg transition-colors mb-2"
                           >
-                            <Plus className="w-4 h-4" />
+                            <Plus className="w-5 h-5" />
                             <span>Create New Client</span>
                           </button>
-                          {filteredClients.map((client) => (
-                            <button
-                              key={client.id}
-                              onClick={() => {
-                                setSelectedClient(client);
-                                setSelectedMedia(null);
-                                setShowClientDropdown(false);
-                                setClientSearch('');
-                              }}
-                              className="w-full px-3 py-2 text-left text-sm text-gray-900 hover:bg-gray-50 rounded"
-                            >
-                              {client.name}
-                            </button>
-                          ))}
+                          <div className="border-t border-gray-200 pt-2 mt-2">
+                            {filteredClients.map((client) => (
+                              <button
+                                key={client.id}
+                                onClick={() => {
+                                  setSelectedClient(client);
+                                  setSelectedMedia(null);
+                                  setShowClientDropdown(false);
+                                  setClientSearch('');
+                                }}
+                                className="w-full px-4 py-3 text-left text-sm text-gray-900 hover:bg-gray-50 rounded-lg transition-colors flex items-center justify-between group"
+                              >
+                                <span className="font-medium">{client.name}</span>
+                                <span className="text-xs text-gray-500">{client.industry}</span>
+                              </button>
+                            ))}
+                          </div>
                         </div>
                       </div>
                     )}
                   </div>
                 </div>
 
-                {selectedClient && (
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-start gap-3">
-                    <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <div className="text-sm font-medium text-green-900 mb-1">Client Selected</div>
-                      <div className="text-sm text-green-800">
-                        Showing media for <strong>{selectedClient.name}</strong>.
+                {/* Media Selection Section */}
+                {!selectedClient ? (
+                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-lg p-8 text-center">
+                    <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Info className="w-8 h-8 text-blue-600" />
+                    </div>
+                    <h3 className="text-gray-900 font-medium mb-2">Select a Client First</h3>
+                    <p className="text-sm text-gray-600 max-w-md mx-auto">
+                      Please choose a client from the dropdown above. The media library will be automatically filtered to show only assets belonging to that client.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                    {/* Media Header */}
+                    <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="text-gray-900 font-medium mb-1">Select Media</h3>
+                          <p className="text-sm text-gray-600">
+                            Showing {filteredMedia.length} asset{filteredMedia.length !== 1 ? 's' : ''} for <span className="font-medium text-gray-900">{selectedClient.name}</span>
+                          </p>
+                        </div>
+                        <button 
+                          onClick={() => toast.info('Upload media functionality')}
+                          className="flex items-center gap-2 px-5 h-10 bg-[#D9480F] text-white rounded-lg hover:bg-[#C13F0D] transition-colors shadow-sm"
+                        >
+                          <Upload className="w-4 h-4" />
+                          <span className="text-sm font-medium">Upload Media</span>
+                        </button>
                       </div>
                     </div>
-                  </div>
-                )}
 
-                {/* Search */}
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <input
-                    type="text"
-                    value={mediaSearch}
-                    onChange={(e) => setMediaSearch(e.target.value)}
-                    placeholder={selectedClient ? `Search ${selectedClient.name} media...` : "Search media library..."}
-                    disabled={!selectedClient}
-                    className="w-full h-12 pl-10 pr-4 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#D9480F] focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-                  />
-                </div>
-
-                {!selectedClient && (
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3">
-                    <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                    <div className="text-sm text-blue-900">
-                      Please select a client first. Media library will be filtered to show only assets belonging to the selected client.
+                    {/* Search Bar */}
+                    <div className="p-6 border-b border-gray-200 bg-white">
+                      <div className="relative max-w-2xl">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <input
+                          type="text"
+                          value={mediaSearch}
+                          onChange={(e) => setMediaSearch(e.target.value)}
+                          placeholder={`Search in ${selectedClient.name}'s media library...`}
+                          className="w-full h-12 pl-12 pr-4 border-2 border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#D9480F] focus:border-[#D9480F] shadow-sm"
+                        />
+                      </div>
                     </div>
-                  </div>
-                )}
 
-                {/* Upload Option */}
-                {selectedClient && (
-                  <button className="w-full flex items-center justify-center gap-2 px-4 py-6 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-gray-400 hover:text-gray-900 transition-colors">
-                    <Upload className="w-5 h-5" />
-                    <span className="text-sm font-medium">Upload New Media for {selectedClient.name}</span>
-                  </button>
-                )}
+                    {/* Media Grid */}
+                    <div className="p-6">
+                      {filteredMedia.length > 0 ? (
+                        <div className="grid grid-cols-4 gap-4">
+                          {filteredMedia.map((media) => (
+                            <button
+                              key={media.id}
+                              onClick={() => setSelectedMedia(media)}
+                              className={`group relative rounded-lg border-2 transition-all text-left overflow-hidden ${
+                                selectedMedia?.id === media.id
+                                  ? 'border-[#D9480F] bg-orange-50 shadow-lg scale-105'
+                                  : 'border-gray-200 hover:border-[#D9480F] hover:shadow-md bg-white'
+                              }`}
+                            >
+                              {/* Thumbnail */}
+                              <div className="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center relative overflow-hidden">
+                                {media.type === 'video' ? (
+                                  <Video className="w-12 h-12 text-gray-400 group-hover:scale-110 transition-transform" />
+                                ) : (
+                                  <FileImage className="w-12 h-12 text-gray-400 group-hover:scale-110 transition-transform" />
+                                )}
+                                
+                                {/* Selection Badge */}
+                                {selectedMedia?.id === media.id && (
+                                  <div className="absolute top-3 right-3 w-7 h-7 bg-[#D9480F] rounded-full flex items-center justify-center shadow-lg">
+                                    <Check className="w-4 h-4 text-white" />
+                                  </div>
+                                )}
+                              </div>
 
-                {/* Media Grid */}
-                {selectedClient && filteredMedia.length > 0 ? (
-                  <div className="grid grid-cols-3 gap-4">
-                    {filteredMedia.map((media) => (
-                      <button
-                        key={media.id}
-                        onClick={() => setSelectedMedia(media)}
-                        className={`relative p-4 rounded-lg border-2 transition-all text-left ${
-                          selectedMedia?.id === media.id
-                            ? 'border-[#D9480F] bg-[#FEF2F2]'
-                            : 'border-gray-200 hover:border-gray-300 bg-white'
-                        }`}
-                      >
-                        {selectedMedia?.id === media.id && (
-                          <div className="absolute top-3 right-3 w-6 h-6 bg-[#D9480F] rounded-full flex items-center justify-center">
-                            <Check className="w-4 h-4 text-white" />
-                          </div>
-                        )}
+                              {/* Info */}
+                              <div className="p-4 space-y-2">
+                                <div className="text-sm font-medium text-gray-900 truncate" title={media.name}>
+                                  {media.name}
+                                </div>
+                                
+                                {/* Tags */}
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-700">
+                                    {media.type === 'video' ? (
+                                      <Video className="w-3 h-3" />
+                                    ) : (
+                                      <ImageIcon className="w-3 h-3" />
+                                    )}
+                                    {media.type.charAt(0).toUpperCase() + media.type.slice(1)}
+                                  </span>
+                                  <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-blue-100 text-blue-700">
+                                    <Clock className="w-3 h-3" />
+                                    {media.duration}s
+                                  </span>
+                                </div>
 
-                        <div className="aspect-video bg-gray-100 rounded mb-3 flex items-center justify-center">
-                          {media.type === 'video' ? (
-                            <Video className="w-8 h-8 text-gray-400" />
-                          ) : (
+                                {/* Details */}
+                                <div className="text-xs text-gray-500 pt-1 border-t border-gray-200">
+                                  {media.resolution} • {media.format}
+                                </div>
+
+                                {/* Validated Badge */}
+                                {media.validated && (
+                                  <div className="flex items-center gap-1.5 text-xs text-green-600 pt-1">
+                                    <CheckCircle2 className="w-3.5 h-3.5" />
+                                    <span className="font-medium">Validated</span>
+                                  </div>
+                                )}
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-12 text-center">
+                          <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
                             <FileImage className="w-8 h-8 text-gray-400" />
-                          )}
-                        </div>
-
-                        <div className="space-y-2">
-                          <div className="text-sm font-medium text-gray-900 truncate">{media.name}</div>
-                          <div className="flex items-center gap-2">
-                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700">
-                              {media.type.charAt(0).toUpperCase() + media.type.slice(1)}
-                            </span>
-                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-700">
-                              {media.duration}s
-                            </span>
                           </div>
-                          <div className="text-xs text-gray-600">{media.resolution} • {media.format}</div>
-                          {media.validated && (
-                            <div className="flex items-center gap-1 text-xs text-green-600">
-                              <CheckCircle2 className="w-3 h-3" />
-                              <span>Validated</span>
-                            </div>
-                          )}
+                          <h4 className="text-gray-900 font-medium mb-2">No Media Found</h4>
+                          <p className="text-sm text-gray-600 mb-4">
+                            {mediaSearch 
+                              ? `No media matching "${mediaSearch}" for ${selectedClient.name}`
+                              : `No media has been uploaded for ${selectedClient.name} yet`}
+                          </p>
+                          <button 
+                            onClick={() => toast.info('Upload media functionality')}
+                            className="inline-flex items-center gap-2 px-5 h-10 bg-[#D9480F] text-white rounded-lg hover:bg-[#C13F0D] transition-colors"
+                          >
+                            <Upload className="w-4 h-4" />
+                            <span className="text-sm font-medium">Upload First Media</span>
+                          </button>
                         </div>
-                      </button>
-                    ))}
-                  </div>
-                ) : selectedClient && filteredMedia.length === 0 ? (
-                  <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-12 text-center">
-                    <FileImage className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                    <div className="text-sm font-medium text-gray-900 mb-1">No media found</div>
-                    <div className="text-sm text-gray-600">
-                      {mediaSearch 
-                        ? `No media matching "${mediaSearch}" for ${selectedClient.name}`
-                        : `No media uploaded for ${selectedClient.name} yet`}
+                      )}
                     </div>
                   </div>
-                ) : null}
+                )}
               </div>
             )}
 
@@ -756,50 +873,7 @@ export default function MachineBookingFlow() {
                   </div>
                 ) : (
                   <>
-                    {/* Slot Type Toggle */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Slot Type</label>
-                      <div className="flex gap-3">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setSlotType('peak');
-                            setSelectedSlotGroup([]);
-                            setSelectionError(null);
-                          }}
-                          className={`flex-1 px-4 py-3 rounded-lg border-2 transition-colors text-left ${
-                            slotType === 'peak'
-                              ? 'border-[#D9480F] bg-[#FEF2F2]'
-                              : 'border-gray-200 hover:border-gray-300'
-                          }`}
-                        >
-                          <div className="font-medium text-gray-900">Peak Slots</div>
-                          <div className="text-sm text-gray-600 mt-1">
-                            ${mockSlotConfigurations.find((c) => c.machineId === machineId && c.applicability === 'peak')?.pricing.peakPrice || 500} per position
-                          </div>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setSlotType('normal');
-                            setSelectedSlotGroup([]);
-                            setSelectionError(null);
-                          }}
-                          className={`flex-1 px-4 py-3 rounded-lg border-2 transition-colors text-left ${
-                            slotType === 'normal'
-                              ? 'border-[#D9480F] bg-[#FEF2F2]'
-                              : 'border-gray-200 hover:border-gray-300'
-                          }`}
-                        >
-                          <div className="font-medium text-gray-900">Normal Slots</div>
-                          <div className="text-sm text-gray-600 mt-1">
-                            ${mockSlotConfigurations.find((c) => c.machineId === machineId && c.applicability === 'normal')?.pricing.normalPrice || 300} per position
-                          </div>
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Duration Calculation */}
+                    {/* Duration Calculation Info */}
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                       <div className="flex items-start gap-3">
                         <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
@@ -807,30 +881,28 @@ export default function MachineBookingFlow() {
                           <div className="text-sm font-medium text-blue-900 mb-1">Slot Requirement</div>
                           <div className="text-sm text-blue-800 mb-2">
                             Your {selectedMedia.duration}s media requires{' '}
-                            <strong>{requiredSlotCount} consecutive {activeConfig?.subSlotDuration}s subslots</strong>.
-                            Click any valid starting slot to auto-select the sequence.
+                            <strong>{requiredSlotCount} consecutive {peakConfig?.subSlotDuration}s subslots</strong>.
+                            You can select slots from both Peak and Normal categories below.
                           </div>
                           <div className="text-xs text-blue-700">
-                            Calculation: {selectedMedia.duration}s ÷ {activeConfig?.subSlotDuration}s = {requiredSlotCount} subslots
+                            Calculation: {selectedMedia.duration}s ÷ {peakConfig?.subSlotDuration}s = {requiredSlotCount} subslots
                           </div>
                         </div>
                       </div>
                     </div>
 
-                    {/* Selection Summary */}
-                    {selectedSlotGroup.length > 0 && (
+                    {/* Total Cost Summary */}
+                    {(selectedPeakSlots.length > 0 || selectedNormalSlots.length > 0) && (
                       <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                         <div className="flex items-start justify-between">
                           <div className="flex items-start gap-3">
                             <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
                             <div>
-                              <div className="text-sm font-medium text-green-900 mb-1">Slots Selected</div>
+                              <div className="text-sm font-medium text-green-900 mb-1">Total Selection</div>
                               <div className="text-sm text-green-800">
-                                {selectedMedia.duration}s media • {requiredSlotCount} consecutive slots • Positions {selectedSlotGroup.join(', ')}
-                              </div>
-                              <div className="text-xs text-green-700 mt-1">
-                                {subSlots.find((s) => s.position === selectedSlotGroup[0])?.startTime} –{' '}
-                                {subSlots.find((s) => s.position === selectedSlotGroup[selectedSlotGroup.length - 1])?.endTime}
+                                {selectedPeakSlots.length > 0 && `${selectedPeakSlots.length} Peak slots`}
+                                {selectedPeakSlots.length > 0 && selectedNormalSlots.length > 0 && ' + '}
+                                {selectedNormalSlots.length > 0 && `${selectedNormalSlots.length} Normal slots`}
                               </div>
                             </div>
                           </div>
@@ -839,204 +911,93 @@ export default function MachineBookingFlow() {
                               ${totalCost.toLocaleString()}/day
                             </div>
                             <div className="text-xs text-green-700">
-                              {requiredSlotCount} × ${activeConfig?.pricing.peakPrice || activeConfig?.pricing.normalPrice}
+                              {peakCost > 0 && `$${peakCost} peak`}
+                              {peakCost > 0 && normalCost > 0 && ' + '}
+                              {normalCost > 0 && `$${normalCost} normal`}
                             </div>
                           </div>
                         </div>
                       </div>
                     )}
 
-                    {/* Error Message */}
-                    {selectionError && (
-                      <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
-                        <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                        <div>
-                          <div className="text-sm font-medium text-red-900 mb-1">Invalid Selection</div>
-                          <div className="text-sm text-red-800">{selectionError}</div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Interactive Slot Grid */}
-                    {validSlotGroups.length > 0 ? (
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Click a Free Slot to Begin
-                        </label>
-                        <div className="text-xs text-gray-600 mb-3">
-                          Valid starting slots are highlighted in green. Hover to preview your selection.
-                        </div>
-
-                        <div className="grid grid-cols-6 gap-3">
-                          {subSlots.map((slot) => {
-                            const isSelected = selectedSlotGroup.includes(slot.position);
-                            const isHoveredPreview = hoveredSlot !== null && getPreviewSelection(hoveredSlot).includes(slot.position);
-                            const canStart = canStartSelection(slot.position);
-                            const isBooked = slot.status === 'booked';
-                            const isFiller = slot.status === 'filler';
-                            const isFree = slot.status === 'free';
-                            const isClickable = isFree;
-
-                            return (
-                              <button
-                                key={slot.position}
-                                onClick={() => isClickable && handleSlotClick(slot.position)}
-                                onMouseEnter={() => isFree && setHoveredSlot(slot.position)}
-                                onMouseLeave={() => setHoveredSlot(null)}
-                                disabled={!isClickable}
-                                className={`relative p-3 rounded-lg text-left transition-all ${
-                                  isSelected
-                                    ? 'border-2 border-[#D9480F] bg-[#D9480F] text-white shadow-lg'
-                                    : isHoveredPreview
-                                    ? 'border-2 border-[#D9480F] border-dashed bg-[#FEF2F2] text-[#D9480F]'
-                                    : canStart
-                                    ? 'border-2 border-green-300 bg-green-50 text-green-900 hover:border-green-400 cursor-pointer'
-                                    : isBooked
-                                    ? 'border border-gray-300 bg-gray-100 text-gray-500 cursor-not-allowed'
-                                    : isFiller
-                                    ? 'border border-yellow-300 bg-yellow-50 text-yellow-700 cursor-not-allowed'
-                                    : 'border border-gray-200 bg-white text-gray-400 cursor-not-allowed'
-                                }`}
-                                title={
-                                  isBooked
-                                    ? `Booked by ${slot.booking?.clientName}`
-                                    : isFiller
-                                    ? 'Filler slot'
-                                    : canStart
-                                    ? 'Click to select this starting position'
-                                    : isFree
-                                    ? 'Cannot start a valid sequence from here'
-                                    : ''
-                                }
-                              >
-                                <div className={`text-xs font-medium mb-1 ${isSelected ? 'text-white' : ''}`}>
-                                  #{slot.position}
-                                </div>
-
-                                <div className={`text-xs opacity-90 mb-1 ${isSelected ? 'text-white' : ''}`}>
-                                  {slot.startTime}
-                                </div>
-
-                                {isBooked && (
-                                  <div className="text-xs font-medium truncate mt-1">
-                                    {slot.booking?.clientName}
-                                  </div>
-                                )}
-                                {isFiller && (
-                                  <div className="text-xs font-medium mt-1">
-                                    Filler
-                                  </div>
-                                )}
-                                {canStart && !isSelected && !isHoveredPreview && (
-                                  <div className="text-xs font-medium text-green-700 mt-1">
-                                    ✓ Valid
-                                  </div>
-                                )}
-                              </button>
-                            );
-                          })}
-                        </div>
-
-                        {/* Legend */}
-                        <div className="mt-4 flex items-center gap-6 text-xs">
-                          <div className="flex items-center gap-2">
-                            <div className="w-4 h-4 rounded border-2 border-[#D9480F] bg-[#D9480F]" />
-                            <span className="text-gray-600">Selected</span>
+                    {/* Duration Calculation */}
+                    {/* <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                      <div className="flex items-start gap-3">
+                        <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                        <div className="w-full">
+                          <div className="text-sm font-medium text-blue-900 mb-1">Slot Requirement</div>
+                          <div className="text-sm text-blue-800 mb-2">
+                            Your {selectedMedia.duration}s media requires{' '}
+                            <strong>{requiredSlotCount} consecutive {peakConfig?.subSlotDuration}s subslots</strong>.
+                            Click any valid starting slot to auto-select the sequence.
                           </div>
-                          <div className="flex items-center gap-2">
-                            <div className="w-4 h-4 rounded border-2 border-green-300 bg-green-50" />
-                            <span className="text-gray-600">Valid Start</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <div className="w-4 h-4 rounded border border-gray-200 bg-white" />
-                            <span className="text-gray-600">Free (Invalid)</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <div className="w-4 h-4 rounded border border-gray-300 bg-gray-100" />
-                            <span className="text-gray-600">Booked</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <div className="w-4 h-4 rounded border border-yellow-300 bg-yellow-50" />
-                            <span className="text-gray-600">Filler</span>
+                          <div className="text-xs text-blue-700">
+                            Calculation: {selectedMedia.duration}s ÷ {peakConfig?.subSlotDuration}s = {requiredSlotCount} subslots
                           </div>
                         </div>
                       </div>
-                    ) : (
-                      <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
-                        <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                        <div>
-                          <div className="text-sm font-medium text-red-900 mb-1">No Available Consecutive Slots</div>
-                          <div className="text-sm text-red-800">
-                            There are no {requiredSlotCount} consecutive free slots available for your {selectedMedia.duration}s media.
-                            Only fragmented slots remain.
-                          </div>
-                          <div className="text-xs text-red-700 mt-2">
-                            Consider: Using shorter media, selecting Normal slots instead, or waiting for slots to become available.
-                          </div>
-                        </div>
+                    </div> */}
+
+
+                    {/* Peak Slots Grid */}
+                    <div className="bg-white border border-gray-200 rounded-lg p-5">
+                      <SlotGrid
+                        title="Peak Slots"
+                        pricePerSlot={peakConfig?.pricing.peakPrice || 500}
+                        subSlots={peakSubSlots}
+                        selectedSlots={selectedPeakSlots}
+                        hoveredSlot={hoveredPeakSlot}
+                        requiredSlotCount={requiredSlotCount}
+                        selectionError={peakSelectionError}
+                        validSlotGroups={validPeakSlotGroups}
+                        onSlotClick={handlePeakSlotClick}
+                        onSlotHover={setHoveredPeakSlot}
+                        canStartSelection={canStartSelection}
+                        getPreviewSelection={getPreviewSelection}
+                      />
+                    </div>
+
+                    {/* Normal Slots Grid */}
+                    <div className="bg-white border border-gray-200 rounded-lg p-5">
+                      <SlotGrid
+                        title="Normal Slots"
+                        pricePerSlot={normalConfig?.pricing.normalPrice || 300}
+                        subSlots={normalSubSlots}
+                        selectedSlots={selectedNormalSlots}
+                        hoveredSlot={hoveredNormalSlot}
+                        requiredSlotCount={requiredSlotCount}
+                        selectionError={normalSelectionError}
+                        validSlotGroups={validNormalSlotGroups}
+                        onSlotClick={handleNormalSlotClick}
+                        onSlotHover={setHoveredNormalSlot}
+                        canStartSelection={canStartSelection}
+                        getPreviewSelection={getPreviewSelection}
+                      />
+                    </div>
+
+                    {/* Legend */}
+                    <div className="flex items-center justify-center gap-6 text-xs pt-4 border-t border-gray-200">
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 rounded border-2 border-[#D9480F] bg-[#D9480F]" />
+                        <span className="text-gray-600">Selected</span>
                       </div>
-                    )}
-
-                    {/* Context Preview */}
-                    {selectedSlotGroup.length > 0 && (
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-3">Ad Sequence Context</label>
-                        <div className="grid grid-cols-3 gap-3">
-                          {(() => {
-                            const beforeSlot = subSlots.find((s) => s.position === selectedSlotGroup[0] - 1);
-                            const afterSlot = subSlots.find((s) => s.position === selectedSlotGroup[selectedSlotGroup.length - 1] + 1);
-                            
-                            return (
-                              <>
-                                <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
-                                  <div className="text-xs text-gray-600 mb-2">Before Your Ad</div>
-                                  <div className="text-sm font-medium text-gray-900">
-                                    {beforeSlot?.status === 'booked'
-                                      ? beforeSlot.booking?.clientName
-                                      : beforeSlot?.status === 'filler'
-                                      ? 'Filler Ad'
-                                      : beforeSlot?.status === 'free'
-                                      ? 'Free Slot'
-                                      : 'Loop Start'}
-                                  </div>
-                                  {beforeSlot && (
-                                    <div className="text-xs text-gray-500 mt-1">
-                                      Slot #{beforeSlot.position}
-                                    </div>
-                                  )}
-                                </div>
-
-                                <div className="bg-[#D9480F] bg-opacity-10 rounded-lg p-3 border-2 border-[#D9480F]">
-                                  <div className="text-xs text-[#D9480F] mb-2">Your Ad</div>
-                                  <div className="text-sm font-medium text-[rgb(255,255,255)] truncate">{selectedMedia.name}</div>
-                                  <div className="text-xs text-[rgb(219,232,255)] mt-1">
-                                    {selectedMedia.duration}s • Positions {selectedSlotGroup.join(', ')}
-                                  </div>
-                                </div>
-
-                                <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
-                                  <div className="text-xs text-gray-600 mb-2">After Your Ad</div>
-                                  <div className="text-sm font-medium text-gray-900">
-                                    {afterSlot?.status === 'booked'
-                                      ? afterSlot.booking?.clientName
-                                      : afterSlot?.status === 'filler'
-                                      ? 'Filler Ad'
-                                      : afterSlot?.status === 'free'
-                                      ? 'Free Slot'
-                                      : 'Loop End'}
-                                  </div>
-                                  {afterSlot && (
-                                    <div className="text-xs text-gray-500 mt-1">
-                                      Slot #{afterSlot.position}
-                                    </div>
-                                  )}
-                                </div>
-                              </>
-                            );
-                          })()}
-                        </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 rounded border-2 border-green-300 bg-green-50" />
+                        <span className="text-gray-600">Valid Start</span>
                       </div>
-                    )}
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 rounded border border-gray-200 bg-white" />
+                        <span className="text-gray-600">Free (Invalid)</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 rounded border border-gray-300 bg-gray-100" />
+                        <span className="text-gray-600">Booked</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 rounded border border-yellow-300 bg-yellow-50" />
+                        <span className="text-gray-600">Filler</span>
+                      </div>
+                    </div>
                   </>
                 )}
               </div>
@@ -1044,62 +1005,61 @@ export default function MachineBookingFlow() {
 
             {/* Step 3: Duration Selection */}
             {currentStep === 3 && (
-              <div className="space-y-6">
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3">
-                  <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                  <div className="text-sm text-blue-900">
-                    Select how long you want your campaign to run on this machine.
-                  </div>
-                </div>
-
-                {/* Duration Type Toggle */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">
-                    Campaign Duration <span className="text-red-500">*</span>
-                  </label>
-                  
-                  <div className="flex gap-3 mb-4">
-                    <button
-                      onClick={() => setDurationType('preset')}
-                      className={`flex-1 h-12 rounded-lg border-2 transition-all font-medium flex items-center justify-center gap-2 ${
-                        durationType === 'preset'
-                          ? 'border-[#D9480F] bg-orange-50 text-[#D9480F]'
-                          : 'border-gray-300 text-gray-700 hover:border-gray-400'
-                      }`}
-                    >
-                      Quick Select
-                    </button>
-                    <button
-                      onClick={() => setDurationType('custom')}
-                      className={`flex-1 h-12 rounded-lg border-2 transition-all font-medium flex items-center justify-center gap-2 ${
-                        durationType === 'custom'
-                          ? 'border-[#D9480F] bg-orange-50 text-[#D9480F]'
-                          : 'border-gray-300 text-gray-700 hover:border-gray-400'
-                      }`}
-                    >
-                      <Calendar className="w-4 h-4" />
-                      Custom Dates
-                    </button>
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Left Column: Duration Selection */}
+                <div className="lg:col-span-2 space-y-6">
+                  {/* Duration Type Toggle */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-3">
+                      Campaign Duration <span className="text-red-500">*</span>
+                    </label>
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => setDurationType('preset')}
+                        className={`flex-1 h-11 rounded-lg border transition-all text-sm font-medium flex items-center justify-center gap-2 ${
+                          durationType === 'preset'
+                            ? 'border-[#D9480F] bg-orange-50 text-[#D9480F]'
+                            : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50'
+                        }`}
+                      >
+                        Quick Select
+                      </button>
+                      <button
+                        onClick={() => setDurationType('custom')}
+                        className={`flex-1 h-11 rounded-lg border transition-all text-sm font-medium flex items-center justify-center gap-2 ${
+                          durationType === 'custom'
+                            ? 'border-[#D9480F] bg-orange-50 text-[#D9480F]'
+                            : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50'
+                        }`}
+                      >
+                        <Calendar className="w-4 h-4" />
+                        Custom Dates
+                      </button>
+                    </div>
                   </div>
 
                   {/* Preset Duration Options */}
                   {durationType === 'preset' && (
-                    <div className="grid grid-cols-3 gap-4">
+                    <div className="grid grid-cols-3 gap-3">
                       {CAMPAIGN_DURATION_PRESETS.map((duration) => (
                         <button
                           key={duration.value}
                           onClick={() => setCampaignDuration(duration.value)}
-                          className={`h-20 rounded-lg border-2 transition-all font-medium flex flex-col items-center justify-center ${
+                          className={`h-20 rounded-lg border transition-all duration-200 flex flex-col items-center justify-center ${
                             campaignDuration === duration.value
-                              ? 'border-[#D9480F] bg-orange-50 text-[#D9480F]'
-                              : 'border-gray-300 text-gray-700 hover:border-gray-400'
+                              ? 'border-[#D9480F] bg-orange-50 text-[#D9480F] shadow-md ring-1 ring-[#D9480F] ring-opacity-20'
+                              : 'border-gray-200 bg-white text-gray-700 hover:border-[#D9480F] hover:border-opacity-30 hover:shadow-sm'
                           }`}
                         >
-                          <div className="text-2xl font-semibold mb-1">
+                          <div className={`text-xl font-bold mb-0.5 ${
+                            campaignDuration === duration.value ? 'text-[#D9480F]' : 'text-gray-900'
+                          }`}>
                             {duration.value === 365 ? '1' : duration.value}
                           </div>
-                          <div className="text-sm">
-                            {duration.value === 365 ? 'year' : 'days'}
+                          <div className={`text-xs font-medium uppercase tracking-wide ${
+                            campaignDuration === duration.value ? 'text-[#D9480F]' : 'text-gray-500'
+                          }`}>
+                            {duration.value === 365 ? 'Year' : duration.value === 1 ? 'Day' : 'Days'}
                           </div>
                         </button>
                       ))}
@@ -1108,9 +1068,9 @@ export default function MachineBookingFlow() {
 
                   {/* Custom Date Range */}
                   {durationType === 'custom' && (
-                    <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
                           Start Date <span className="text-red-500">*</span>
                         </label>
                         <input
@@ -1118,11 +1078,11 @@ export default function MachineBookingFlow() {
                           value={startDate}
                           onChange={(e) => setStartDate(e.target.value)}
                           min={new Date().toISOString().split('T')[0]}
-                          className="w-full h-11 px-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D9480F] focus:border-transparent"
+                          className="w-full h-11 px-4 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#D9480F] focus:border-transparent"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
                           End Date <span className="text-red-500">*</span>
                         </label>
                         <input
@@ -1130,23 +1090,21 @@ export default function MachineBookingFlow() {
                           value={endDate}
                           onChange={(e) => setEndDate(e.target.value)}
                           min={startDate || new Date().toISOString().split('T')[0]}
-                          className="w-full h-11 px-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D9480F] focus:border-transparent"
+                          className="w-full h-11 px-4 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#D9480F] focus:border-transparent"
                         />
                       </div>
                       {startDate && endDate && new Date(endDate) > new Date(startDate) && (
-                        <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                          <div className="flex items-start gap-3">
-                            <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                            <div>
-                              <div className="text-sm font-medium text-green-900 mb-1">Campaign Duration Calculated</div>
-                              <div className="text-sm text-green-800">
-                                Your campaign will run for <span className="font-semibold">
-                                  {Math.ceil((new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24))} days
-                                </span>
-                              </div>
-                              <div className="text-xs text-green-700 mt-1">
-                                From {new Date(startDate).toLocaleDateString()} to {new Date(endDate).toLocaleDateString()}
-                              </div>
+                        <div className="col-span-2 bg-green-50 border border-green-200 rounded-lg p-4 flex items-start gap-3">
+                          <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                          <div>
+                            <div className="text-sm font-medium text-green-900">
+                              <span className="font-bold">
+                                {Math.ceil((new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24))} days
+                              </span>
+                              {' '}campaign duration
+                            </div>
+                            <div className="text-xs text-green-700 mt-0.5">
+                              {new Date(startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} – {new Date(endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                             </div>
                           </div>
                         </div>
@@ -1155,27 +1113,76 @@ export default function MachineBookingFlow() {
                   )}
                 </div>
 
-                {/* Cost Preview */}
+                {/* Right Column: Cost Estimate - Sticky Sidebar */}
                 {totalCost > 0 && campaignDays > 0 && (
-                  <div className="bg-white border-2 border-[#D9480F] rounded-lg p-6">
-                    <div className="text-sm font-medium text-gray-700 mb-4">Campaign Cost Estimate</div>
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-600">Daily Rate</span>
-                        <span className="font-medium text-gray-900">${totalCost.toLocaleString()}</span>
-                      </div>
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-600">Campaign Duration</span>
-                        <span className="font-medium text-gray-900">× {campaignDays} days</span>
-                      </div>
-                      <div className="pt-3 border-t border-gray-300 flex items-center justify-between">
-                        <span className="text-base font-medium text-gray-900">Total Campaign Cost</span>
-                        <span className="text-2xl font-semibold text-[#D9480F]">
-                          ${(totalCost * campaignDays).toLocaleString()}
-                        </span>
-                      </div>
-                      <div className="text-xs text-gray-600">
-                        {requiredSlotCount} slots × ${activeConfig?.pricing.peakPrice || activeConfig?.pricing.normalPrice} × {campaignDays} days
+                  <div className="lg:col-span-1">
+                    <div className="bg-gradient-to-br from-orange-50 to-red-50 border border-[#D9480F] rounded-lg p-6 sticky top-6 shadow-sm">
+                      <div className="text-sm font-medium text-gray-700 mb-4">Campaign Cost</div>
+                      
+                      <div className="space-y-4">
+                        {/* Total Cost - Prominent */}
+                        <div className="text-center py-4">
+                          <div className="text-4xl font-bold text-[#D9480F] mb-1">
+                            ${(totalCost * campaignDays).toLocaleString()}
+                          </div>
+                          <div className="text-xs text-gray-600 uppercase tracking-wide">
+                            Total Campaign Cost
+                          </div>
+                        </div>
+
+                        {/* Divider */}
+                        <div className="border-t border-orange-200"></div>
+
+                        {/* Breakdown */}
+                        <div className="space-y-2.5">
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-gray-700">Daily Rate</span>
+                            <span className="font-semibold text-gray-900">${totalCost.toLocaleString()}</span>
+                          </div>
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-gray-700">Duration</span>
+                            <span className="font-semibold text-gray-900">{campaignDays} {campaignDays === 1 ? 'day' : 'days'}</span>
+                          </div>
+                          
+                          {/* Slot Breakdown - Show both Peak and Normal if applicable */}
+                          {selectedPeakSlots.length > 0 && selectedNormalSlots.length > 0 ? (
+                            <>
+                              <div className="pt-2 border-t border-orange-100">
+                                <div className="text-xs font-medium text-gray-600 mb-2">Slot Breakdown</div>
+                                <div className="space-y-1.5">
+                                  <div className="flex items-center justify-between text-xs">
+                                    <span className="text-gray-600">Peak Slots</span>
+                                    <span className="font-medium text-gray-900">{selectedPeakSlots.length} × ${peakConfig?.pricing.peakPrice}</span>
+                                  </div>
+                                  <div className="flex items-center justify-between text-xs">
+                                    <span className="text-gray-600">Normal Slots</span>
+                                    <span className="font-medium text-gray-900">{selectedNormalSlots.length} × ${normalConfig?.pricing.normalPrice}</span>
+                                  </div>
+                                  <div className="flex items-center justify-between text-sm pt-1.5 border-t border-orange-100">
+                                    <span className="text-gray-700">Total Slots</span>
+                                    <span className="font-semibold text-gray-900">{selectedPeakSlots.length + selectedNormalSlots.length} slots</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </>
+                          ) : (
+                            <div className="flex items-center justify-between text-sm">
+                              <span className="text-gray-700">Slots Booked</span>
+                              <span className="font-semibold text-gray-900">
+                                {selectedPeakSlots.length + selectedNormalSlots.length} {selectedPeakSlots.length + selectedNormalSlots.length === 1 ? 'slot' : 'slots'}
+                                {selectedPeakSlots.length > 0 && ' (Peak)'}
+                                {selectedNormalSlots.length > 0 && ' (Normal)'}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Formula */}
+                        <div className="bg-white bg-opacity-70 rounded-lg p-3 text-center">
+                          <div className="text-xs text-gray-600">
+                            {totalCost}/day × {campaignDays} day{campaignDays !== 1 ? 's' : ''}
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -1214,30 +1221,74 @@ export default function MachineBookingFlow() {
                     <div>
                       <div className="text-xs font-medium text-gray-700 mb-2">Slot Allocation</div>
                       <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between text-sm">
-                            <span className="text-gray-600">Slot Type</span>
-                            <span className="font-medium text-gray-900 capitalize">{slotType}</span>
-                          </div>
-                          <div className="flex items-center justify-between text-sm">
-                            <span className="text-gray-600">Positions</span>
-                            <span className="font-medium text-gray-900">{selectedSlotGroup.join(', ')}</span>
-                          </div>
-                          <div className="flex items-center justify-between text-sm">
-                            <span className="text-gray-600">Time Range</span>
-                            <span className="font-medium text-gray-900">
-                              {subSlots.find((s) => s.position === selectedSlotGroup[0])?.startTime} –{' '}
-                              {subSlots.find((s) => s.position === selectedSlotGroup[selectedSlotGroup.length - 1])?.endTime}
-                            </span>
-                          </div>
-                          <div className="flex items-center justify-between text-sm">
-                            <span className="text-gray-600">Subslots Required</span>
-                            <span className="font-medium text-gray-900">
-                              {requiredSlotCount} × {activeConfig?.subSlotDuration}s
-                            </span>
-                          </div>
-                          <div className="pt-2 border-t border-gray-300 text-xs text-gray-600">
-                            Logic: {selectedMedia?.duration}s media ÷ {activeConfig?.subSlotDuration}s subslots = {requiredSlotCount} positions
+                        <div className="space-y-3">
+                          {/* Peak Slots */}
+                          {selectedPeakSlots.length > 0 && (
+                            <div className="pb-3 border-b border-gray-200">
+                              <div className="flex items-center justify-between text-sm mb-2">
+                                <span className="text-gray-600 font-medium">Peak Slots</span>
+                                <span className="font-semibold text-orange-600">{selectedPeakSlots.length} slots</span>
+                              </div>
+                              <div className="space-y-1.5 text-xs">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-gray-600">Positions</span>
+                                  <span className="font-medium text-gray-900">
+                                    #{selectedPeakSlots[0]} - #{selectedPeakSlots[selectedPeakSlots.length - 1]}
+                                  </span>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                  <span className="text-gray-600">Time Range</span>
+                                  <span className="font-medium text-gray-900">
+                                    {peakSubSlots.find((s) => s.position === selectedPeakSlots[0])?.startTime} –{' '}
+                                    {peakSubSlots.find((s) => s.position === selectedPeakSlots[selectedPeakSlots.length - 1])?.endTime}
+                                  </span>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                  <span className="text-gray-600">Price per slot</span>
+                                  <span className="font-medium text-gray-900">${peakConfig?.pricing.peakPrice}</span>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Normal Slots */}
+                          {selectedNormalSlots.length > 0 && (
+                            <div className={selectedPeakSlots.length > 0 ? '' : 'pb-3 border-b border-gray-200'}>
+                              <div className="flex items-center justify-between text-sm mb-2">
+                                <span className="text-gray-600 font-medium">Normal Slots</span>
+                                <span className="font-semibold text-blue-600">{selectedNormalSlots.length} slots</span>
+                              </div>
+                              <div className="space-y-1.5 text-xs">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-gray-600">Positions</span>
+                                  <span className="font-medium text-gray-900">
+                                    #{selectedNormalSlots[0]} - #{selectedNormalSlots[selectedNormalSlots.length - 1]}
+                                  </span>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                  <span className="text-gray-600">Time Range</span>
+                                  <span className="font-medium text-gray-900">
+                                    {normalSubSlots.find((s) => s.position === selectedNormalSlots[0])?.startTime} –{' '}
+                                    {normalSubSlots.find((s) => s.position === selectedNormalSlots[selectedNormalSlots.length - 1])?.endTime}
+                                  </span>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                  <span className="text-gray-600">Price per slot</span>
+                                  <span className="font-medium text-gray-900">${normalConfig?.pricing.normalPrice}</span>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Total Summary */}
+                          <div className="pt-2 text-xs text-gray-600">
+                            <div className="flex items-center justify-between">
+                              <span>Total Subslots Required</span>
+                              <span className="font-medium text-gray-900">{requiredSlotCount}</span>
+                            </div>
+                            <div className="mt-1 text-gray-500">
+                              Logic: {selectedMedia?.duration}s media ÷ {peakConfig?.subSlotDuration || normalConfig?.subSlotDuration}s subslots = {requiredSlotCount} positions
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -1317,9 +1368,9 @@ export default function MachineBookingFlow() {
                       <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                         <div className="space-y-2">
                           <div className="flex items-center justify-between text-sm">
-                            <span className="text-gray-600">Price per Subslot</span>
+                            <span className="text-gray-600">Daily Cost</span>
                             <span className="font-medium text-gray-900">
-                              ${activeConfig?.pricing.peakPrice || activeConfig?.pricing.normalPrice}
+                              ${totalCost}
                             </span>
                           </div>
                           <div className="flex items-center justify-between text-sm">
@@ -1341,7 +1392,7 @@ export default function MachineBookingFlow() {
                             </span>
                           </div>
                           <div className="text-xs text-gray-600 text-right">
-                            ${activeConfig?.pricing.peakPrice || activeConfig?.pricing.normalPrice} × {requiredSlotCount} slots × {campaignDays} days
+                            ${totalCost} per day × {campaignDays} days
                           </div>
                         </div>
                       </div>
@@ -1353,8 +1404,10 @@ export default function MachineBookingFlow() {
                   <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
                   <div className="text-sm text-blue-900">
                     By confirming this booking, your {selectedMedia?.duration}s ad will play on{' '}
-                    <strong>{machine.name}</strong> in positions <strong>{selectedSlotGroup.join(', ')}</strong> during{' '}
-                    <strong>{slotType}</strong> hours for <strong>{campaignDays} days</strong>.
+                    <strong>{machine.name}</strong> in{' '}
+                    {selectedPeakSlots.length > 0 && <><strong>{selectedPeakSlots.length} peak slots</strong>{selectedNormalSlots.length > 0 && ' and '}</>}
+                    {selectedNormalSlots.length > 0 && <><strong>{selectedNormalSlots.length} normal slots</strong></>}
+                    {' '}for <strong>{campaignDays} days</strong>.
                   </div>
                 </div>
               </div>
