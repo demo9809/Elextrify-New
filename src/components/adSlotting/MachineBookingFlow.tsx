@@ -176,6 +176,7 @@ export default function MachineBookingFlow() {
   const [campaignDuration, setCampaignDuration] = useState(30);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [presetStartDate, setPresetStartDate] = useState(''); // Start date for preset mode
 
   const machine = mockMachines.find((m) => m.id === machineId);
   
@@ -404,7 +405,9 @@ export default function MachineBookingFlow() {
 
   const canProceedFromStep1 = selectedClient !== null && selectedMedia !== null;
   const canProceedFromStep2 = selectedPeakSlots.length > 0 || selectedNormalSlots.length > 0;
-  const canProceedFromStep3 = durationType === 'preset' || (startDate !== '' && endDate !== '' && new Date(endDate) > new Date(startDate));
+  const canProceedFromStep3 = durationType === 'preset' 
+    ? presetStartDate !== '' 
+    : (startDate !== '' && endDate !== '' && new Date(endDate) > new Date(startDate));
   const canSubmit = canProceedFromStep1 && canProceedFromStep2 && canProceedFromStep3;
 
   const handleSubmit = () => {
@@ -425,8 +428,10 @@ export default function MachineBookingFlow() {
       clientName: selectedClient!.name,
       durationType,
       campaignDuration: durationType === 'preset' ? campaignDuration : undefined,
-      startDate: durationType === 'custom' ? startDate : undefined,
-      endDate: durationType === 'custom' ? endDate : undefined,
+      startDate: durationType === 'preset' ? presetStartDate : startDate,
+      endDate: durationType === 'preset' 
+        ? new Date(new Date(presetStartDate).getTime() + campaignDuration * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+        : endDate,
       campaignDays,
       totalCost,
       peakCost,
@@ -593,12 +598,17 @@ export default function MachineBookingFlow() {
                   </div>
                 )}
 
-                {campaignDays > 0 && (
+                {((durationType === 'preset' && presetStartDate) || (durationType === 'custom' && campaignDays > 0)) && (
                   <div>
                     <div className="text-xs text-gray-600 mb-1">Campaign Duration</div>
                     <div className="text-sm font-medium text-gray-900">
                       {durationType === 'preset' ? `${campaignDuration} days` : `${campaignDays} days`}
                     </div>
+                    {durationType === 'preset' && presetStartDate && (
+                      <div className="text-xs text-gray-500 mt-1">
+                        {presetStartDate} to {new Date(new Date(presetStartDate).getTime() + campaignDuration * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
+                      </div>
+                    )}
                     {durationType === 'custom' && startDate && endDate && (
                       <div className="text-xs text-gray-500 mt-1">
                         {startDate} to {endDate}
@@ -607,12 +617,12 @@ export default function MachineBookingFlow() {
                   </div>
                 )}
 
-                {totalCost > 0 && campaignDays > 0 && (
+                {totalCost > 0 && ((durationType === 'preset' && presetStartDate) || (durationType === 'custom' && campaignDays > 0)) && (
                   <div className="pt-3 border-t border-gray-300">
                     <div className="text-xs text-gray-600 mb-1">Estimated Total Cost</div>
-                    <div className="text-xl font-semibold text-[#D9480F]">${(totalCost * campaignDays).toLocaleString()}</div>
+                    <div className="text-xl font-semibold text-[#D9480F]">${(totalCost * (durationType === 'preset' ? campaignDuration : campaignDays)).toLocaleString()}</div>
                     <div className="text-xs text-gray-500 mt-1">
-                      ${totalCost} × {campaignDays} days
+                      ${totalCost} × {durationType === 'preset' ? campaignDuration : campaignDays} days
                     </div>
                   </div>
                 )}
@@ -1040,29 +1050,73 @@ export default function MachineBookingFlow() {
 
                   {/* Preset Duration Options */}
                   {durationType === 'preset' && (
-                    <div className="grid grid-cols-3 gap-3">
-                      {CAMPAIGN_DURATION_PRESETS.map((duration) => (
-                        <button
-                          key={duration.value}
-                          onClick={() => setCampaignDuration(duration.value)}
-                          className={`h-20 rounded-lg border transition-all duration-200 flex flex-col items-center justify-center ${
-                            campaignDuration === duration.value
-                              ? 'border-[#D9480F] bg-orange-50 text-[#D9480F] shadow-md ring-1 ring-[#D9480F] ring-opacity-20'
-                              : 'border-gray-200 bg-white text-gray-700 hover:border-[#D9480F] hover:border-opacity-30 hover:shadow-sm'
-                          }`}
-                        >
-                          <div className={`text-xl font-bold mb-0.5 ${
-                            campaignDuration === duration.value ? 'text-[#D9480F]' : 'text-gray-900'
-                          }`}>
-                            {duration.value === 365 ? '1' : duration.value}
+                    <div className="space-y-4">
+                      {/* Start Date for Preset Mode */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Campaign Start Date <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="date"
+                          value={presetStartDate}
+                          onChange={(e) => setPresetStartDate(e.target.value)}
+                          min={new Date().toISOString().split('T')[0]}
+                          className="w-full h-11 px-4 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#D9480F] focus:border-transparent"
+                        />
+                        {presetStartDate && (
+                          <p className="text-xs text-gray-500 mt-1">
+                            Campaign will end on {new Date(new Date(presetStartDate).getTime() + campaignDuration * 24 * 60 * 60 * 1000).toLocaleDateString()}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Duration Selection Grid */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Select Duration
+                        </label>
+                        <div className="grid grid-cols-3 gap-3">
+                          {CAMPAIGN_DURATION_PRESETS.map((duration) => (
+                            <button
+                              key={duration.value}
+                              onClick={() => setCampaignDuration(duration.value)}
+                              className={`h-20 rounded-lg border transition-all duration-200 flex flex-col items-center justify-center ${
+                                campaignDuration === duration.value
+                                  ? 'border-[#D9480F] bg-orange-50 text-[#D9480F] shadow-md ring-1 ring-[#D9480F] ring-opacity-20'
+                                  : 'border-gray-200 bg-white text-gray-700 hover:border-[#D9480F] hover:border-opacity-30 hover:shadow-sm'
+                              }`}
+                            >
+                              <div className={`text-xl font-bold mb-0.5 ${
+                                campaignDuration === duration.value ? 'text-[#D9480F]' : 'text-gray-900'
+                              }`}>
+                                {duration.value === 365 ? '1' : duration.value}
+                              </div>
+                              <div className={`text-xs font-medium uppercase tracking-wide ${
+                                campaignDuration === duration.value ? 'text-[#D9480F]' : 'text-gray-500'
+                              }`}>
+                                {duration.value === 365 ? 'Year' : duration.value === 1 ? 'Day' : 'Days'}
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Info Box for Preset Mode */}
+                      {presetStartDate && (
+                        <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-start gap-3">
+                          <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                          <div>
+                            <div className="text-sm font-medium text-green-900 mb-1">
+                              Campaign Duration Set
+                            </div>
+                            <div className="text-sm text-green-800">
+                              Your campaign will run for <strong>{campaignDuration} days</strong> starting from{' '}
+                              <strong>{new Date(presetStartDate).toLocaleDateString()}</strong> and ending on{' '}
+                              <strong>{new Date(new Date(presetStartDate).getTime() + campaignDuration * 24 * 60 * 60 * 1000).toLocaleDateString()}</strong>.
+                            </div>
                           </div>
-                          <div className={`text-xs font-medium uppercase tracking-wide ${
-                            campaignDuration === duration.value ? 'text-[#D9480F]' : 'text-gray-500'
-                          }`}>
-                            {duration.value === 365 ? 'Year' : duration.value === 1 ? 'Day' : 'Days'}
-                          </div>
-                        </button>
-                      ))}
+                        </div>
+                      )}
                     </div>
                   )}
 
@@ -1303,10 +1357,26 @@ export default function MachineBookingFlow() {
                             <span className="font-medium text-gray-900 capitalize">{durationType === 'preset' ? 'Quick Select' : 'Custom Dates'}</span>
                           </div>
                           {durationType === 'preset' ? (
-                            <div className="flex items-center justify-between text-sm">
-                              <span className="text-gray-600">Campaign Length</span>
-                              <span className="font-medium text-gray-900">{campaignDuration} days</span>
-                            </div>
+                            <>
+                              <div className="flex items-center justify-between text-sm">
+                                <span className="text-gray-600">Campaign Length</span>
+                                <span className="font-medium text-gray-900">{campaignDuration} days</span>
+                              </div>
+                              {presetStartDate && (
+                                <>
+                                  <div className="flex items-center justify-between text-sm">
+                                    <span className="text-gray-600">Start Date</span>
+                                    <span className="font-medium text-gray-900">{presetStartDate}</span>
+                                  </div>
+                                  <div className="flex items-center justify-between text-sm">
+                                    <span className="text-gray-600">End Date</span>
+                                    <span className="font-medium text-gray-900">
+                                      {new Date(new Date(presetStartDate).getTime() + campaignDuration * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
+                                    </span>
+                                  </div>
+                                </>
+                              )}
+                            </>
                           ) : (
                             <>
                               <div className="flex items-center justify-between text-sm">
