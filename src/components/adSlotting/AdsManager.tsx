@@ -21,6 +21,7 @@ import {
   Activity,
 } from 'lucide-react';
 import { toast } from 'sonner@2.0.3';
+import { Pagination } from '../shared/Pagination';
 
 type AdStatus = 'running' | 'scheduled' | 'paused' | 'completed' | 'conflict';
 type MediaType = 'video' | 'image';
@@ -420,6 +421,9 @@ export default function AdsManager() {
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
   const [emergencyStopAd, setEmergencyStopAd] = useState<AdInstance | null>(null);
 
+  // Active tab state
+  const [activeTab, setActiveTab] = useState<'all' | AdStatus | 'drafts'>('all');
+
   // Filters
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
@@ -430,8 +434,27 @@ export default function AdsManager() {
   const [filterMediaType, setFilterMediaType] = useState<MediaType | ''>('');
   const [filterStatus, setFilterStatus] = useState<AdStatus | ''>('');
 
+  // Calculate counts per tab
+  const tabCounts = {
+    all: mockAdInstances.length,
+    running: mockAdInstances.filter(ad => ad.status === 'running').length,
+    scheduled: mockAdInstances.filter(ad => ad.status === 'scheduled').length,
+    paused: mockAdInstances.filter(ad => ad.status === 'paused').length,
+    completed: mockAdInstances.filter(ad => ad.status === 'completed').length,
+    drafts: 0, // Add draft logic when needed
+  };
+
   // Filtered data
   const filteredAds = mockAdInstances.filter((ad) => {
+    // Tab filtering
+    if (activeTab !== 'all' && activeTab !== 'drafts') {
+      if (ad.status !== activeTab) return false;
+    }
+    if (activeTab === 'drafts') {
+      // Add draft filtering logic when needed
+      return false;
+    }
+
     const matchesSearch = 
       ad.clientName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       ad.creativeName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -543,170 +566,157 @@ export default function AdsManager() {
     setFilterStatus('');
   };
 
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const totalPages = Math.ceil(filteredAds.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = Math.min(startIndex + itemsPerPage, filteredAds.length);
+  const currentAds = filteredAds.slice(startIndex, endIndex);
+
+  // Reset to page 1 when filters change
+  const handleFilterChange = () => {
+    setCurrentPage(1);
+  };
+
   return (
     <div className="flex flex-col h-screen bg-[#F9FAFB]">
       {/* Header */}
-      <div className="bg-white border-b border-[#E5E7EB] px-8 py-6">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-[32px] leading-[38px] font-semibold text-[#111827] mb-2">Ads Manager</h1>
-            <p className="text-sm text-[#6B7280]">
-              {filteredAds.length} ad instance{filteredAds.length !== 1 ? 's' : ''} • Real-time hardware state
-            </p>
-          </div>
-          {selectedRows.length > 0 && (
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-[#6B7280]">{selectedRows.length} selected</span>
-              <button
-                onClick={handleBulkPause}
-                className="flex items-center gap-2 px-4 h-11 bg-white border border-[#E5E7EB] text-[#111827] rounded-lg hover:bg-[#F9FAFB] transition-colors font-medium"
-              >
-                <Pause className="w-4 h-4" />
-                <span>Pause</span>
-              </button>
-              <button
-                onClick={handleBulkResume}
-                className="flex items-center gap-2 px-4 h-11 bg-white border border-[#E5E7EB] text-[#111827] rounded-lg hover:bg-[#F9FAFB] transition-colors font-medium"
-              >
-                <Play className="w-4 h-4" />
-                <span>Resume</span>
-              </button>
-              <button
-                onClick={() => setSelectedRows([])}
-                className="flex items-center justify-center w-11 h-11 bg-white border border-[#E5E7EB] text-[#111827] rounded-lg hover:bg-[#F9FAFB] transition-colors"
-              >
-                <X className="w-4 h-4" />
-              </button>
+      <div className="bg-white border-b border-[#E5E7EB]">
+        <div className="px-8 py-6">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h1 className="text-[32px] leading-[38px] font-semibold text-[#111827] mb-2">Ads Manager</h1>
+              <p className="text-sm text-[#6B7280]">
+                {filteredAds.length} ad instance{filteredAds.length !== 1 ? 's' : ''} • Real-time hardware state
+              </p>
             </div>
-          )}
-        </div>
-
-        {/* Search and Filters */}
-        <div className="flex items-center gap-4">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B7280]" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search by client, creative, or machine..."
-              className="w-full h-11 pl-10 pr-4 border border-[#E5E7EB] rounded-md text-sm focus:ring-2 focus:ring-[#D9480F] focus:border-transparent bg-white"
-            />
-          </div>
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className={`flex items-center gap-2 px-4 h-11 rounded-lg font-medium transition-colors ${
-              showFilters
-                ? 'bg-[#D9480F] text-white'
-                : 'bg-white border border-[#E5E7EB] text-[#111827] hover:bg-[#F9FAFB]'
-            }`}
-          >
-            <Filter className="w-4 h-4" />
-            <span>Filters</span>
-            {activeFilterCount > 0 && (
-              <span className="flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-white text-[#D9480F] text-xs font-semibold">
-                {activeFilterCount}
-              </span>
-            )}
-          </button>
-        </div>
-
-        {/* Filter Panel */}
-        {showFilters && (
-          <div className="mt-6 p-6 bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg">
-            <div className="grid grid-cols-6 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-[#111827] mb-2">Client</label>
-                <select
-                  value={filterClient}
-                  onChange={(e) => setFilterClient(e.target.value)}
-                  className="w-full h-11 px-3 border border-[#E5E7EB] rounded-md text-sm focus:ring-2 focus:ring-[#D9480F] focus:border-transparent bg-white"
-                >
-                  <option value="">All</option>
-                  {uniqueClients.map((client) => (
-                    <option key={client} value={client}>{client}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-[#111827] mb-2">Machine</label>
-                <select
-                  value={filterMachine}
-                  onChange={(e) => setFilterMachine(e.target.value)}
-                  className="w-full h-11 px-3 border border-[#E5E7EB] rounded-md text-sm focus:ring-2 focus:ring-[#D9480F] focus:border-transparent bg-white"
-                >
-                  <option value="">All</option>
-                  {uniqueMachines.map((machine) => (
-                    <option key={machine} value={machine}>{machine}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-[#111827] mb-2">Group</label>
-                <select
-                  value={filterGroup}
-                  onChange={(e) => setFilterGroup(e.target.value)}
-                  className="w-full h-11 px-3 border border-[#E5E7EB] rounded-md text-sm focus:ring-2 focus:ring-[#D9480F] focus:border-transparent bg-white"
-                >
-                  <option value="">All</option>
-                  {uniqueGroups.map((group) => (
-                    <option key={group} value={group}>{group}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-[#111827] mb-2">Slot Type</label>
-                <select
-                  value={filterSlotType}
-                  onChange={(e) => setFilterSlotType(e.target.value as SlotType | '')}
-                  className="w-full h-11 px-3 border border-[#E5E7EB] rounded-md text-sm focus:ring-2 focus:ring-[#D9480F] focus:border-transparent bg-white"
-                >
-                  <option value="">All</option>
-                  <option value="peak">Peak</option>
-                  <option value="normal">Normal</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-[#111827] mb-2">Media</label>
-                <select
-                  value={filterMediaType}
-                  onChange={(e) => setFilterMediaType(e.target.value as MediaType | '')}
-                  className="w-full h-11 px-3 border border-[#E5E7EB] rounded-md text-sm focus:ring-2 focus:ring-[#D9480F] focus:border-transparent bg-white"
-                >
-                  <option value="">All</option>
-                  <option value="video">Video</option>
-                  <option value="image">Image</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-[#111827] mb-2">Status</label>
-                <select
-                  value={filterStatus}
-                  onChange={(e) => setFilterStatus(e.target.value as AdStatus | '')}
-                  className="w-full h-11 px-3 border border-[#E5E7EB] rounded-md text-sm focus:ring-2 focus:ring-[#D9480F] focus:border-transparent bg-white"
-                >
-                  <option value="">All</option>
-                  <option value="running">Running</option>
-                  <option value="scheduled">Scheduled</option>
-                  <option value="paused">Paused</option>
-                  <option value="completed">Completed</option>
-                  <option value="conflict">Conflict</option>
-                </select>
-              </div>
-            </div>
-            {activeFilterCount > 0 && (
-              <div className="mt-4 flex items-center justify-between">
-                <span className="text-sm text-[#6B7280]">{activeFilterCount} filter{activeFilterCount > 1 ? 's' : ''} active</span>
+            {selectedRows.length > 0 && (
+              <div className="flex items-center gap-4">
+                <span className="text-sm text-[#6B7280]">{selectedRows.length} selected</span>
                 <button
-                  onClick={clearFilters}
-                  className="text-sm text-[#D9480F] hover:underline font-medium"
+                  onClick={handleBulkPause}
+                  className="flex items-center gap-2 px-4 h-11 bg-white border border-[#E5E7EB] text-[#111827] rounded-lg hover:bg-[#F9FAFB] transition-colors font-medium"
                 >
-                  Clear all filters
+                  <Pause className="w-4 h-4" />
+                  <span>Pause</span>
+                </button>
+                <button
+                  onClick={handleBulkResume}
+                  className="flex items-center gap-2 px-4 h-11 bg-white border border-[#E5E7EB] text-[#111827] rounded-lg hover:bg-[#F9FAFB] transition-colors font-medium"
+                >
+                  <Play className="w-4 h-4" />
+                  <span>Resume</span>
+                </button>
+                <button
+                  onClick={() => setSelectedRows([])}
+                  className="flex items-center justify-center w-11 h-11 bg-white border border-[#E5E7EB] text-[#111827] rounded-lg hover:bg-[#F9FAFB] transition-colors"
+                >
+                  <X className="w-4 h-4" />
                 </button>
               </div>
             )}
           </div>
-        )}
+        </div>
+
+        {/* Tabs (Segmented Controls) + Search and Filters - All in one line */}
+        <div className="px-8 py-4 border-b border-[#E5E7EB]">
+          <div className="flex items-center justify-between gap-4">
+            {/* Segmented Control Tabs */}
+            <div className="inline-flex items-center gap-1 p-1 bg-[#F3F4F6] rounded-lg">
+              <button
+                onClick={() => setActiveTab('all')}
+                className={`px-3 h-8 text-sm font-medium rounded-md transition-colors ${
+                  activeTab === 'all'
+                    ? 'bg-white text-[#111827] shadow-sm'
+                    : 'text-[#6B7280] hover:text-[#111827]'
+                }`}
+              >
+                All
+              </button>
+              <button
+                onClick={() => setActiveTab('running')}
+                className={`px-3 h-8 text-sm font-medium rounded-md transition-colors ${
+                  activeTab === 'running'
+                    ? 'bg-white text-[#111827] shadow-sm'
+                    : 'text-[#6B7280] hover:text-[#111827]'
+                }`}
+              >
+                Active {tabCounts.running > 0 && <span className="ml-1.5">({tabCounts.running})</span>}
+              </button>
+              <button
+                onClick={() => setActiveTab('scheduled')}
+                className={`px-3 h-8 text-sm font-medium rounded-md transition-colors ${
+                  activeTab === 'scheduled'
+                    ? 'bg-white text-[#111827] shadow-sm'
+                    : 'text-[#6B7280] hover:text-[#111827]'
+                }`}
+              >
+                Scheduled {tabCounts.scheduled > 0 && <span className="ml-1.5">({tabCounts.scheduled})</span>}
+              </button>
+              <button
+                onClick={() => setActiveTab('paused')}
+                className={`px-3 h-8 text-sm font-medium rounded-md transition-colors ${
+                  activeTab === 'paused'
+                    ? 'bg-white text-[#111827] shadow-sm'
+                    : 'text-[#6B7280] hover:text-[#111827]'
+                }`}
+              >
+                Paused {tabCounts.paused > 0 && <span className="ml-1.5">({tabCounts.paused})</span>}
+              </button>
+              <button
+                onClick={() => setActiveTab('completed')}
+                className={`px-3 h-8 text-sm font-medium rounded-md transition-colors ${
+                  activeTab === 'completed'
+                    ? 'bg-white text-[#111827] shadow-sm'
+                    : 'text-[#6B7280] hover:text-[#111827]'
+                }`}
+              >
+                Completed {tabCounts.completed > 0 && <span className="ml-1.5">({tabCounts.completed})</span>}
+              </button>
+              <button
+                onClick={() => setActiveTab('drafts')}
+                className={`px-3 h-8 text-sm font-medium rounded-md transition-colors ${
+                  activeTab === 'drafts'
+                    ? 'bg-white text-[#111827] shadow-sm'
+                    : 'text-[#6B7280] hover:text-[#111827]'
+                }`}
+              >
+                Drafts {tabCounts.drafts > 0 && <span className="ml-1.5">({tabCounts.drafts})</span>}
+              </button>
+            </div>
+
+            {/* Search and Filters */}
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B7280]" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search campaigns..."
+                  className="w-[300px] h-9 pl-10 pr-4 border border-[#E5E7EB] rounded-md text-sm focus:ring-2 focus:ring-[#D9480F] focus:border-transparent bg-white"
+                />
+              </div>
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className={`flex items-center gap-2 px-4 h-9 rounded-md text-sm font-medium transition-colors ${
+                  showFilters
+                    ? 'bg-[#D9480F] text-white'
+                    : 'bg-white border border-[#E5E7EB] text-[#111827] hover:bg-[#F9FAFB]'
+                }`}
+              >
+                <Filter className="w-4 h-4" />
+                <span>Filters</span>
+                {activeFilterCount > 0 && (
+                  <span className="flex items-center justify-center min-w-[18px] h-5 px-1.5 rounded-full bg-white text-[#D9480F] text-xs font-semibold">
+                    {activeFilterCount}
+                  </span>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Table Container with Padding */}
@@ -735,7 +745,7 @@ export default function AdsManager() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-[#E5E7EB]">
-              {filteredAds.map((ad) => {
+              {currentAds.map((ad) => {
                 const isExpanded = expandedRows.has(ad.id);
                 const isSelected = selectedRows.includes(ad.id);
 
@@ -1073,6 +1083,157 @@ export default function AdsManager() {
           ad={emergencyStopAd}
           onClose={() => setEmergencyStopAd(null)}
           onConfirm={confirmEmergencyStop}
+        />
+      )}
+
+      {/* Filter Drawer */}
+      {showFilters && (
+        <>
+          {/* Backdrop */}
+          <div 
+            className="fixed inset-0 bg-black/50 z-40"
+            onClick={() => setShowFilters(false)}
+          />
+          
+          {/* Drawer Panel */}
+          <div className="fixed right-0 top-0 bottom-0 w-[480px] bg-white shadow-2xl z-50 flex flex-col">
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-5 border-b border-[#E5E7EB]">
+              <div>
+                <h2 className="text-lg font-semibold text-[#111827]">Filters</h2>
+                {activeFilterCount > 0 && (
+                  <p className="text-sm text-[#6B7280] mt-1">{activeFilterCount} filter{activeFilterCount > 1 ? 's' : ''} active</p>
+                )}
+              </div>
+              <button
+                onClick={() => setShowFilters(false)}
+                className="p-2 hover:bg-[#F9FAFB] rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-[#6B7280]" />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto px-6 py-6">
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium text-[#111827] mb-2">Client</label>
+                  <select
+                    value={filterClient}
+                    onChange={(e) => setFilterClient(e.target.value)}
+                    className="w-full h-11 px-3 border border-[#E5E7EB] rounded-md text-sm focus:ring-2 focus:ring-[#D9480F] focus:border-transparent bg-white"
+                  >
+                    <option value="">All clients</option>
+                    {uniqueClients.map((client) => (
+                      <option key={client} value={client}>{client}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-[#111827] mb-2">Machine</label>
+                  <select
+                    value={filterMachine}
+                    onChange={(e) => setFilterMachine(e.target.value)}
+                    className="w-full h-11 px-3 border border-[#E5E7EB] rounded-md text-sm focus:ring-2 focus:ring-[#D9480F] focus:border-transparent bg-white"
+                  >
+                    <option value="">All machines</option>
+                    {uniqueMachines.map((machine) => (
+                      <option key={machine} value={machine}>{machine}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-[#111827] mb-2">Group</label>
+                  <select
+                    value={filterGroup}
+                    onChange={(e) => setFilterGroup(e.target.value)}
+                    className="w-full h-11 px-3 border border-[#E5E7EB] rounded-md text-sm focus:ring-2 focus:ring-[#D9480F] focus:border-transparent bg-white"
+                  >
+                    <option value="">All groups</option>
+                    {uniqueGroups.map((group) => (
+                      <option key={group} value={group}>{group}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-[#111827] mb-2">Slot Type</label>
+                  <select
+                    value={filterSlotType}
+                    onChange={(e) => setFilterSlotType(e.target.value as SlotType | '')}
+                    className="w-full h-11 px-3 border border-[#E5E7EB] rounded-md text-sm focus:ring-2 focus:ring-[#D9480F] focus:border-transparent bg-white"
+                  >
+                    <option value="">All slot types</option>
+                    <option value="peak">Peak</option>
+                    <option value="normal">Normal</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-[#111827] mb-2">Media Type</label>
+                  <select
+                    value={filterMediaType}
+                    onChange={(e) => setFilterMediaType(e.target.value as MediaType | '')}
+                    className="w-full h-11 px-3 border border-[#E5E7EB] rounded-md text-sm focus:ring-2 focus:ring-[#D9480F] focus:border-transparent bg-white"
+                  >
+                    <option value="">All media types</option>
+                    <option value="video">Video</option>
+                    <option value="image">Image</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-[#111827] mb-2">Status</label>
+                  <select
+                    value={filterStatus}
+                    onChange={(e) => setFilterStatus(e.target.value as AdStatus | '')}
+                    className="w-full h-11 px-3 border border-[#E5E7EB] rounded-md text-sm focus:ring-2 focus:ring-[#D9480F] focus:border-transparent bg-white"
+                  >
+                    <option value="">All statuses</option>
+                    <option value="running">Running</option>
+                    <option value="scheduled">Scheduled</option>
+                    <option value="paused">Paused</option>
+                    <option value="completed">Completed</option>
+                    <option value="conflict">Conflict</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-[#E5E7EB] bg-[#F9FAFB]">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={clearFilters}
+                  className="flex-1 h-11 px-4 bg-white border border-[#E5E7EB] text-[#111827] rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                >
+                  Clear All
+                </button>
+                <button
+                  onClick={() => setShowFilters(false)}
+                  className="flex-1 h-11 px-4 bg-[#D9480F] text-white rounded-lg hover:bg-[#C13F0D] transition-colors font-medium"
+                >
+                  Apply Filters
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Pagination */}
+      {filteredAds.length > 0 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={filteredAds.length}
+          itemsPerPage={itemsPerPage}
+          onPageChange={setCurrentPage}
+          onItemsPerPageChange={setItemsPerPage}
+          startIndex={startIndex}
+          endIndex={endIndex}
         />
       )}
     </div>
