@@ -3039,6 +3039,10 @@
     padding-inline: calc(var(--spacing) * 8);
   }
 
+  .px-\[32px\] {
+    padding-inline: 32px;
+  }
+
   .py-0 {
     padding-block: calc(var(--spacing) * 0);
   }
@@ -3093,6 +3097,10 @@
 
   .py-20 {
     padding-block: calc(var(--spacing) * 20);
+  }
+
+  .py-\[70px\] {
+    padding-block: 70px;
   }
 
   .pt-0\.5 {
