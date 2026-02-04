@@ -962,6 +962,10 @@
     margin-left: calc(var(--spacing) * 1);
   }
 
+  .ml-1\.5 {
+    margin-left: calc(var(--spacing) * 1.5);
+  }
+
   .ml-2 {
     margin-left: calc(var(--spacing) * 2);
   }
@@ -1425,6 +1429,10 @@
     width: 280px;
   }
 
+  .w-\[300px\] {
+    width: 300px;
+  }
+
   .w-\[320px\] {
     width: 320px;
   }
@@ -1439,6 +1447,10 @@
 
   .w-\[400px\] {
     width: 400px;
+  }
+
+  .w-\[480px\] {
+    width: 480px;
   }
 
   .w-\[600px\] {
