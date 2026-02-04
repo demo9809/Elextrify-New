@@ -124,7 +124,7 @@ export function Welcome({ onNavigate }: WelcomeProps) {
                   label="Campaigns"
                   value="0"
                   action="Launch one"
-                  onClick={() => onNavigate('/campaigns')}
+                  onClick={() => onNavigate('/ad-slotting/inventory')}
                 />
                 <StatCard
                   icon={ListVideo}
@@ -137,7 +137,7 @@ export function Welcome({ onNavigate }: WelcomeProps) {
             </div>
 
             {/* Right Column - CTA Card */}
-            <div className="bg-gradient-to-b from-[#F9FAFB] to-white border-2 border-[#E5E7EB] rounded-2xl p-8 flex flex-col items-center text-center h-fit m-[0px]">
+            <div className="bg-gradient-to-b from-[#F9FAFB] to-white border-2 border-[#E5E7EB] rounded-2xl p-8 flex flex-col items-center text-center h-fit m-[0px] px-[32px] py-[70px]">
               <div className="w-32 h-32 rounded-3xl bg-gradient-to-br from-[rgba(217,72,15,0.1)] to-[rgba(249,115,22,0.05)] flex items-center justify-center mb-6 relative">
                 <div className="absolute inset-0 bg-gradient-to-b from-[#D9480F] to-[#F97316] opacity-10 rounded-3xl" />
                 <Calendar className="w-16 h-16 text-[#D9480F] relative z-10" />
@@ -214,7 +214,7 @@ export function Welcome({ onNavigate }: WelcomeProps) {
               iconBg="bg-[#D1FAE5]"
               iconColor="text-[#16A34A]"
               popular
-              onClick={() => onNavigate('/campaigns')}
+              onClick={() => onNavigate('/ad-slotting/inventory')}
             />
           </div>
         </div>
